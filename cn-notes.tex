@@ -1,4 +1,4 @@
-\documentclass[a4paper, 12pt]{report}
+\documentclass[a4paper, 11pt]{report}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{charter}
@@ -52,9 +52,17 @@ TCP is a procotol that has the following properties,
 
 \begin{itemize}
 	\item allows \emph{connection between processes};
-	\item is \emph{connection-oriented};
-	\item is \emph{reliable};
-	\item is \emph{byte-oriented}.
+	\item is \emph{connection-oriented}: before transmitting data, a
+		connection must be established;
+	\item is \emph{reliable}: it assures all segments are correctly
+		delivered through use of \texttt{ACK} mechanism, and \textbf{at
+		most once};
+	\item offers a \emph{sliding window} mechanism for congestion control
+		and stream control. This assures read and send buffers are
+		well-optimized in both sender and receiver;
+	\item is \emph{byte-oriented}: the byte stream is fragmented into
+		multiple segments, and composed again after getting to
+		destination.
 \end{itemize}
 
 The logical structure is the following one. There are client and server. The
@@ -67,8 +75,14 @@ they are sent.
 
 A very simplified pseudo-code for TCP is as following,
 
-\begin{verbatim} int s; s := socket(...); connect(s, IP-srv, port-srv,...); ...
-send (s, msgl, ...); ... msg2 := receive(s,...); ... \end{verbatim}
+\begin{verbatim} int s; s := socket(...); 
+connect(s, IP-srv, port-srv,...); 
+...
+send (s, msgl, ...); 
+... 
+msg2 := receive(s,...); 
+... 
+\end{verbatim}
 
 The logical structure at server side is quite different. A server creates
 socket $s1$, chooses a port number to bind to that socket, then it declares
@@ -76,9 +90,17 @@ willingness to accept connections on $s1$, and finally it awaits for connection
 requests on $s1$. Server remains on \emph{sleep} until a connection is
 requested.
 
-\begin{verbatim} s1 := socket(...); bind(s1, portsrvm ...); listen(s1,...); s2
-:= accept(s1,...); // another socket ... msg1 := receive(s2,...); ...
-send(s2,msg2,...); ... \end{verbatim}
+\begin{verbatim} 
+s1 := socket(...);
+bind(s1, portsrvm ...);
+listen(s1,...);
+s2 := accept(s1,...); // another socket 
+... 
+msg1 := receive(s2,...);
+...
+send(s2,msg2,...);
+... 
+\end{verbatim}
 
 In TCP, communication is \emph{bidirectional}, with a pattern that depends on
 the application protocol.
