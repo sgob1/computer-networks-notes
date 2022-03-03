@@ -1,4 +1,4 @@
-\documentclass[a4paper, 11pt]{report}
+\documentclass[a4paper, 12pt]{report}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{charter}
@@ -9,7 +9,7 @@
 \usepackage{setspace}
 \usepackage{parskip}
 \usepackage[a4paper, inner=0.5cm, outer=0.5cm, lmargin=3.5cm, rmargin=3.5cm,
-tmargin=1.8cm, bmargin=2.1cm]{geometry}
+tmargin=2.0cm, bmargin=2.3cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
 \definecolor{greengray}{rgb}{0.32,0.57,0.32}
@@ -164,18 +164,151 @@ packet along the full path, in order to prevent fragmentation.
 
 TODO Add figure that recaps IP header + TCP header.
 
-\part{Network Tools}
+\section{Establishing a TCP Connection}
 
-\chapter{Wireshark}
+At the beginning of a TCP connection, $3$ segments are needed, while $2$ segments are needed to close it.
 
-\emph{Wireshark} is a free and open-source tool for \emph{recording} and
-\emph{analyzing} network messages. Recording takes place in a local interface,
-while analysis can be done anywhere by loading saved sessions in a file.
-Wireshark is useful for analysis, troubleshooting and understanding of a
-network's behavior.
+DNS -> To forge it, must change IP address to response AS WELL AS copying Transaction ID of request
 
-\section{Network analysis with pre-captured session}
 
+\section{TCP Architecture}
+
+TCP has many different implementations, depending mostly on chosen OS. Several
+variants of its components are written, with many of them largely optional.
+
+TCP works in segments. Suppose to be at the application level. Execution flow
+at application level works independently and unpredictably with respect to the
+TCP-level flow. When an application sends something, multiple TCP packages must
+be exchanged. The sequence of bytes will be copied to a buffer (sliding window)
+and the \texttt{send()} function is, for example, invoked \--- time in which a
+segment is sent is \emph{unpredictable}, \emph{unrepeatable}.
+
+Many events can provoke a transmission:
+
+\begin{itemize}
+	\item application invokes \texttt{send()};
+	\item application invokes \texttt{receive()};
+	\item TCP layer \emph{receives a segment};
+	\item a \emph{timeout} occurs;
+\end{itemize}
+
+Each of the above will trigger a transmission either immediately or
+\emph{withing a maximum predefined time} (in the case of a timeout, for
+instance). When a TCP layer is touched from above or below, \textbf{it reacts
+by transmitting a segment}.
+
+Transmission may occur \emph{even if there is no useful data to transmit} (e.g.
+the transmission buffer is empty) \-- in that case, a segment will only carry
+the header.
+
+Transmission may transmit a varying number of bytes, ranging from empty up to
+bytes number \emph{larger than Maximum Segment Size} ($536$ in Internet
+network, $1460$ for same Ethernet network). In that case, the payload must be
+\emph{fragmented} before delivery, and multiple segments are delivered in sequence.
+It happens that $2$ or $3$ segments are initially delivered before the
+acknowledgement.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cc}
+CPU Cycle & $0.3 ns$ \\
+Main Memory Access (DRAM) & $120ns$ \\
+SSD & 50-150 $\mu s$ \\
+HHD & $10 ms$ \\
+Internet SF to NY & $40ms$
+\end{tabular}
+\caption{Some interesting metrics.}\label{tab:SomeMetrics}
+\end{table}
+\bigskip
+
+TCP starts sending slowly, increasing the exchange speed. Acceleration depends
+on the timing of \emph{received} packets, by looking at the metrics of
+confirmation packets from receiver.
+
+\subsection{The \texttt{send()} system call}
+
+\texttt{send()} is the system call that processes call to send data through the
+network. The \texttt{send} function passes a memory buffer contained in
+application space (address, legth), copies bytes from transmission memory
+buffer (TX-buffer) in application space to memory byffer in TCP layer.
+
+\begin{lstlisting}
+public void write(byte[] b)
+	throws IOException
+\end{lstlisting}
+
+Send is first invoked by application level. Buffer at application layer is then
+copied to the TCP transmission buffer, to be sent immediately or later. New
+invokations of \texttt{send()} will copy data in TCP buffer \textbf{after} the
+data that is already present. 
+
+\subsection{The \texttt{receive()} system call}
+
+When data reaches the receiver, the data is copied into a receiving buffer
+(RX-buffer). The receiver buffer is flushed only when the application invokes
+\texttt{receive()}. The function \texttt{receive()} copies receiver buffer to
+application buffer, receive copies without exceeding the size of the buffer (it
+returns how many bytes are copied). Receive takes as argument also the number
+of bytes to get from the TCP receiving buffer.
+
+There are three possible cases:
+
+\begin{itemize}
+	\item if the receive buffer is empty, the application is suspended and
+		the process is put to sleep;
+	\item if more than \texttt{length} bytes are available, a
+		\texttt{length} number of bytes is fetched;
+	\item if less than \texttt{length} bytes are available, all available
+		bytes are copied.
+\end{itemize}
+
+\subsection{Sending N bytes}
+
+Suppose to send $N$ bytes with $K$ consecutive \texttt{send()} invocations. How
+many segments will be exchanged? How many transmission events?
+
+As a first approximation, the number of transmitted segments will roughly be
+$$num = \frac{N}{MSS} + 1,$$ with the last segment $+1$ smaller than the
+previous ones. Things, however, can be much more complex due to packet loss and
+retransmissions.
+
+Recall that the number per se is not predictable and not repeatable (TCP is
+byte-oriented).
+
+\section{Sequence numbers}
+
+Since IP is \emph{unreliable} (packets can be lost, duplicated, or delivered in
+different order from which they were sent), each data byte is implicitly
+identified by a $32$ bit \textbf{sequence number}. The association is implicit
+\--- the sender applies a sequence number to a segment, and the receiver uses
+it to reconstruct the actual order of segments.
+
+There are several sequence number. \texttt{snd.User} is the variable carrying
+the value of the next byte the \textbf{application} will send.
+\texttt{snd.Next} is the variable carrying the value of the next byte that the
+\textbf{TCP layer} will transmit \--- its value is contained in the TCP header
+(initial byte of the sequence, of course).
+
+The sequence number of application level must be computed from other
+information.
+
+In short,
+
+\begin{itemize}
+	\item \texttt{snd.Next} is the boundary between transmitted data and
+		yet-to-transmit data;
+	\item \texttt{snd.User} is the boundary between in TX-buffer data and
+		not-yet-associated bytes.
+\end{itemize}
+
+From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
+is the boundary between content of RX-buffer and not-yet-received data (right
+boundary of the data currently in buffer). Only packets having expected
+sequence number are collected and put in the buffer \--- however, if some
+packet has new parts of information and sequence numbers not collected, they
+will be collected and duplicated bytes are thrown away. There may be two
+reasons for packet duplications: IP duplication, and TCP sender retransmission
+because it thought it was lost.
 
 
 \end{document}
