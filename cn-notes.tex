@@ -297,8 +297,8 @@ In short,
 \begin{itemize}
 	\item \texttt{snd.Next} is the boundary between transmitted data and
 		yet-to-transmit data;
-	\item \texttt{snd.User} is the boundary between in TX-buffer data and
-		not-yet-associated bytes.
+	\item \texttt{snd.User} is the boundary between in TX-buffer data (data
+		sent by application) and not-yet-associated bytes.
 \end{itemize}
 
 From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
@@ -308,7 +308,140 @@ sequence number are collected and put in the buffer \--- however, if some
 packet has new parts of information and sequence numbers not collected, they
 will be collected and duplicated bytes are thrown away. There may be two
 reasons for packet duplications: IP duplication, and TCP sender retransmission
-because it thought it was lost.
+because it thought it was lost. TCP stores packets in buffer until
+acknowledgement has been received, since they could be retransmitted in the
+immediate future.
+
+\begin{itemize}
+	\item \texttt{rcv.Next} points at the next byte that is not yet being
+		received;
+	\item \texttt{rcv.User} points to the next byte to be received by the
+		application. After \texttt{receive()} invokation by the
+		application, all delivered to the application bytes can now be
+		deleted, since there are no retransmission needs. 
+\end{itemize}
+
+An important detail is that \textbf{sequence numbers are 32-bit integers}.
+Therefore, there may be a \emph{wrap-around} (overflow-like behavior). TCP
+should handle these comparisons accordingly.
+
+\section{Handling duplicates and loss}
+
+IP is an unreliable protocol. This means that \emph{packets can be loss}.
+Necessary mechanisms are
+
+\begin{itemize}
+	\item \textbf{retransmission};
+	\item \textbf{acknowledgement}, which is a kind of \emph{notification
+		of receipt}, in order to be sure that the receiver has received
+		all the data we sent them.
+\end{itemize}
+
+Acknowledgements is a mechanism that assures receipt of a message by
+notifications. Every header of a segment contains the sequence number of
+\texttt{snd.Next}. Every segment also \emph{carries an information regarding
+the bytes that are received}: the \textbf{acknowledgement number}, which tracks
+the state of the RX-buffer by the pointer \texttt{rcv.Next}. This way, having
+both sequence number and acknowledgement number, one can successfully track the
+state of a TCP connection. When sending a TCP segment, both sequence number and
+acknowledgement number are sent, so that the receiver can reconstruct the state
+of the sender RX-buffer.
+
+A fifth variable is needed: \texttt{snd.Ack}, which \emph{points to the byte in
+TX-buffer that are both transmitted and acknowledged}. This variable is only
+increased upon receiving data (for instance, upon receiving a sequence with a
+greater ACK number from the sender). Data before \texttt{snd.Ack} pointer can
+safely be discarded. Acknowledgements are crucial to a TCP connection, in order
+to guarantee \textbf{reliability} of a connection (TCP is connection-oriented).
+Therefore, transmission is always necessary even if TX-buffer is empty. That
+case, no payload will be transmitted, only information in header is sent
+(increasing acknowledgement number). 
+
+Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
+be \emph{in flight} data. These bytes have been transmitted but not yet
+acknowledged.
+
+\section{Delayed Acknowledgement}
+
+\emph{Delayed Acknowledgement} is a famous TCP algorithm. It is pretty
+straightforward:
+
+\begin{quote}
+Upon receiving a segment, if delayed-ack timer $T$ has previously been set,
+transmit immediately. Else, set the delayed-ack timer $T$ to a value.
+\end{quote}
+
+Delayed-ack timer value depends on the operating system:
+
+\begin{itemize}
+	\item RFC suggests $T = 500ms$;
+	\item Windows has $T = 200ms$;
+	\item Linux in general has $T = 40ms$;
+	\item RHEL sets $T = 4ms$.
+\end{itemize}
+
+If there is not much data to transmit, it will be likely that the timer $T$
+will expire. If the other part is sending a lot of data, the contrary will be
+more likely to occur, breaking the awaiting.
+
+The core idea is to minimize the number of segments to be sent. In fact, a
+delay time $T$ assured to save sending some segments, a feature that
+historically was of a crucial importance.
+
+\section{Retransmissions}
+
+The connection state includes three more variables:
+
+\begin{itemize}
+	\item a \textbf{retransmission timer};
+	\item a \emph{variable that describes the duration of retransmission
+		timer}, the \textbf{RTO};
+	\item a \textbf{retransmission counter}.
+\end{itemize}
+
+The algorithm is as follows:
+
+\begin{quote}
+Upon transmitting segment S, the counter is cleared and set to $0$, with the
+timer set to the RTO value. Upon receiving an ACK, \texttt{snd.Ack} is set to
+the maximum value between \texttt{snd.Ack} and \texttt{segment.Ack}. If
+\texttt{snd.Ack == snd.Next} the timer is switched off.
+
+Upon timer expiring, the counter is incremented and if the counter has not yet
+reached a \texttt{MAX\_COUNT} value, the segment is retransmitted. However, this
+time the timer value is set to RTO but \texttt{RTO = 2 * RTO}. Only in-flight data
+should be retransmitted (and all of it after timer expires). Basically, data
+for which we are sure that it has been received, should not be retransmitted in
+case the timer expires.
+
+When counter reached \texttt{MAX\_COUNT} value, connection is closed.
+\end{quote}
+
+Windows closes connection after $5$ failed attempts, Linux after $15$.
+
+It is simple to realise that there may be a lot of unnecessary retransmissions.
+The timer can, for instance, run out too soon for the acknowledgement to reach
+the sender. Unnecessary retransmissions are a waste of resources, a fundamental
+problem. The reason could be one of those:
+
+\begin{itemize}
+	\item segments are lost;
+	\item segments wich ACK are lost;
+	\item RTO was set to a too small value.
+\end{itemize}
+
+Thus, RTO should be set to an appropriate value, since a too short value leads
+to high overhead and possibly many unnecessary retransmissions, while a too
+long value results in high latency and possibly a slow connection. RTO should
+be set \textbf{dinamically}.
+
+The RTO should be slightly greater than the \emph{RTT} (round-trip-time), and
+it is an idea from Jacobson algorithm. This is of a crucial importance for TCP
+to work.
+
+Initial RTO value is heuristical, and varies from one OS to another. Linux and
+Window start from same value, macOS use a different value, and so on.
+
 
 
 \end{document}

@@ -1,0 +1,23 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/sgob/notes/knowledge/security/computer-networks-2-introduction-to-cybersecurity/cn-repo/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+Brief recap of TCP	cn-notes.tex	/^\\section{Brief recap of TCP}$/;"	s	chapter:Low-Level Network Protocols""TCP
+Establishing a TCP Connection	cn-notes.tex	/^\\section{Establishing a TCP Connection}$/;"	s	chapter:Low-Level Network Protocols""TCP
+Handling duplicates and loss	cn-notes.tex	/^\\section{Handling duplicates and loss}$/;"	s	chapter:Low-Level Network Protocols""TCP
+Low-Level Network Protocols	cn-notes.tex	/^\\part{Low-Level Network Protocols}$/;"	p
+Sending N bytes	cn-notes.tex	/^\\subsection{Sending N bytes}$/;"	u	section:Low-Level Network Protocols""TCP""TCP Architecture
+Sequence numbers	cn-notes.tex	/^\\section{Sequence numbers}$/;"	s	chapter:Low-Level Network Protocols""TCP
+TCP	cn-notes.tex	/^\\chapter{TCP}$/;"	c	part:Low-Level Network Protocols
+TCP Architecture	cn-notes.tex	/^\\section{TCP Architecture}$/;"	s	chapter:Low-Level Network Protocols""TCP
+TCP Implementation	cn-notes.tex	/^\\subsection{TCP Implementation}$/;"	u	section:Low-Level Network Protocols""TCP""Brief recap of TCP
+The \\texttt{receive()} system call	cn-notes.tex	/^\\subsection{The \\texttt{receive()} system call}$/;"	u	section:Low-Level Network Protocols""TCP""TCP Architecture
+The \\texttt{send()} system call	cn-notes.tex	/^\\subsection{The \\texttt{send()} system call}$/;"	u	section:Low-Level Network Protocols""TCP""TCP Architecture
+tab:SomeMetrics	cn-notes.tex	/^\\caption{Some interesting metrics.}\\label{tab:SomeMetrics}$/;"	l
