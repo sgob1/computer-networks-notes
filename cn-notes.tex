@@ -1,13 +1,14 @@
 \documentclass[a4paper, 11pt]{report}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{times}
+\usepackage{charter}
+\usepackage[libertine]{newtxmath}
 \usepackage{graphicx}
 \usepackage[pdfa]{hyperref}
 \usepackage{color}
 \usepackage{setspace}
 \usepackage{parskip}
-\usepackage[a4paper, inner=0.5cm, outer=0.5cm, lmargin=2.7cm, rmargin=2.7cm,
+\usepackage[a4paper, inner=0.5cm, outer=0.5cm, lmargin=3.0cm, rmargin=3.0cm,
 tmargin=2.0cm, bmargin=2.1cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
@@ -36,15 +37,15 @@ tmargin=2.0cm, bmargin=2.1cm]{geometry}
 \setlength{\parindent}{0pt}
 
 \begin{document}
-\setstretch{1.00}
+\setstretch{1.20}
 \title{Computer Networks 2 and Introduction to Cybersecurity}
 \author{Marco Sgobino}
 \maketitle
 \tableofcontents
 
-\part{Low-Level Network Protocols}
+\part{Transmission Control Protocol internals}
 
-\chapter{TCP}
+\chapter{Basics}
 
 \section{Brief recap of TCP}
 TCP is a procotol that has the following properties,
@@ -360,6 +361,15 @@ Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
 be \emph{in flight} data. These bytes have been transmitted but not yet
 acknowledged.
 
+\begin{figure}[b]
+        \centering
+        \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
+	\caption{}
+        \label{fig:TxBuffer}
+\end{figure}
+
+
+
 \section{Delayed Acknowledgement}
 
 \emph{Delayed Acknowledgement} is a famous TCP algorithm. It is pretty
@@ -406,7 +416,7 @@ timer set to the RTO value. Upon receiving an ACK, \texttt{snd.Ack} is set to
 the maximum value between \texttt{snd.Ack} and \texttt{segment.Ack}. If
 \texttt{snd.Ack == snd.Next} the timer is switched off.
 
-Upon timer expiring, the counter is incremented and if the counter has not yet
+When timer expires, the counter is incremented and if the counter has not yet
 reached a \texttt{MAX\_COUNT} value, the segment is retransmitted. However, this
 time the timer value is set to RTO but \texttt{RTO = 2 * RTO}. Only in-flight data
 should be retransmitted (and all of it after timer expires). Basically, data
@@ -414,6 +424,10 @@ for which we are sure that it has been received, should not be retransmitted in
 case the timer expires.
 
 When counter reached \texttt{MAX\_COUNT} value, connection is closed.
+
+A particular condition is when an ACK arrives for a portion of the data that
+has been sent. In that case, the timer resets (the receiver has responded) and
+the sender awaits ACK for missing segments.
 \end{quote}
 
 Windows closes connection after $5$ failed attempts, Linux after $15$.
@@ -432,16 +446,137 @@ problem. The reason could be one of those:
 Thus, RTO should be set to an appropriate value, since a too short value leads
 to high overhead and possibly many unnecessary retransmissions, while a too
 long value results in high latency and possibly a slow connection. RTO should
-be set \textbf{dinamically}.
+be set \textbf{dinamically}. The RTO should be slightly greater than the
+\emph{RTT} (round-trip-time), and it is an idea from Jacobson algorithm. This
+is of a crucial importance for TCP to work. Initial RTO value is heuristical,
+and varies from one OS to another. Linux and Window start from same value,
+macOS use a different value, and so on.
 
-The RTO should be slightly greater than the \emph{RTT} (round-trip-time), and
-it is an idea from Jacobson algorithm. This is of a crucial importance for TCP
-to work.
+\section{Multiple default gateways}
 
-Initial RTO value is heuristical, and varies from one OS to another. Linux and
-Window start from same value, macOS use a different value, and so on.
+More default gateways could be added to a single node. Reasons to add more than
+one default gateway all boil up to failure avoidance. To know whether a gateway
+has stopped working, a heuristic TCP algorithm tries gateway failure detection:
 
+\begin{quote}
+	if the number of retransmissions is greater than a \texttt{MAX\_COUNT}
+	divided by 2 number, the \emph{connection} changes its default gateway.
+	Moreover, if the number of connection that changed default gateway is
+	greater than the number of open connections divided by 4, the \emph{IP
+	layer} changes the default gateway. This last feature speeds up
+	reconfiguration of early connections that still have to make some
+	retransmission attemps.
+\end{quote}
 
+Basically, each connection can autonomously choose its own gateway, but the IP
+layer can force any \--- new or already present \--- connection to use a
+different default gateway.
+
+\section{Gaps in RX-buffer}
+
+Suppose that 4 segments are sent, but the second one has been lost. In this
+case, the receiver has got all segments except the second one, however it has
+no method to inform the sender to retransmit only the second segment. Sending
+ACK for only the first segment would result in unnecessary retransmission of
+segments 3 and 4. The receive buffer could end up having some \textbf{gaps},
+missing bytes that are supposed to be received. The solutions are
+\emph{Selective Acknowledgements} (SACK), a special kind of acknowledgements
+that carry both \emph{left and right sequence number edges} of each
+out-of-order \textbf{block} in RX-buffer, this way avoiding unnecessary
+retransmissions. SACK protocol must be supported by both members of a
+connection.
+
+SACK is very convenient, since many segments can be lost when a sender tries to
+deliver dozens of segments at once. This way, TCP can achieve \emph{efficient
+handling} of the connection.
+
+Of course, out-of-order segments could still lead to gaps in RX-buffer. In this
+case, unnecessary retransmissions are unavoidable when an out-of-order segment
+reaches the receiver too late (however, SACK reduces a lot the burden to the
+sender since only missing segments should selectively be sent).
+
+\section{Operating System TCP interrupts}
+
+Upon packet arrival, a \emph{system interrupt} is sent. 
+
+\chapter{Flow and Congestion Control}
+
+Whenever TCP decides to transmit, there are three possible cases: 
+\begin{itemize}
+	\item an empty segment is sent when there is no payload;
+	\item transmits a single segment if payload data is smaller than MSS;
+	\item transmits multiple segments if paylod size exceeds MSS.
+\end{itemize}
+
+TCP initially starts slowly, then \emph{increases its transfer speed} according
+to the rate in which acknowledgements are received. The overall interaction is
+bidirectional and quite complicated, since TCP implementation at sender's side
+tries to adapt to both connection properties and receiver's side properties.
+As a general rule, the number of in-flight bytes is always lower than an upper
+bound that is dynamically updated \--- this way, TCP can \emph{adapt} to the
+peculiar characteristics of the connection and receiver's speed. Naturally
+speaking, a sender should not send more segments than how many can be managed
+by the receiver.
+
+There are two different bounds and algorithms, the \textbf{flow control} and
+\textbf{congestion control}. The first algorithm constructs a bound in such a
+way that the capacity of the receiver is always respected. Let an extremely
+fast computer send data faster than a receiving, slow, computer. Slower
+computer has not enough speed to collect all data that has been sent \--- the
+flow control algorithm lets the sender speed adapt to the receiver speed by
+means of a \emph{send window}. The second algorithm, the congestion control,
+constructs a state variable called \emph{congestion window} that . The number
+of in-flight bytes \emph{must be slower than both send window and congestion
+window multiplied by MSS}, so that $$\mbox{in-flight} \leq min(\mbox{sndWin},
+\mbox{congWin} \cdot \mbox{MSS}).$$ Basically, if the transmission buffer is full of data,
+a number of in-flight bytes equal to the minumum of both quantities should be
+sent, otherwise just send \texttt{snd.User - snd.Ack} bytes (those still to
+send).
+
+\section{Managing memory buffers}
+
+Buffers cannot increase indefinitely: boundaries must be set in order to assure
+system stability. In Linux kernel, buffer size are set upon compilation.
+Application should be suspended in case data cannot be pushed to TX-buffer (the
+case when the buffer is full). When the RX-buffer is full, packets have to be
+discarded since they cannot be collected. Flow control will act to prevent this
+situation by letting the sender know how much free space is available to the
+RX-buffer.
+
+\section{Flow control}
+
+Flow control is keeping a fast transmitter from overrunning a slower receiver.
+
+Since application sends much data and faster than ACK arrive, the TX-buffer
+could end up being filled up. At receiver's side, application invokes
+\texttt{receive()} much slower than incoming packages speed. This way, the
+RX-buffer could fill up as well. To solve this issues, application invokes
+\texttt{send()} only when TX-buffer is full, hence it is put to sleep (blocked)
+until TCP gets proper ACK and advances \texttt{snd.Ack} (when it has more free
+space). TCP sender keeps track of free space in other end's RX-buffer by
+looking at a variable in header that informs it of how much free space is
+available, so that it can predict how much free space there is. When it guesses
+that receiver's RX-buffer could be full and have no space available, it stops
+transmission and suspends the application. If the maximum window corresponds to
+the size of a single segment, the protocol is called \textbf{stop-and-wait}.
+Larger windows enable pipelining of multiple segments in a row, enabling far
+more efficient usage of the connection.
+
+Flow control algorithm adopts the concept of \textbf{sliding window}. Each
+segment header has a \texttt{WindowSize} field in the header that contains
+\emph{how many free bytes are in the RX-buffer}. WindowSize field basically is
+the amount of free space available in RX-buffer. At sending side,
+\texttt{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
+the other side}. Initially it is set to the receiver's buffer size, and it is
+updated dynamically upon sending a segment. If \texttt{S.Ack} is greater or
+equal to \texttt{snd.Ack}, then the variable \texttt{snd.winSize} is set to
+\texttt{S.windowSize}. Basically, the number of in-flight bytes must never
+exceed the number of bytes in \texttt{snd.winSize} that are available in the
+RX-buffer. The goal of TCP is to reach a number of in-flight bytes that is as
+close as possible to the \texttt{snd.winSize} number of bytes, in order to
+optimize the connection efficiently.
+
+\subsection{Example: M * MSS window size and no transmission errors during flow}
 
 \end{document}
 
