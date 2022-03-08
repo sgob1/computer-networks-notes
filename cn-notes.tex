@@ -315,14 +315,17 @@ identified by a $32$ bit \textbf{sequence number}. The association is implicit
 that information to reconstruct the original order of segments. Segments are
 then reconstructed, and the data assembled as it originally was.
 
-There are several sequence number. \texttt{snd.User} is the variable carrying
+There are several sequence numbers. \texttt{snd.User} is the variable carrying
 the value of the next byte the \textbf{application} will send.
 \texttt{snd.Next} is the variable carrying the value of the next byte that the
 \textbf{TCP layer} will transmit \--- its value is contained in the TCP header
-(initial byte of the sequence, of course).
-
-The sequence number of application level must be computed from other
-information.
+(initial byte of the sequence, of course). Basically, \texttt{snd.User} refers
+to the next byte that will be filled by the invocation of \texttt{send()},
+while \texttt{snd.Next} is the next byte yet to transmit by the TCP layer. The
+sequence number of application level must be computed from other information.
+\footnote{An important detail is that \textbf{sequence numbers are 32-bit integers}.
+Therefore, there may be a \emph{wrap-around} in an overflow-like fashion. TCP
+should internally handle these comparisons in a proper manner.}
 
 In short,
 
@@ -333,16 +336,26 @@ In short,
 		sent by application) and not-yet-associated bytes.
 \end{itemize}
 
+
+\begin{figure}[b]
+        \centering
+        \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
+	\caption{TX-Buffer and its flags \texttt{snd.Ack}, \texttt{snd.Next} and \texttt{snd.User}.}
+        \label{fig:TxBuffer}
+\end{figure}
+
 From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
 is the boundary between content of RX-buffer and not-yet-received data (right
-boundary of the data currently in buffer). Only packets having expected
-sequence number are collected and put in the buffer \--- however, if some
-packet has new parts of information and sequence numbers not collected, they
-will be collected and duplicated bytes are thrown away. There may be two
-reasons for packet duplications: IP duplication, and TCP sender retransmission
-because it thought it was lost. TCP stores packets in buffer until
-acknowledgement has been received, since they could be retransmitted in the
-immediate future.
+boundary of the data currently in buffer). The variable \texttt{rcv.Next} is
+similar to the variable \texttt{rcv.Next} in the sense that it points at the
+next byte yet to receive. Only packets having expected sequence number are
+collected and put in the buffer. There is the case where some packet has new
+parts of information and sequence numbers not collected: in that case the
+incoming segment will still be collected, with duplicated bytes thrown away.
+There may be two reasons for packet duplications: IP duplication, and TCP
+sender retransmission because it thought it was lost. TCP stores packets in
+buffer until acknowledgement has been received, since they could be
+retransmitted in the immediate future.
 
 \begin{itemize}
 	\item \texttt{rcv.Next} points at the next byte that is not yet being
@@ -353,16 +366,14 @@ immediate future.
 		deleted, since there are no retransmission needs. 
 \end{itemize}
 
-An important detail is that \textbf{sequence numbers are 32-bit integers}.
-Therefore, there may be a \emph{wrap-around} (overflow-like behavior). TCP
-should handle these comparisons accordingly.
-
 \begin{figure}[b]
         \centering
         \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/RxBuffer.png}
-	\caption{RX-buffer and its pointers.}
+    \caption{RX-buffer and its flags. Notice that RX-buffer only uses two flags
+    instead of three (no ACK flag needed).}
         \label{fig:RxBuffer}
 \end{figure}
+
 
 
 
@@ -378,7 +389,7 @@ Necessary mechanisms are
 		all the data we sent them.
 \end{itemize}
 
-Acknowledgements is a mechanism that assures receipt of a message by
+Acknowledgements are a mechanism that assures receipt of a message by
 notifications. Every header of a segment contains the sequence number of
 \texttt{snd.Next}. Every segment also \emph{carries an information regarding
 the bytes that are received}: the \textbf{acknowledgement number}, which tracks
@@ -402,14 +413,6 @@ Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
 be \emph{in flight} data. These bytes have been transmitted but not yet
 acknowledged.
 
-\begin{figure}[b]
-        \centering
-        \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
-	\caption{TX-Buffer and its flags \texttt{snd.Ack}, \texttt{snd.Next} and \texttt{snd.User}.}
-        \label{fig:TxBuffer}
-\end{figure}
-
-
 
 \section{Delayed Acknowledgement}
 
@@ -432,11 +435,11 @@ Delayed-ack timer value depends on the operating system:
 
 If there is not much data to transmit, it will be likely that the timer $T$
 will expire. If the other part is sending a lot of data, the contrary will be
-more likely to occur, breaking the awaiting.
-
-The core idea is to minimize the number of segments to be sent. In fact, a
-delay time $T$ assured to save sending some segments, a feature that
-historically was of a crucial importance.
+more likely to occur, breaking the awaiting. \emph{In order to help the other
+part, acknowledges will be delivered as soon as a second segment is received}.
+The core idea is to both help the other end and minimize the number of segments
+to be sent. In fact, a delay time $T$ assured to save sending some segments, a
+feature that historically was of a crucial importance.
 
 \section{Retransmissions}
 
@@ -471,23 +474,23 @@ has been sent. In that case, the timer resets (the receiver has responded) and
 the sender awaits ACK for missing segments.
 \end{quote}
 
-Windows closes connection after $5$ failed attempts, Linux after $15$.
-
-It is simple to realise that there may be a lot of unnecessary retransmissions.
-The timer can, for instance, run out too soon for the acknowledgement to reach
-the sender. Unnecessary retransmissions are a waste of resources, a fundamental
+Windows closes connection after $5$ failed attempts, Linux after $15$. It is
+simple to realise that there may be a lot of unnecessary retransmissions. The
+timer can, for instance, run out too soon for the acknowledgement to reach the
+sender. Unnecessary retransmissions are a waste of resources, a fundamental
 problem. The reason could be one of those:
 
 \begin{itemize}
-	\item segments are lost;
-	\item segments wich ACK are lost;
-	\item RTO was set to a too small value.
+    \item segments are \emph{lost};
+    \item segments \emph{which ACK are lost};
+    \item RTO was set to a \emph{too small value}.
 \end{itemize}
 
 Thus, RTO should be set to an appropriate value, since a too short value leads
 to high overhead and possibly many unnecessary retransmissions, while a too
-long value results in high latency and possibly a slow connection. RTO should
-be set \textbf{dinamically}. The RTO should be slightly greater than the
+long value results in high latency and possibly a slow connection. RTO value is
+basically a trade-off between few retransmissions and fast connection. RTO
+should be set \textbf{dinamically}. The RTO should be slightly greater than the
 \emph{RTT} (round-trip-time), and it is an idea from Jacobson algorithm. This
 is of a crucial importance for TCP to work. Initial RTO value is heuristical,
 and varies from one OS to another. Linux and Window start from same value,
@@ -496,13 +499,13 @@ macOS use a different value, and so on.
 \section{Multiple default gateways}
 
 More default gateways could be added to a single node. Reasons to add more than
-one default gateway all boil up to failure avoidance. To know whether a gateway
-has stopped working, a heuristic TCP algorithm tries gateway failure detection:
+one default gateway all boil up to \emph{failure avoidance}. To know whether a
+gateway has stopped working, a heuristic TCP algorithm tries to detect a gateway failure:
 
 \begin{quote}
 	if the number of retransmissions is greater than a \texttt{MAX\_COUNT}
 	divided by 2 number, the \emph{connection} changes its default gateway.
-	Moreover, if the number of connection that changed default gateway is
+	Moreover, if the number of connections that changed default gateway is
 	greater than the number of open connections divided by 4, the \emph{IP
 	layer} changes the default gateway. This last feature speeds up
 	reconfiguration of early connections that still have to make some
@@ -510,31 +513,29 @@ has stopped working, a heuristic TCP algorithm tries gateway failure detection:
 \end{quote}
 
 Basically, each connection can autonomously choose its own gateway, but the IP
-layer can force any \--- new or already present \--- connection to use a
+layer is able to force any \--- new or already present \--- connection to use a
 different default gateway.
 
 \section{Gaps in RX-buffer}
 
-Suppose that 4 segments are sent, but the second one has been lost. In this
-case, the receiver has got all segments except the second one, however it has
+Suppose that 4 segments are sent, and the second one has been lost. In this
+case, the receiver received all segments except the second one, however it has
 no method to inform the sender to retransmit only the second segment. Sending
 ACK for only the first segment would result in unnecessary retransmission of
-segments 3 and 4. The receive buffer could end up having some \textbf{gaps},
-missing bytes that are supposed to be received. The solutions are
-\emph{Selective Acknowledgements} (SACK), a special kind of acknowledgements
-that carry both \emph{left and right sequence number edges} of each
-out-of-order \textbf{block} in RX-buffer, this way avoiding unnecessary
+segments 3 and 4, which were correctly received. The receive buffer could end
+up having some \textbf{gaps}, missing bytes that are supposed to be received.
+The solutions are \emph{Selective Acknowledgements} (SACK), a special kind of
+acknowledgements that carry both \emph{left and right sequence number edges} of
+each out-of-order \textbf{block} in RX-buffer, this way avoiding unnecessary
 retransmissions. SACK protocol must be supported by both members of a
-connection.
-
-SACK is very convenient, since many segments can be lost when a sender tries to
-deliver dozens of segments at once. This way, TCP can achieve \emph{efficient
-handling} of the connection.
+connection. SACK is very convenient, since many segments can be lost when a
+sender tries to deliver dozens of segments at once. This way, TCP can achieve
+\emph{efficient handling} of the connection.
 
 Of course, out-of-order segments could still lead to gaps in RX-buffer. In this
 case, unnecessary retransmissions are unavoidable when an out-of-order segment
 reaches the receiver too late (however, SACK reduces a lot the burden to the
-sender since only missing segments should selectively be sent).
+sender since only missing segments should be selectively sent).
 
 \section{Operating System TCP interrupts}
 
@@ -542,12 +543,12 @@ Upon packet arrival, a \emph{system interrupt} is sent.
 
 \chapter{Flow and Congestion Control}
 
-Whenever TCP decides to transmit, there are three possible cases: 
-\begin{itemize}
+Whenever TCP decides to transmit, there are three possible scenarios: 
+\begin{enumerate}
 	\item an empty segment is sent when there is no payload;
-	\item transmits a single segment if payload data is smaller than MSS;
-	\item transmits multiple segments if paylod size exceeds MSS.
-\end{itemize}
+	\item it transmits a single segment if payload data is smaller than MSS;
+	\item it transmits multiple segments if payload size exceeds MSS.
+\end{enumerate}
 
 TCP initially starts slowly, then \emph{increases its transfer speed} according
 to the rate in which acknowledgements are received. The overall interaction is
@@ -557,7 +558,7 @@ As a general rule, the number of in-flight bytes is always lower than an upper
 bound that is dynamically updated \--- this way, TCP can \emph{adapt} to the
 peculiar characteristics of the connection and receiver's speed. Naturally
 speaking, a sender should not send more segments than how many can be managed
-by the receiver.
+by the receiver \--- \emph{how many} is an upper limit that dynamically adapts.
 
 There are two different bounds and algorithms, the \textbf{flow control} and
 \textbf{congestion control}. The first algorithm constructs a bound in such a
