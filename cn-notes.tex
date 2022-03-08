@@ -225,7 +225,7 @@ instance). When a TCP layer is touched from above or below, \textbf{it reacts
 by transmitting a segment}. Transmission may occur \emph{even if there is no
 useful data to transmit} (e.g. the transmission buffer is empty) \-- in that
 case, a segment will only carry the header, which has information useful to the
-protocol itself. Upon transmission TCP may deliver a varying number of bytes,
+protocol itself. Upon transmission, TCP may deliver a varying number of bytes,
 ranging from empty up to a number of bytes \emph{larger than Maximum Segment
 Size} ($536$ in Internet network, $1460$ for same Ethernet network). To send a
 huge paylod, the TCP protocol \emph{fragments} it before delivery, resulting in
@@ -273,21 +273,26 @@ data that is already present.
 \subsection{The \texttt{receive()} system call}
 
 When data reaches the receiver, the data is copied into a receiving buffer
-(RX-buffer). The receiver buffer is flushed only when the application invokes
-\texttt{receive()}. The function \texttt{receive()} copies receiver buffer to
-application buffer, receive copies without exceeding the size of the buffer (it
-returns how many bytes are copied). Receive takes as argument also the number
-of bytes to get from the TCP receiving buffer.
+(RX-buffer). The receiver buffer stores all received bytes and is flushed only
+when the application invokes \texttt{receive()}. The function
+\texttt{receive()} copies (at least a portion of) the receiver buffer into the
+application buffer by means of passing a buffer of \texttt{address} and
+\texttt{length}. Function receive() copies bytes without exceeding the size of
+the buffer (\texttt{length}) and it returns how many bytes are copied. As
+argument, receive() also takes the number of bytes to get from the TCP
+receiving buffer.
 
-There are three possible cases:
+There are three possible outcomes for the receive() call:
 
 \begin{itemize}
 	\item if the receive buffer is empty, the application is suspended and
 		the process is put to sleep;
 	\item if more than \texttt{length} bytes are available, a
-		\texttt{length} number of bytes is fetched;
+        \texttt{length} number of bytes is fetched and delivered to the
+        application;
 	\item if less than \texttt{length} bytes are available, all available
-		bytes are copied.
+        bytes are copied since they are less than the maximum deliverable
+        value.
 \end{itemize}
 
 \subsection{Sending N bytes}
@@ -298,18 +303,17 @@ many segments will be exchanged? How many transmission events?
 As a first approximation, the number of transmitted segments will roughly be
 $$num = \frac{N}{MSS} + 1,$$ with the last segment $+1$ smaller than the
 previous ones. Things, however, can be much more complex due to packet loss and
-retransmissions.
-
-Recall that the number per se is not predictable and not repeatable (TCP is
-byte-oriented).
+retransmissions. Recall that the number per se is not predictable and not
+repeatable (TCP is byte-oriented, and will send a proper number of segments).
 
 \section{Sequence numbers}
 
-Since IP is \emph{unreliable} (packets can be lost, duplicated, or delivered in
-different order from which they were sent), each data byte is implicitly
+IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
+in different order from which they were sent), each data byte is implicitly
 identified by a $32$ bit \textbf{sequence number}. The association is implicit
 \--- the sender applies a sequence number to a segment, and the receiver uses
-it to reconstruct the actual order of segments.
+that information to reconstruct the original order of segments. Segments are
+then reconstructed, and the data assembled as it originally was.
 
 There are several sequence number. \texttt{snd.User} is the variable carrying
 the value of the next byte the \textbf{application} will send.
