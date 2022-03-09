@@ -620,5 +620,157 @@ optimize the connection efficiently.
 
 \subsection{Example: M * MSS window size and no transmission errors during flow}
 
+TODO add example with figures
+
+\section{Performance estimation}
+
+From flow control, let's determine the maximum T-IN-TCP that can be obtained.
+TCP is injecting some throughput into the network, and the amount of it is
+controlled by the flow control algorithm. 
+
+The best case one can get by flow control is $M * MSS$ every RTT \--- this is
+the case where the receiver's application empties the RX-buffer the moment the
+segments arrive. In the case the application empties \emph{half} the buffer at
+periodic intervals, the throughput would be the half as well, $M/2 * MSS$ every
+RTT. If the entire buffer is emptied but with a delay or not aligned with the
+receipt of segments, the throughput would be $M * MSS$ every RTT + $\Delta$
+(more time than plain RTT). Combining all cases, one could get less than $M *
+MSS$ data every longer than RTT.
+
+TODO add scheme TCP3-39
+
+For the best case, some assumptions have been made:
+\begin{itemize}
+	\item all intervals have same time duration $T$;
+    \item all the segments arrive together;
+    \item acknowledgement arrives immediately.
+\end{itemize}
+
+In every case, a greater RX-buffer will result in higher throughput, since
+there is a proportionality. Viceversa, greater RTT will result in less
+throughput \--- LANs will have greater throughput than WANs. However, in this
+formula quality of the network is not taken in account: segments can be loss,
+especially when too many of them are injected through the internet. For this
+reason, this much-optimistic model cannot be applied in cases where the
+throughput is high (read \--- when RX-buffer is insanely huge). Every time a
+retransmission is needed, throughput becomes much smaller than the ideal case,
+and this phenomenon is much heavier as the RTT increases, since retransmissions
+are harder to assess.
+
+Another thing to consider is maximum network speed. Injected throughput could
+be \emph{even greater} than maximum network speed, in that case many segments
+would be loss, resulting in a sub-optimal efficiency\footnote{This is solved by
+Congestion control mechanism.}.
+
+\subsection{Establishing size of RX-buffer}
+
+Size of RX-buffer should have the following characteristics:
+\begin{itemize}
+    \item the size should be \emph{a multiple of MSS} \--- this is done to
+        avoid leaving unused space at the end of the buffer, since in the lucky
+        case exactly a multiple of MSS will be delivered;
+    \item the RX-buffer size is a \emph{trade-off} between greater ideal
+        throughput and lower throughput due to excessive retransmissions, and
+        should be chosen accordingly;
+    \item usually, $64KB$ are chosen; the value is OS-dependent. The size is
+        managed as if it were a multiple of MSS \--- when almost full, pretend
+        it is full and ignore last portion of buffer.
+\end{itemize}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{ccc}
+    Flow control & Ethernet & Internet \\
+    MSS  & $1460B$ & $536B$ \\
+    RX-buffer & $64KB$ & $64KB$ \\
+    number of segments in-flight & $44$ & $122$
+\end{tabular}
+\caption{Quantities involved in flow control, on Ethernet and Internet.}\label{tab:FlowControlQuantities}
+\end{table}
+\bigskip
+
+\section{Sustainable throughput}
+
+A sustainable throughput is not potentially infinite. After a certain injected
+throughput \texttt{T\_MAX}, the network bottlenecks and starts losing segments
+\--- this behavior will certainly lead to less overall performance. Thus, an
+optimal throughput should be determined and largely depends on connection
+quality. Basically, injected segments are delivered at same speed only if the
+injected throughput is lower than the maximum possible throughput,
+\texttt{T\_MAX}.
+
+TODO add graph TCP3-53
+
+An excessive throughput \textbf{will} result in the following consequences:
+\begin{itemize}
+    \item packets exit \textbf{slower} than they entered;
+    \item network's max sustainable throughput \texttt{T\_MAX} will
+        \emph{collapse} \--- this fenomenon is called \textbf{network
+        congestion};
+    \item network \textbf{will need some time to remove its congestion},
+        with even worse behavior in the case the unsustainable throughput is
+        maintained for a longer time.
+\end{itemize}
+
+Congestion issues happen mostly because networks have different speeds, and at
+lower level this cannot be perceived \--- it is up to the TCP layer to detect
+issues during path, and slow down segments injection. Routers commonly have a
+mechanism for packet queuing, which can be filled up, resulting in packet
+discarding. Such discarded packets will need a retransmission, leading in lower
+performance. New segments and packets will increase the time for which the
+queue is dissolved.
+
+\section{Congestion control}
+
+Suppose the bound of flow control is so large that congestion control is
+predominant (snd.congWin*MSS < snd.WinSize). A congestion control algorithm
+could try do infer the maximum throughput by looking at the RTT and calculating
+MSS/RTT < T\_MAX. However, this is unfeasible, since it requires too much data.
+A second issue is that the quantity \texttt{T\_MAX} \emph{varies during time}:
+it depends on nominal throughput of networks and routers, and on
+\textbf{competition} of different injected throughputs in the network.
+Basically, the competition is \emph{unpredictable} and \emph{time-varying}.
+
+\subsection{Actual algorithm}
+
+Congestion control algorithm have some important components,
+\begin{enumerate}
+	\item slow start;
+    \item congestion avoidance;
+    \item fast retransmit;
+    \item fast recovery;
+\end{enumerate}
+
+each one with several variants and many parameters to be properly set. We will
+see \texttt{Tahoe} algorithm, but the most used one is the \texttt{Reno}
+algorithm.
+
+The state variable \texttt{CongestionWindow(t)} is set to an initial very small
+value. Its value will increase whenever Acknowledgements are received in time
+\--- the network is assumed to be not congested. Upon retransmission (timeout
+expiration) the state variable is decreased a lot, and the network is assumed
+to be congested. Another state variable, called \texttt{SlowStartThreshold}, is
+a threshold under which \texttt{CongestionWindow(t)} increases very fast, while
+below it the same state variable increases slowly.
+
+Initial values of \texttt{snd.congWin} and \texttt{snd.ssThresh} are,
+respectively, (usually) $3$ MSS and $64KB$. Whenever an acknowledgement is
+received in time, if the congestion window is lower than the threshold,
+increase fast with \emph{slow start algorithm}; otherwise, increase slowly with
+\emph{congestion avoidance} algorithm. Upon retransmission (timeout
+expiration), the congestion window is reset to MSS and the threshold is reset
+to the maximum value between $2$ MSS and (snd.Next - snd.Ack)/2. The assumption
+upon retransmission is that the network is congested: this behavior is hugely
+inefficient, since \emph{many} concurrent causes may determine a packet loss
+\--- for instance, small RTO, network loss (e.g. WiFi).
+
+The congestion window is increased by +MSS whenever an in-time ACK is received.
+Congestion avoidance algorithm does the same, but only upon receipt of
+\textbf{the last} in-time ACK (only if snd.congWin bytes are ACK'ed).
+
+TODO complete slides TCP3-78 and go on
+
+
+
 \end{document}
 
