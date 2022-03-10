@@ -1,14 +1,12 @@
 \documentclass[a4paper, 11pt]{report}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{charter}
+\usepackage{times}
 \usepackage[libertine]{newtxmath}
 \usepackage{graphicx}
 \usepackage[pdfa]{hyperref}
 \usepackage{color}
-\usepackage{setspace}
-\usepackage{parskip}
-\usepackage[a4paper, inner=0.5cm, outer=0.5cm, lmargin=3.0cm, rmargin=3.0cm,
+\usepackage[a4paper, inner=0.5cm, outer=0.5cm, lmargin=2.6cm, rmargin=2.6cm,
 tmargin=2.0cm, bmargin=2.1cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
@@ -34,10 +32,8 @@ tmargin=2.0cm, bmargin=2.1cm]{geometry}
 	breakatwhitespace=true,
 	tabsize=3
 }
-\setlength{\parindent}{0pt}
 
 \begin{document}
-\setstretch{1.20}
 \title{Computer Networks 2 and Introduction to Cybersecurity}
 \author{Marco Sgobino}
 \maketitle
@@ -58,7 +54,7 @@ TCP is a procotol that has the following properties,
 		is no concept of connection, and messages are exchanged in
 		packets;
 	\item is \emph{reliable}: it assures all segments are correctly
-		delivered through use of \texttt{ACK} mechanism, and \textbf{at
+		delivered through use of \emph{ACK} mechanism, and \textbf{at
 		most once} \--- again, this is different to IP layer, since IP
 		packets are unreliable and there is no guarantee that they will
 		be delivered, let alone in their correct ordering;
@@ -98,7 +94,7 @@ msg2 := receive(s,...);
 ... 
 \end{verbatim}
 
-where the notation \texttt{...} denotes possibly code in between two
+where the notation \emph{...} denotes possibly code in between two
 instructions.
 
 The logical structure at server side is quite different. A server creates
@@ -197,7 +193,7 @@ optional. TCP works in segments. Execution flow at application level works
 independently and unpredictably with respect to the TCP-level flow. When an
 application sends something, multiple TCP packages must be exchanged. The
 sequence of bytes will be copied to a buffer (sliding window) and the
-\texttt{send()} function is, for example, invoked \--- the time in which a
+\emph{send()} function is, for example, invoked \--- the time in which a
 segment is sent is \emph{unpredictable}, \emph{unrepeatable} and depends on
 many things. This means that application cannot \emph{deterministically
 predict} the exact time in which the transmission will occur \--- instead, the
@@ -209,10 +205,10 @@ resources.}.
 On TCP, many events can provoke a transmission:
 
 \begin{itemize}
-    \item application invokes \texttt{send()} \--- in this case, the data in
+    \item application invokes \emph{send()} \--- in this case, the data in
         send's call argument will be inserted into the proper transmission
         buffer, and it will be transmitted somewhere in the (immediate) future;
-    \item application invokes \texttt{receive()} \--- this way, we will see in
+    \item application invokes \emph{receive()} \--- this way, we will see in
         detail that the TCP protocol provides a \emph{response} that
         \emph{acknowledges} the receipt of a segment;
 	\item TCP layer \emph{receives a segment} \--- the same as above;
@@ -252,10 +248,10 @@ speed as the time goes on. Acceleration mainly depends on the timing of
 from receiver. As the sender acknowledges that the receiver is able to keep up
 with the increasing transmission speed, it raises the delivery speed.
 
-\subsection{The \texttt{send()} system call}
+\subsection{The \emph{send()} system call}
 
-The system call \texttt{send()} processes the data transmission through the
-network. The \texttt{send} function passes a memory buffer contained in
+The system call \emph{send()} processes the data transmission through the
+network. The \emph{send} function passes a memory buffer contained in
 application space (address, length), and copies bytes from transmission memory
 buffer in application space to transmission memory buffer in TCP layer (called
 \textbf{TX-buffer}).
@@ -267,18 +263,18 @@ public void write(byte[] b)
 
 Send is first invoked by application level. Buffer at application layer is then
 copied to the TCP transmission buffer, to be sent immediately or later. New
-invokations of \texttt{send()} will copy data in TCP buffer \textbf{after} the
+invokations of \emph{send()} will copy data in TCP buffer \textbf{after} the
 data that is already present. 
 
-\subsection{The \texttt{receive()} system call}
+\subsection{The \emph{receive()} system call}
 
 When data reaches the receiver, the data is copied into a receiving buffer
 (RX-buffer). The receiver buffer stores all received bytes and is flushed only
-when the application invokes \texttt{receive()}. The function
-\texttt{receive()} copies (at least a portion of) the receiver buffer into the
-application buffer by means of passing a buffer of \texttt{address} and
-\texttt{length}. Function receive() copies bytes without exceeding the size of
-the buffer (\texttt{length}) and it returns how many bytes are copied. As
+when the application invokes \emph{receive()}. The function
+\emph{receive()} copies (at least a portion of) the receiver buffer into the
+application buffer by means of passing a buffer of \emph{address} and
+\emph{length}. Function receive() copies bytes without exceeding the size of
+the buffer (\emph{length}) and it returns how many bytes are copied. As
 argument, receive() also takes the number of bytes to get from the TCP
 receiving buffer.
 
@@ -287,17 +283,17 @@ There are three possible outcomes for the receive() call:
 \begin{itemize}
 	\item if the receive buffer is empty, the application is suspended and
 		the process is put to sleep;
-	\item if more than \texttt{length} bytes are available, a
-        \texttt{length} number of bytes is fetched and delivered to the
+	\item if more than \emph{length} bytes are available, a
+        \emph{length} number of bytes is fetched and delivered to the
         application;
-	\item if less than \texttt{length} bytes are available, all available
+	\item if less than \emph{length} bytes are available, all available
         bytes are copied since they are less than the maximum deliverable
         value.
 \end{itemize}
 
 \subsection{Sending N bytes}
 
-Suppose to send $N$ bytes with $K$ consecutive \texttt{send()} invocations. How
+Suppose to send $N$ bytes with $K$ consecutive \emph{send()} invocations. How
 many segments will be exchanged? How many transmission events?
 
 As a first approximation, the number of transmitted segments will roughly be
@@ -315,13 +311,13 @@ identified by a $32$ bit \textbf{sequence number}. The association is implicit
 that information to reconstruct the original order of segments. Segments are
 then reconstructed, and the data assembled as it originally was.
 
-There are several sequence numbers. \texttt{snd.User} is the variable carrying
+There are several sequence numbers. \emph{snd.User} is the variable carrying
 the value of the next byte the \textbf{application} will send.
-\texttt{snd.Next} is the variable carrying the value of the next byte that the
+\emph{snd.Next} is the variable carrying the value of the next byte that the
 \textbf{TCP layer} will transmit \--- its value is contained in the TCP header
-(initial byte of the sequence, of course). Basically, \texttt{snd.User} refers
-to the next byte that will be filled by the invocation of \texttt{send()},
-while \texttt{snd.Next} is the next byte yet to transmit by the TCP layer. The
+(initial byte of the sequence, of course). Basically, \emph{snd.User} refers
+to the next byte that will be filled by the invocation of \emph{send()},
+while \emph{snd.Next} is the next byte yet to transmit by the TCP layer. The
 sequence number of application level must be computed from other information.
 \footnote{An important detail is that \textbf{sequence numbers are 32-bit integers}.
 Therefore, there may be a \emph{wrap-around} in an overflow-like fashion. TCP
@@ -330,9 +326,9 @@ should internally handle these comparisons in a proper manner.}
 In short,
 
 \begin{itemize}
-	\item \texttt{snd.Next} is the boundary between transmitted data and
+	\item \emph{snd.Next} is the boundary between transmitted data and
 		yet-to-transmit data;
-	\item \texttt{snd.User} is the boundary between in TX-buffer data (data
+	\item \emph{snd.User} is the boundary between in TX-buffer data (data
 		sent by application) and not-yet-associated bytes.
 \end{itemize}
 
@@ -340,14 +336,14 @@ In short,
 \begin{figure}[b]
         \centering
         \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
-	\caption{TX-Buffer and its flags \texttt{snd.Ack}, \texttt{snd.Next} and \texttt{snd.User}.}
+	\caption{TX-Buffer and its flags \emph{snd.Ack}, \emph{snd.Next} and \emph{snd.User}.}
         \label{fig:TxBuffer}
 \end{figure}
 
-From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
+From the receiver's point of view, there is a variable, \emph{rcv.Next}, that
 is the boundary between content of RX-buffer and not-yet-received data (right
-boundary of the data currently in buffer). The variable \texttt{rcv.Next} is
-similar to the variable \texttt{rcv.Next} in the sense that it points at the
+boundary of the data currently in buffer). The variable \emph{rcv.Next} is
+similar to the variable \emph{rcv.Next} in the sense that it points at the
 next byte yet to receive. Only packets having expected sequence number are
 collected and put in the buffer. There is the case where some packet has new
 parts of information and sequence numbers not collected: in that case the
@@ -358,10 +354,10 @@ buffer until acknowledgement has been received, since they could be
 retransmitted in the immediate future.
 
 \begin{itemize}
-	\item \texttt{rcv.Next} points at the next byte that is not yet being
+	\item \emph{rcv.Next} points at the next byte that is not yet being
 		received;
-	\item \texttt{rcv.User} points to the next byte to be received by the
-		application. After \texttt{receive()} invokation by the
+	\item \emph{rcv.User} points to the next byte to be received by the
+		application. After \emph{receive()} invokation by the
 		application, all delivered to the application bytes can now be
 		deleted, since there are no retransmission needs. 
 \end{itemize}
@@ -391,25 +387,25 @@ Necessary mechanisms are
 
 Acknowledgements are a mechanism that assures receipt of a message by
 notifications. Every header of a segment contains the sequence number of
-\texttt{snd.Next}. Every segment also \emph{carries an information regarding
+\emph{snd.Next}. Every segment also \emph{carries an information regarding
 the bytes that are received}: the \textbf{acknowledgement number}, which tracks
-the state of the RX-buffer by the pointer \texttt{rcv.Next}. This way, having
+the state of the RX-buffer by the pointer \emph{rcv.Next}. This way, having
 both sequence number and acknowledgement number, one can successfully track the
 state of a TCP connection. When sending a TCP segment, both sequence number and
 acknowledgement number are sent, so that the receiver can reconstruct the state
 of the sender RX-buffer.
 
-A fifth variable is needed: \texttt{snd.Ack}, which \emph{points to the byte in
+A fifth variable is needed: \emph{snd.Ack}, which \emph{points to the byte in
 TX-buffer that are both transmitted and acknowledged}. This variable is only
 increased upon receiving data (for instance, upon receiving a sequence with a
-greater ACK number from the sender). Data before \texttt{snd.Ack} pointer can
+greater ACK number from the sender). Data before \emph{snd.Ack} pointer can
 safely be discarded. Acknowledgements are crucial to a TCP connection, in order
 to guarantee \textbf{reliability} of a connection (TCP is connection-oriented).
 Therefore, transmission is always necessary even if TX-buffer is empty. That
 case, no payload will be transmitted, only information in header is sent
 (increasing acknowledgement number). 
 
-Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
+Data bytes between pointers \emph{snd.Ack} and \emph{snd.Next} is said to
 be \emph{in flight} data. These bytes have been transmitted but not yet
 acknowledged.
 
@@ -456,18 +452,18 @@ The algorithm is as follows:
 
 \begin{quote}
 Upon transmitting segment S, the counter is cleared and set to $0$, with the
-timer set to the RTO value. Upon receiving an ACK, \texttt{snd.Ack} is set to
-the maximum value between \texttt{snd.Ack} and \texttt{segment.Ack}. If
-\texttt{snd.Ack == snd.Next} the timer is switched off.
+timer set to the RTO value. Upon receiving an ACK, \emph{snd.Ack} is set to
+the maximum value between \emph{snd.Ack} and \emph{segment.Ack}. If
+\emph{snd.Ack == snd.Next} the timer is switched off.
 
 When timer expires, the counter is incremented and if the counter has not yet
-reached a \texttt{MAX\_COUNT} value, the segment is retransmitted. However, this
-time the timer value is set to RTO but \texttt{RTO = 2 * RTO}. Only in-flight data
+reached a \emph{MAX\_COUNT} value, the segment is retransmitted. However, this
+time the timer value is set to RTO but \emph{RTO = 2 * RTO}. Only in-flight data
 should be retransmitted (and all of it after timer expires). Basically, data
 for which we are sure that it has been received, should not be retransmitted in
 case the timer expires.
 
-When counter reached \texttt{MAX\_COUNT} value, connection is closed.
+When counter reached \emph{MAX\_COUNT} value, connection is closed.
 
 A particular condition is when an ACK arrives for a portion of the data that
 has been sent. In that case, the timer resets (the receiver has responded) and
@@ -503,7 +499,7 @@ one default gateway all boil up to \emph{failure avoidance}. To know whether a
 gateway has stopped working, a heuristic TCP algorithm tries to detect a gateway failure:
 
 \begin{quote}
-	if the number of retransmissions is greater than a \texttt{MAX\_COUNT}
+	if the number of retransmissions is greater than a \emph{MAX\_COUNT}
 	divided by 2 number, the \emph{connection} changes its default gateway.
 	Moreover, if the number of connections that changed default gateway is
 	greater than the number of open connections divided by 4, the \emph{IP
@@ -555,46 +551,49 @@ to the rate in which acknowledgements are received. The overall interaction is
 bidirectional and quite complicated, since TCP implementation at sender's side
 tries to adapt to both connection properties and receiver's side properties.
 As a general rule, the number of in-flight bytes is always lower than an upper
-bound that is dynamically updated \--- this way, TCP can \emph{adapt} to the
-peculiar characteristics of the connection and receiver's speed. Naturally
-speaking, a sender should not send more segments than how many can be managed
-by the receiver \--- \emph{how many} is an upper limit that dynamically adapts.
+bound that is dynamically updated \--- since the upper bound is chosen
+according to proper criteria, TCP can \emph{adapt} to the peculiar
+characteristics of the connection and receiver's speed. Naturally speaking, a
+sender should not send more segments than how many can be managed by the
+receiver \--- \emph{how many} is an upper limit that dynamically adapts.
 
-There are two different bounds and algorithms, the \textbf{flow control} and
-\textbf{congestion control}. The first algorithm constructs a bound in such a
-way that the capacity of the receiver is always respected. Let an extremely
-fast computer send data faster than a receiving, slow, computer. Slower
-computer has not enough speed to collect all data that has been sent \--- the
-flow control algorithm lets the sender speed adapt to the receiver speed by
-means of a \emph{send window}. The second algorithm, the congestion control,
-constructs a state variable called \emph{congestion window} that . The number
-of in-flight bytes \emph{must be slower than both send window and congestion
-window multiplied by MSS}, so that $$\mbox{in-flight} \leq min(\mbox{sndWin},
-\mbox{congWin} \cdot \mbox{MSS}).$$ Basically, if the transmission buffer is full of data,
-a number of in-flight bytes equal to the minumum of both quantities should be
-sent, otherwise just send \texttt{snd.User - snd.Ack} bytes (those still to
-send).
+There are two different algorithms that will set two different bounds: the
+\textbf{flow control} and the \textbf{congestion control}. The TCP layer will
+always send less data than the minimum between the two upper bounds. The first
+algorithm constructs a bound in such a way that the capacity of the receiver is
+always respected. Let an extremely fast computer send data faster than a
+receiving, slow, computer. Slower computer has not enough speed to collect all
+data that has been sent \--- the flow control algorithm lets the sender speed
+adapt to the receiver speed by means of a \emph{send window}. The second
+algorithm, the congestion control, constructs a state variable called
+\emph{congestion window}, whose goal is to model the maximum current throughput
+of the network. The number of in-flight bytes \emph{must be slower than both
+send window and congestion window multiplied by MSS}, so that
+$$\mbox{in-flight} \leq \min(\mbox{sndWin}, \mbox{congWin} \cdot \mbox{MSS}).$$
+Basically, if the transmission buffer is full of data, a number of in-flight
+bytes equal to the minumum of both quantities should be sent, otherwise just
+send \emph{snd.User - snd.Ack} bytes (those still to send).
 
 \section{Managing memory buffers}
 
 Buffers cannot increase indefinitely: boundaries must be set in order to assure
-system stability. In Linux kernel, buffer size are set upon compilation.
-Application should be suspended in case data cannot be pushed to TX-buffer (the
-case when the buffer is full). When the RX-buffer is full, packets have to be
-discarded since they cannot be collected. Flow control will act to prevent this
-situation by letting the sender know how much free space is available to the
-RX-buffer.
-
+system stability. In Linux kernel, buffer size are set upon compilation and are
+fixed in size. In case data cannot be pushed into the TX-buffer anymore because
+it is full, application should be suspended. When the RX-buffer is full,
+packets have to be discarded since they cannot be collected. Flow control will
+act to prevent this situation by letting the sender know how much free space is
+available to the RX-buffer.
 \section{Flow control}
 
-Flow control is keeping a fast transmitter from overrunning a slower receiver.
+The goal of flow control is to keep a fast transmitter from overrunning a
+slower receiver.
 
 Since application sends much data and faster than ACK arrive, the TX-buffer
 could end up being filled up. At receiver's side, application invokes
-\texttt{receive()} much slower than incoming packages speed. This way, the
+\emph{receive()} much slower than incoming packages speed. This way, the
 RX-buffer could fill up as well. To solve this issues, application invokes
-\texttt{send()} only when TX-buffer is full, hence it is put to sleep (blocked)
-until TCP gets proper ACK and advances \texttt{snd.Ack} (when it has more free
+\emph{send()} only when TX-buffer is full, hence it is put to sleep (blocked)
+until TCP gets proper ACK and advances \emph{snd.Ack} (when it has more free
 space). TCP sender keeps track of free space in other end's RX-buffer by
 looking at a variable in header that informs it of how much free space is
 available, so that it can predict how much free space there is. When it guesses
@@ -605,17 +604,17 @@ Larger windows enable pipelining of multiple segments in a row, enabling far
 more efficient usage of the connection.
 
 Flow control algorithm adopts the concept of \textbf{sliding window}. Each
-segment header has a \texttt{WindowSize} field in the header that contains
+segment header has a \emph{WindowSize} field in the header that contains
 \emph{how many free bytes are in the RX-buffer}. WindowSize field basically is
 the amount of free space available in RX-buffer. At sending side,
-\texttt{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
+\emph{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
 the other side}. Initially it is set to the receiver's buffer size, and it is
-updated dynamically upon sending a segment. If \texttt{S.Ack} is greater or
-equal to \texttt{snd.Ack}, then the variable \texttt{snd.winSize} is set to
-\texttt{S.windowSize}. Basically, the number of in-flight bytes must never
-exceed the number of bytes in \texttt{snd.winSize} that are available in the
+updated dynamically upon sending a segment. If \emph{S.Ack} is greater or
+equal to \emph{snd.Ack}, then the variable \emph{snd.winSize} is set to
+\emph{S.windowSize}. Basically, the number of in-flight bytes must never
+exceed the number of bytes in \emph{snd.winSize} that are available in the
 RX-buffer. The goal of TCP is to reach a number of in-flight bytes that is as
-close as possible to the \texttt{snd.winSize} number of bytes, in order to
+close as possible to the \emph{snd.winSize} number of bytes, in order to
 optimize the connection efficiently.
 
 \subsection{Example: M * MSS window size and no transmission errors during flow}
@@ -692,19 +691,19 @@ Size of RX-buffer should have the following characteristics:
 \section{Sustainable throughput}
 
 A sustainable throughput is not potentially infinite. After a certain injected
-throughput \texttt{T\_MAX}, the network bottlenecks and starts losing segments
+throughput \emph{T\_MAX}, the network bottlenecks and starts losing segments
 \--- this behavior will certainly lead to less overall performance. Thus, an
 optimal throughput should be determined and largely depends on connection
 quality. Basically, injected segments are delivered at same speed only if the
 injected throughput is lower than the maximum possible throughput,
-\texttt{T\_MAX}.
+\emph{T\_MAX}.
 
 TODO add graph TCP3-53
 
 An excessive throughput \textbf{will} result in the following consequences:
 \begin{itemize}
     \item packets exit \textbf{slower} than they entered;
-    \item network's max sustainable throughput \texttt{T\_MAX} will
+    \item network's max sustainable throughput \emph{T\_MAX} will
         \emph{collapse} \--- this fenomenon is called \textbf{network
         congestion};
     \item network \textbf{will need some time to remove its congestion},
@@ -726,7 +725,7 @@ Suppose the bound of flow control is so large that congestion control is
 predominant (snd.congWin*MSS < snd.WinSize). A congestion control algorithm
 could try do infer the maximum throughput by looking at the RTT and calculating
 MSS/RTT < T\_MAX. However, this is unfeasible, since it requires too much data.
-A second issue is that the quantity \texttt{T\_MAX} \emph{varies during time}:
+A second issue is that the quantity \emph{T\_MAX} \emph{varies during time}:
 it depends on nominal throughput of networks and routers, and on
 \textbf{competition} of different injected throughputs in the network.
 Basically, the competition is \emph{unpredictable} and \emph{time-varying}.
@@ -742,33 +741,224 @@ Congestion control algorithm have some important components,
 \end{enumerate}
 
 each one with several variants and many parameters to be properly set. We will
-see \texttt{Tahoe} algorithm, but the most used one is the \texttt{Reno}
+see \emph{Tahoe} algorithm, but the most used one is the \emph{Reno}
 algorithm.
 
-The state variable \texttt{CongestionWindow(t)} is set to an initial very small
+The state variable \emph{CongestionWindow(t)} is set to an initial very small
 value. Its value will increase whenever Acknowledgements are received in time
 \--- the network is assumed to be not congested. Upon retransmission (timeout
 expiration) the state variable is decreased a lot, and the network is assumed
-to be congested. Another state variable, called \texttt{SlowStartThreshold}, is
-a threshold under which \texttt{CongestionWindow(t)} increases very fast, while
-below it the same state variable increases slowly.
+to be congested. Another state variable, called \emph{SlowStartThreshold}, is
+a threshold under which \emph{CongestionWindow(t)} increases very fast, while
+below it the same state variable increases slowly. Initial values of
+\emph{snd.congWin} and \emph{snd.ssThresh} are, respectively, (usually) $3$ MSS
+and $64KB$. Whenever an acknowledgement is received in time, if the congestion
+window is lower than the threshold, increase fast with \emph{slow start
+algorithm}; otherwise, increase slowly with \emph{congestion avoidance}
+algorithm. Upon retransmission (timeout expiration), the congestion window is
+reset to MSS and the threshold is reset to the maximum value between $2$ MSS
+and (snd.Next - snd.Ack)/2 \--- that is, the maximum value between the double
+of MSS and the half of the in-flight bytes. The assumption upon retransmission
+is that the network is congested: this behavior is hugely inefficient, since
+\emph{many} concurrent causes may determine a packet loss \--- for instance,
+small RTO, network loss (e.g. WiFi). The congestion window is increased by +MSS
+whenever an in-time ACK is received. Congestion avoidance algorithm does the
+same, but only upon receipt of \textbf{the last} in-time ACK (only if
+snd.congWin bytes are ACK'ed). 
 
-Initial values of \texttt{snd.congWin} and \texttt{snd.ssThresh} are,
-respectively, (usually) $3$ MSS and $64KB$. Whenever an acknowledgement is
-received in time, if the congestion window is lower than the threshold,
-increase fast with \emph{slow start algorithm}; otherwise, increase slowly with
-\emph{congestion avoidance} algorithm. Upon retransmission (timeout
-expiration), the congestion window is reset to MSS and the threshold is reset
-to the maximum value between $2$ MSS and (snd.Next - snd.Ack)/2. The assumption
-upon retransmission is that the network is congested: this behavior is hugely
-inefficient, since \emph{many} concurrent causes may determine a packet loss
-\--- for instance, small RTO, network loss (e.g. WiFi).
+The two algorithms increase the congestion window at \emph{much} different
+speed. Slow start algorithm, despite its name, will \emph{double} the
+congestion window each time an acknowledgement for all segments is received.
+Congestion avoidance, instead, will increase the congestion window
+\emph{linearly}, for which the window is increased by $1$ (single MSS) each
+time an acknowledgement for all segments is received. The slow start will
+provoke an exponential growth, while the congestion avoidance will provoke a
+linear growth. 
 
-The congestion window is increased by +MSS whenever an in-time ACK is received.
-Congestion avoidance algorithm does the same, but only upon receipt of
-\textbf{the last} in-time ACK (only if snd.congWin bytes are ACK'ed).
+TODO add figure increment TCP3-83
 
-TODO complete slides TCP3-78 and go on
+\subsection{Congestion control pattern in case of exponential growth}
+
+Let's assume all segments are lost, and retransmission occurs after RTT (that
+means, RTO is a good approximation of RTT). Let's also assume slow start
+produces an exponential growth. Initial value of \emph{ssThresh\_start} is
+$64KB$. Starting with threshold value below \emph{T\_MAX}, slow start will
+yield an exponential growth; after some time, congestion avoidance will enter,
+a segment loss will occur and the congestion window will be reset to half the
+\emph{ssThresh\_start} original value. Initial threshold above \emph{T\_MAX}
+will trigger a segment loss, and a reset of the threshold (without congestion
+avoidance algorithm, that has not enough time to act). After the first segment
+loss, threshold will be halved by setting it at half of the in-flight bytes,
+and system will act as it started below the \emph{T\_MAX} throughput. The
+``exponential, linear, drop'' pattern will occur \emph{forever}, and the three
+phases (slow start, congestion avoidance, loss detection) will happen one after
+the other.
+
+TODO add useful graph TCP3-91
+
+\subsection{Congestion control pattern in case of linear growth}
+
+TODO add useful graph TCP3-95
+
+With same assumptions as above, but with slow start provoking a linear growth,
+the pattern will be \emph{completely linear}, since no exponential growth
+occurs. Basically, only the starting phase of each cycle will be different. The
+end result in both patterns, however, is that the average \emph{T\_IN} value
+will be \textbf{much} smaller than \emph{T\_MAX} \--- the TCP congestion
+control cannot expoit internetwork capacity efficiently. Injected throughput
+will always be lower than the maximum possible: the consequence, is that the
+average throughput is lower than what the network could sustain, however, this
+is very important in order to avoid network collapse and congestion.
+
+\subsection{Fast retransmit in a nutshell}
+
+TODO
+
+\subsection{Reasons of congestion control to slow down the network so much}
+
+Intuitively, one would like to reach the maximum possible value for the
+congestion window and the maximum throughput sustainable; however, they are
+\textbf{unknown}. We can detect detect its value only after having injected an
+excessive throughput, by detecing segment loss. An aggressive slow down occurs
+at each detection of segment loss, in order to prevent the collapse of the
+network. In fact, suppose many machines are injecting a throughput which is
+closer to the maximum possible: in that case, if the network is congested,
+\emph{it will require more time to return to its normal state}, because all
+machines are insisting injecting throughputs close to unsustainable ones, and
+removing congestion \emph{will} require larger time. Basically, this is a
+heuristic way to avoid congestion on a network where multiple machines are
+using transmission resources altogether.
+
+In the end, congestion control strives to ensure \textbf{fairness}. Fairness is
+the tendency of each competing TCP connection on a router to consume the same
+fraction of the router capacity. Each connection, on the average, will consume
+an equal fraction of router's capacity. However, today's standard impose
+\textbf{node-level fairness}: this means that each node should have the same
+amount of network capacity (thousands of TCP connections can be opened at the
+same time from a single node). Note that UDP connections \emph{do not}
+implement any flow or congestion control, and transmit at full-speed: they are
+`selfish'.
+
+\subsection{Estimating the average throughput}
+
+Some assumptions should be made in order to compute average throughput:
+\begin{itemize}
+    \item slow start has \emph{linear growth};
+    \item \emph{T\_MAX} is constant and in between $K\cdot MSS$ and$(K+1)\cdot MSS$;
+    \item \emph{all} segments are lost at once (no wild retransmissions);
+\end{itemize}
+
+The average throughput that is injected is the average number of bytes in each
+pattern, divided by $(K + 1)\cdot RTT$, that is FIXME
+$$A_t = \frac{MSS\cdot \frac{K(K+1)}{2}}{(K+1)\cdot RTT} = \frac{MSS\cdot
+K/2}{RTT}.$$ Thus, the injected throughput is the same one would obtain by
+having a \emph{constant window} of $K/2 \cdot MSS$ size \--- on the average,
+one can only get \textbf{half} of the maximum network throughput.
+
+Slow start in exponential fashion makes this calculation quite more complex,
+but we will genuinely assume a linear growth in all our calculations.
+
+Another important scenario is not transmitting data after many RTTs. Without a
+reset, one would use the last values that were determined by the congestion
+control algorithm. In order to avoid bad performance, the sender \textbf{resets
+both congWin and ssThresh} after a timeout. Basically, the approach is very
+pessimistic and conservative, in order to avoid any kind of congestion in the
+network.
+
+\section{Interaction between flow control and congestion control}
+
+The interaction between the two TCP control systems is not straightforward. At
+connection opening, the bound imposed by congestion control is \emph{much}
+tighter than the flow control one (2-4 MSS instead of $64KB$). Hence, at the
+beginning the network will follow congestion control's dictated bounds \---
+data arrives slowly.
+
+After connection opening (steady-state), there are two possible cases:
+\begin{itemize}
+    \item T-MAX > T-FLOW-CONTROL \--- maximum network throughput is greater
+        than maximum flow control throughput: in this case, the bottleneck is
+        the \textbf{receiver's capacity}. The steady state throughput will be
+        $\frac{M\cdot MSS}{RTT}$, while its connection opening transient
+        throughput will be half of that value;
+    \item T-MAX < T-FLOW-CONTROL \--- maximum network throughput is lower
+        than maximum flow control throughput: in this other case, the
+        bottleneck is the \textbf{internetwork}, and congestion window will go
+        up and down, never reaching the value corresponding to the receiver's
+        buffer size. The steady state throughput will be $\frac{K\cdot
+        MSS}{2MSS}$.
+\end{itemize}
+
+TODO TCP3-130 describe figure
+
+TODO TCP3-131-133 solve equation and jot down hbdp
+
+\chapter{Connection opening}
+
+\section{Sequence numbers initialization}
+
+Upon connection opening, since they are not set to zero, each of the two sides
+should agree to their initial sequence numbers. A first idea could be to simply
+send initial segments in which \emph{snd.Next} are specified in header. Special
+segments carry a flag that denotes a connection request (from the client) and
+`ok' (from the server). Both parties will set their initial \emph{rcv} pointers
+to the value read in the header from the other party. In reality, this first
+implementation has many issues:
+\begin{itemize}
+    \item delayed duplicates from client may be received after a long time \---
+        the server might uncorrectly believe another connection request is
+        coming from the client (since there are port numbers, however, the new
+        connection will be opened only in case the previous one has been
+        closed);
+    \item delayed duplicates from server may be received after a long time \---
+        this way, an opening with wrong sequence numbers may occur.
+\end{itemize}
+
+The solution to the above problems, in which delayed packets may be
+undistinguishable from not delayed ones: the ``\emph{cross your finigers}''
+approach. The machines \emph{assume} that a predefined, maximum segment
+lifetime exist \--- segments cannot exist after this supposed lifetime. Since
+the assumption does not match reality, the algorithm execution does not provide
+any guarantees. The lifetime in question is named \textbf{Maximum Segment
+Lifetime (MSL)}, and it is arbitrarily set to $2 min$ ($120s$). After such MSL
+time, the machine assumes that the segment will never reach it. This is, in
+reality, wrong: IP do not have concept of time, and packets are discarded only
+based off their number of \emph{hops}. 
+
+\subsection{The three-way handshake protocol}
+
+The sequence numbers are generated by the \textbf{ISN-generator} (initial
+sequence number generator), a $32$-bit counter increased every $4\mu s$, even
+when the node is switched off. Overflow will happen every 4-5 hours. The
+generator is used to generate an initial sequence number from its current
+value. A sequence number can used again at least after $4$ hours.
+
+The three-way handshake protocol will begin with sequence number
+initialization, from the ISN-generator (suppose it's $x$), and send a
+SYN(seq=x)\footnote{SYN bit is a flag in TCP header that is always zero, except
+in the first and second segments, and it is used only for requesting
+connections.} packet to the server. The latter will answer with a package such
+as SYN(SEQ=y, ACK=x+1). The client will then respond with a second message,
+containing data and having sequence and acknowledgement numbers (SEQ=x+1,
+ACK=y+1); now, connection has been established and both parties will assume the
+connection is successfully opened. The client side will be sure that no delayed
+duplicates are coming since $x$ should have come from a connection which has
+been opened more than $4$ hours ago! The same reasoning happens from the server
+side: any delayed duplicate should have been traveling for more than $4$ hours.
+This protocol even protects in the case old duplicates are received: that case,
+the other party will receive a wrong packet \--- for something they did not
+request at all \--- and respond with a REJECT packet\footnote{RST is a header
+flag as well as SYN, and it is used only to reject connections.}. The client
+will respond with a REJECT(ACK=y).
+
+A very unlucky case is where the server receives two delayed duplicates,
+however, there is little to no chance that the ACK values are correct (and, in
+that case, it would have traveled for more than $4$ hours, much more than MSL
+value of 2 minutes). The same goes if the server receives a REJECT (it cannot
+be a duplicate)
+
+TODO please add figure TCP4-12
+
+
 
 
 
