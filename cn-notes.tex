@@ -897,11 +897,13 @@ TODO TCP3-131-133 solve equation and jot down hbdp
 \section{Sequence numbers initialization}
 
 Upon connection opening, since they are not set to zero, each of the two sides
-should agree to their initial sequence numbers. A first idea could be to simply
-send initial segments in which \emph{snd.Next} are specified in header. Special
-segments carry a flag that denotes a connection request (from the client) and
-`ok' (from the server). Both parties will set their initial \emph{rcv} pointers
-to the value read in the header from the other party. In reality, this first
+should agree to their initial sequence numbers. The ideal starting point is
+that every \emph{snd} pointer should be set to the same value, as well as the
+other party's \emph{rcv} buffer. A first idea could be to simply send initial
+segments in which \emph{snd.Next} are specified in header. Special segments
+carry a flag that denotes a connection request (from the client) and `ok' (from
+the server). Both parties will set their initial \emph{rcv} pointers to the
+value read in the header from the other party. In reality, this first
 implementation has many issues:
 \begin{itemize}
     \item delayed duplicates from client may be received after a long time \---
@@ -920,9 +922,9 @@ lifetime exist \--- segments cannot exist after this supposed lifetime. Since
 the assumption does not match reality, the algorithm execution does not provide
 any guarantees. The lifetime in question is named \textbf{Maximum Segment
 Lifetime (MSL)}, and it is arbitrarily set to $2 min$ ($120s$). After such MSL
-time, the machine assumes that the segment will never reach it. This is, in
-reality, wrong: IP do not have concept of time, and packets are discarded only
-based off their number of \emph{hops}. 
+time passed, the machine assumes that the segment will never reach it. This is,
+in reality, wrong: IP do not have concept of time, and packets are discarded
+only based off their number of \emph{hops}. 
 
 \subsection{The three-way handshake protocol}
 
@@ -957,6 +959,102 @@ value of 2 minutes). The same goes if the server receives a REJECT (it cannot
 be a duplicate)
 
 TODO please add figure TCP4-12
+
+RST segments are send in two cases,
+\begin{itemize}
+	\item unexpected rcv-seqnum in 3-way handshake;
+    \item received segment for closed connection;
+\end{itemize}
+in those cases, send a RST segment with seqnum expected by peer.
+
+In case the RST packet is legit (that is, when it carries the sequence number
+the machine expects), then \textbf{close} the connection and \textbf{ignore}
+rcv-segment.
+
+\section{Interface between 3-way handshake and application layer}
+
+Application layer just requests opening a connection. The TCP layer will handle
+the connection opening with appropriate system calls. The system calls in sequence are
+
+\begin{itemize}
+	\item socket;
+    \item bind;
+    \item listen(num,...);
+    \item accept.
+\end{itemize}
+
+System call listen has a \emph{num} in argument that tells \emph{how many
+connections can be queued}, that is, the number of incoming SYN segments that
+should be queued. Until listen call, no connection can be opened and the server
+will respond with RST. Up to \emph{num} SYN segments can be accepted at the
+same time \emph{before} invocation of accept and delivery of SYN-ACK packages.
+Closing a connection happens with FIN flag. It is handled the same way as SYN
+is, and where one party wants to close connection, sets FIN flag to $1$ and the
+other party will respond with a FIN flag to $1$ as well.
+
+This protocol can be abused to block a server with little to no effort. Attacks
+whose goal is to prevent the target working are called \textbf{Denial of
+Service} attack. An example of DoS attack is the \textbf{SYN-flood} attack.
+SYN-flood attacks are very hard to detect and very cheap to operate. The idea
+is to keep sending SYN segments so that server queue \emph{is always full}: the
+effect will be that legitimate SYN requests from legitimate clients will be
+discarded. Some variants even hide the IP-src by modifying it, in order to hide
+attack origin. SYN-ACKs responses will be delivered to (fake) IP-src address.
+Randomly forging IP-src addresses makes almost impossible to filter them out
+with a firewall. SYN-flood attacks are cheap: for $128$ opened connections
+every $3$ minutes, only $128\cdot 40 = 5120B every 180s = 228 bps$ bytes are
+needed to the attacker to forge necessary packets. To forge $1280$ connections,
+$1280\cdot 40 = 51200B every 3 m = 6826bps.$ A small cost of sending a packet
+causes the listener to force a listening to a connection, a \textbf{much}
+higher cost. By designing a new protocol, one would likely avoid spending
+resources upon the first SYN, by operating \emph{statelessly} until the
+initiation can demonstrate its legitimacy.
+
+\chapter{TCP Reliability}
+
+TCP a \emph{reliable} protocol. Reliable only means that data are received, in
+order, and with no duplicates. However, application layer do not know how many
+bytes are received by the other side of the connection. \texttt{send()} may
+complete with no error, but no byte could be transmitted \--- no way to know
+how many packages are actually delivered to the other party. Upon an error
+taken during the $n+1$-th send invocation, there is no way to know if previous
+messages were actually delivered or not. Despite TCP being reliable, there is
+\textbf{no guarantee} that messages up to $n$-th were delivered and
+transmitted. FIXME-6
+
+The correct reasoning is that all bytes \emph{up to} $k$ are correctly
+delivered, but one cannot know exact $k$ value. Regarding bytes delivered to
+the application level at the other end, bytes were received by TCP layer up to
+$k$ but probably $k - k'$ bytes \emph{are still to be delivered to the
+application}. Only a portion of them, $k'$, have been delivered. Both $k$ and
+$k'$ are \emph{unknown}. Only after \emph{receive} call, with all ACK correctly
+received, one is sure that all previous data have been successfully delivered.
+Upon receive error, one \textbf{cannot tell anything about the previous send
+invocation}, since there is no clue that the packet has been received correctly
+or not. Any of these scenarios might be the reason:
+\begin{itemize}
+    \item \emph{not received}: packet never received by the partner;
+    \item \emph{not delivered}: packet arrived, but partner crashed before
+        reply;
+    \item \emph{delivered}: but not reaching, connection broke.
+\end{itemize}
+
+All these scenarios must be handled differently and correctly. Response to
+failure should always be a correct failure handling and proper recovery from
+damage, no matter the kind of it. Typical examples of error handling are:
+\begin{enumerate}
+	\item take an error;
+    \item repeat;
+    \item wait some time;
+    \item send request again;
+    \item until receiving a response.
+\end{enumerate}
+
+However, this approach is wrong, especially when dealing with financial
+transactions, where same requests, multiple times, can lead to catastrofic
+errors and wrong operations. Only read operations can be handled this way
+effectively.
+
 
 
 
