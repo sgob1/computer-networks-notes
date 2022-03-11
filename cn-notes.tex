@@ -1057,6 +1057,43 @@ effectively.
 
 
 
+\part{Threat model}
+
+\chapter{Understanding threat model}
+
+TCP offers no authentication. It means that if in DNS the address has been
+maliciously altered, a connection can be opened to the attacker's service
+rather than to the legitimate one. Network attacker may be in control of the
+router \--- he may switch DNS request and respond with fake responses. TCP
+offers no integrity either. A network attacker might change what the machine
+sends and receives \--- a communication may be altered by an entity that acts
+in between the parties. An improved version of TCP, \textbf{TLS}, is available.
+It acts on top of TCP and uses cryptography to protect integrity and offer
+authentication.
+
+Suppose now the client has been infected by malware \--- attacker can control
+the client's behavior from remote, for example modifying web pages, opening
+connections, attempting priviledge escalation. In this case, TLS does not
+guarantee secrecy, integrity, authentication. 
+
+Basically, it depends on \textbf{threat model}. The threat model is the set of
+actions that we assume the attacker can execute. Reasoning about security of a
+system without a well-posed threat model makes no sense.
+
+Typical threat models involve the following scenarios, in increasing pessimism:
+\begin{itemize}
+    \item \textbf{Network attacker} \--- attacker can only operate in the
+        network. He is able to observe and communicate. DoS and MITM attacks
+        are usually what a network attacker can do;
+    \item \textbf{Compromised endpoint} \--- attacker has compromised a node in
+        the network with a malware;
+    \item \textbf{Physical access} \--- attacker has physical access to an
+        endpoint;
+    \item \textbf{Insider/Supply chain} \--- attacker has access to portion of
+        the software supply chain, e.g. libraries, infrastructure.
+\end{itemize}
+
+
 
 
 
