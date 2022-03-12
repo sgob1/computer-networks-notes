@@ -617,9 +617,19 @@ RX-buffer. The goal of TCP is to reach a number of in-flight bytes that is as
 close as possible to the \emph{snd.winSize} number of bytes, in order to
 optimize the connection efficiently.
 
-\subsection{Example: M * MSS window size and no transmission errors during flow}
+\begin{figure}[b]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/idealThroughput.png}
+    \caption{Ideal throughput condition, in which the injected throughput is
+    equal to M $\cdot$ MSS at each time $T$. In scheme, every timing is
+considered constant, and the total time $T$ is the sum of the time in which all
+the segments arrive at the receiver's end, the receiver's processing time and
+the acknowledgement's time to arrive at the original sender's side.}
+    \label{fig:idealThroughput}
+\end{figure}
 
-TODO add example with figures
+\clearpage
+
 
 \section{Performance estimation}
 
@@ -634,15 +644,17 @@ periodic intervals, the throughput would be the half as well, $M/2 * MSS$ every
 RTT. If the entire buffer is emptied but with a delay or not aligned with the
 receipt of segments, the throughput would be $M * MSS$ every RTT + $\Delta$
 (more time than plain RTT). Combining all cases, one could get less than $M *
-MSS$ data every longer than RTT.
+MSS$ data every \emph{longer} than RTT, depending on the parameters and the
+circumstances of the network.
 
-TODO add scheme TCP3-39
-
-For the best case, some assumptions have been made:
+For the best case, it's important to recall that some important assumptions
+have been made:
 \begin{itemize}
-	\item all intervals have same time duration $T$;
-    \item all the segments arrive together;
-    \item acknowledgement arrives immediately.
+    \item all intervals have same time duration $T$, as described in
+        Figure~\ref{fig:idealThroughput};
+    \item all the segments arrive together, or at least not after a time which
+        is irrelevant or already counted in $T$.;
+    \item acknowledgement arrives immediately, and not after a huge delay.
 \end{itemize}
 
 In every case, a greater RX-buffer will result in higher throughput, since
@@ -698,7 +710,16 @@ quality. Basically, injected segments are delivered at same speed only if the
 injected throughput is lower than the maximum possible throughput,
 \emph{T\_MAX}.
 
-TODO add graph TCP3-53
+\begin{figure}[b]
+    \centering
+    \includegraphics[ width=0.6\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/networkCollapse.png}
+    \caption{Network collapse after injecting a too-high throughput. Notice
+        how injecting an even greater throughput will result in a \emph{lower}
+        throughput.}
+    \label{fig:networkCollapse}
+\end{figure}
+
+
 
 An excessive throughput \textbf{will} result in the following consequences:
 \begin{itemize}
@@ -775,7 +796,15 @@ time an acknowledgement for all segments is received. The slow start will
 provoke an exponential growth, while the congestion avoidance will provoke a
 linear growth. 
 
-TODO add figure increment TCP3-83
+\begin{figure}[hb]
+    \centering
+    \includegraphics[ width=0.7\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/slowStartTypes.png}
+    \caption{The two kinds of slow start evolutions. At left, exponential, at
+    right, linear.}
+    \label{fig:slowStartTypes}
+\end{figure}
+
+
 
 \subsection{Congestion control pattern in case of exponential growth}
 
@@ -794,11 +823,18 @@ and system will act as it started below the \emph{T\_MAX} throughput. The
 phases (slow start, congestion avoidance, loss detection) will happen one after
 the other.
 
-TODO add useful graph TCP3-91
+\begin{figure}[hb]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/congestionControl.png}
+    \caption{Congestion control and its dynamics. The pattern indefinitely
+    repeats.}
+    \label{fig:congestionControl}
+\end{figure}
+
+
+\clearpage
 
 \subsection{Congestion control pattern in case of linear growth}
-
-TODO add useful graph TCP3-95
 
 With same assumptions as above, but with slow start provoking a linear growth,
 the pattern will be \emph{completely linear}, since no exponential growth
@@ -812,7 +848,14 @@ is very important in order to avoid network collapse and congestion.
 
 \subsection{Fast retransmit in a nutshell}
 
-TODO
+Suppose $K$ segements are transmitted in a burst, and a single segment appears
+to be lost. Resetting congWin to its minimum value is largely inefficient,
+since only a single segment of the row has been lost. Another strategy could be
+waiting for a timeout before resetting the congWin: the solution is inefficient
+too, since waiting before retransmitting could lead to long breaks (how much to
+wait? how to estimate a correct time interval?). The solution is to retransmit
+\emph{immediately only} what appears to be the missing segment, and decrease
+congWin \emph{but not} to its minimum value.
 
 \subsection{Reasons of congestion control to slow down the network so much}
 
@@ -888,9 +931,33 @@ After connection opening (steady-state), there are two possible cases:
         MSS}{2MSS}$.
 \end{itemize}
 
-TODO TCP3-130 describe figure
+Many variants of Congestion control have been developed. In particolar, there
+are many families for different use-cases:
+\begin{description}
+    \item[congestion collapse] this class attempts to increase the average T-IN
+        upon congestion collapse in a standard, wired internetwork connection;
+    \item[wireless] this class strives to optimize correct non-wired environments, with algorithms tailored to environments with high network loss;
+    \item [high-speed] this class is tailored to sustain very-high bandwidth
+        connections (e.g. backbones), with \emph{high bandwidth-delay product}.
+\end{description}
 
-TODO TCP3-131-133 solve equation and jot down hbdp
+
+The latter is the case of backbones, with very-high bandwidth-delay product
+\--- those are all the networks that, if TCP is left as default, will lead to
+several minutes of connection start and gigabytes of data exchanged for the
+sole goal of bringing the connection to full-speed. In order to optimize them,
+several variants of TCP have been developed.
+
+Suppose a sustainable throughput is $T_{MAX} = K \cdot MSS / RTT$, and suppose
+the length of the first initialization period be $t_{init} = K \cdot RTT$.
+Solving in $K$ leads to $$t_{init} = \frac{T_{MAX} \cdot RTT^2}{MSS}.$$ By
+looking at the formula, one recognizes that the initial time has a squared
+dependency over round-trip time, a direct proportionality over $T_{MAX}$ and is
+inversely proportional to MSS. In all connections where both RTT and $T_{MAX}$
+are large or extremely large, the initialization time could become relevant as
+well as the sheer quantity of the data that is needed (more than $3$ minutes of
+transient, more than 100GB transmitted).
+
 
 \chapter{Connection opening}
 
@@ -934,31 +1001,49 @@ when the node is switched off. Overflow will happen every 4-5 hours. The
 generator is used to generate an initial sequence number from its current
 value. A sequence number can used again at least after $4$ hours.
 
-The three-way handshake protocol will begin with sequence number
-initialization, from the ISN-generator (suppose it's $x$), and send a
-SYN(seq=x)\footnote{SYN bit is a flag in TCP header that is always zero, except
-in the first and second segments, and it is used only for requesting
-connections.} packet to the server. The latter will answer with a package such
-as SYN(SEQ=y, ACK=x+1). The client will then respond with a second message,
-containing data and having sequence and acknowledgement numbers (SEQ=x+1,
-ACK=y+1); now, connection has been established and both parties will assume the
-connection is successfully opened. The client side will be sure that no delayed
-duplicates are coming since $x$ should have come from a connection which has
-been opened more than $4$ hours ago! The same reasoning happens from the server
-side: any delayed duplicate should have been traveling for more than $4$ hours.
-This protocol even protects in the case old duplicates are received: that case,
-the other party will receive a wrong packet \--- for something they did not
-request at all \--- and respond with a REJECT packet\footnote{RST is a header
-flag as well as SYN, and it is used only to reject connections.}. The client
-will respond with a REJECT(ACK=y).
+\begin{figure}[b]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/threeWayHandshake.png}
+    \caption{The three-way handshake.}
+    \label{fig:threeWayHandshake}
+\end{figure}
+
+
+
+The three-way handshake protocol (Figure~\ref{fig:threeWayHandshake} will begin
+with sequence number initialization, from the ISN-generator (suppose it's $x$),
+and send a SYN(seq=x)\footnote{SYN bit is a flag in TCP header that is always
+zero, except in the first and second segments, and it is used only for
+requesting connections.} packet to the server. The latter will answer with a
+package such as SYN(SEQ=y, ACK=x+1). The client will then respond with a second
+message, containing data and having sequence and acknowledgement numbers
+(SEQ=x+1, ACK=y+1); now, connection has been established and both parties will
+assume the connection is successfully opened. The client side will be sure that
+no delayed duplicates are coming since $x$ should have come from a connection
+which has been opened more than $4$ hours ago! The same reasoning happens from
+the server side: any delayed duplicate should have been traveling for more than
+$4$ hours. This protocol even protects in the case old duplicates are received:
+that case, the other party will receive a wrong packet \--- for something they
+did not request at all \--- and respond with a REJECT packet\footnote{RST is a
+header flag as well as SYN, and it is used only to reject connections.}. The
+client will respond with a REJECT(ACK=y).
 
 A very unlucky case is where the server receives two delayed duplicates,
 however, there is little to no chance that the ACK values are correct (and, in
 that case, it would have traveled for more than $4$ hours, much more than MSL
 value of 2 minutes). The same goes if the server receives a REJECT (it cannot
-be a duplicate)
+be a duplicate). The mechanism is shown in Figure~\ref{fig:threeWHduplicates}.
 
-TODO please add figure TCP4-12
+\begin{figure}[b]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/threeWHduplicates.png}
+    \caption{Possible errors in TCP handshake. The TCP protocol and its
+    sequence number system is designed to avoid unsolicited connection opening,
+preventing the server to waste resources with no reason.}
+    \label{fig:threeWHduplicates}
+\end{figure}
+
+
 
 RST segments are send in two cases,
 \begin{itemize}
