@@ -82,7 +82,7 @@
 
 \part{Transmission Control Protocol internals}
 
-\chapter{TCP Workings}
+\chapter{TCP Basis}
 
 \section{Recap}
 TCP is a procotol that has the following remarkable properties,
@@ -598,62 +598,84 @@ There are three possible outcomes for the \texttt{receive()} call:
         yield all requested bytes, and more calls should be used.
 \end{itemize}
 
-MARK
+Let a buffer have length equal to $800$ bytes. Suppose \texttt{receive()} is
+invoked in the following scenarios,
+\begin{enumerate}
+    \item in the first scenario, there are $600$ bytes in the RX-buffer. Upon
+        \texttt{receive()} call, all $600$ bytes are delivered to the
+        application. The RX-buffer is now empty;
+    \item in the second scenario, there are $1000$ bytes in the RX-buffer. Upon
+        \texttt{receive()} invocation, only $800$ of the $1000$ bytes are saved
+        into the buffer \-- $200$ bytes will remain into the RX-buffer;
+    \item in the third scenario, there is \emph{no data} in the TX-buffer.
+        Application is suspended until there is data to retrieve. Suppose $500$
+        bytes are collected in the RX-buffer \-- they will be immediately saved
+        into the buffer provided by the application, and the application will
+        retrieve them. RX-buffer is now emptied.
+\end{enumerate}
+
+
 \section{Sequence numbers}
 
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
 in different order from which they were sent), each data byte is implicitly
-identified by a $32$ bit \textbf{sequence number}. The association is implicit
-\--- the sender applies a sequence number to a segment, and the receiver uses
-that information to reconstruct the original order of segments. Segments are
-then reconstructed, and the data assembled as it originally was.
+identified by a $32$ bit \textbf{sequence number}. The association is
+\emph{implicit} \--- the sender applies a sequence number to a segment, and the
+receiver uses that information to reconstruct the original order of segments.
+Segments are then reconstructed, and the data assembled as it originally was.
 
-There are several sequence numbers. \emph{snd.User} is the variable carrying
+There are several sequence numbers. \texttt{snd.User} is the variable carrying
 the value of the next byte the \textbf{application} will send.
-\emph{snd.Next} is the variable carrying the value of the next byte that the
+The variable \texttt{snd.Next} carries the value of the next byte that the
 \textbf{TCP layer} will transmit \--- its value is contained in the TCP header
-(initial byte of the sequence, of course). Basically, \emph{snd.User} refers
+(initial byte of the sequence, of course). Basically, \texttt{snd.User} refers
 to the next byte that will be filled by the invocation of \texttt{send()},
-while \emph{snd.Next} is the next byte yet to transmit by the TCP layer. The
+while \texttt{snd.Next} is the next byte yet to transmit by the TCP layer. The
 sequence number of application level must be computed from other information.
 \footnote{An important detail is that \textbf{sequence numbers are 32-bit integers}.
-Therefore, there may be a \emph{wrap-around} in an overflow-like fashion. TCP
-should internally handle these comparisons in a proper manner.}
+    Therefore, the sequence numbers can only go from $0$ to $2^{32} - 1$, so
+there may be \emph{wrap-arounds} in an overflow-like fashion. TCP should
+internally handle these comparisons in a proper manner.}
+
+The variable \texttt{snd.Next} is carried in the TCP segment header, in
+\emph{sequence number} space (16 bit).
 
 In short,
 
 \begin{itemize}
-	\item \emph{snd.Next} is the boundary between transmitted data and
+	\item \texttt{snd.Next} is the boundary between transmitted data and
 		yet-to-transmit data;
-	\item \emph{snd.User} is the boundary between in TX-buffer data (data
+	\item \texttt{snd.User} is the boundary between in TX-buffer data (data
 		sent by application) and not-yet-associated bytes.
 \end{itemize}
 
 
 \begin{figure}[b]
         \centering
-        \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
-	\caption{TX-Buffer and its flags \emph{snd.Ack}, \emph{snd.Next} and \emph{snd.User}.}
+        \includegraphics[ width=1.3\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
+	\caption{TX-Buffer and its flags \texttt{snd.Ack}, \texttt{snd.Next} and \texttt{snd.User}.}
         \label{fig:TxBuffer}
 \end{figure}
 
-From the receiver's point of view, there is a variable, \emph{rcv.Next}, that
+From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
 is the boundary between content of RX-buffer and not-yet-received data (right
-boundary of the data currently in buffer). The variable \emph{rcv.Next} is
-similar to the variable \emph{rcv.Next} in the sense that it points at the
-next byte yet to receive. Only packets having expected sequence number are
-collected and put in the buffer. There is the case where some packet has new
-parts of information and sequence numbers not collected: in that case the
-incoming segment will still be collected, with duplicated bytes thrown away.
-There may be two reasons for packet duplications: IP duplication, and TCP
-sender retransmission because it thought it was lost. TCP stores packets in
-buffer until acknowledgement has been received, since they could be
+boundary of the data currently in buffer). The variable \texttt{rcv.Next} is
+similar to the variable \texttt{rcv.Next} in the sense that it points at the
+next byte yet to receive. Only packets having \emph{expected sequence number}
+are collected and put in the buffer. 
+
+There is the case where some segment carries new parts of information and sequence
+numbers that are not collected, with a portion of them already collected: in
+that case the incoming segment will still be collected, with duplicated bytes
+thrown away. There may be two reasons for packet duplications: IP duplication,
+and TCP sender retransmission because it thought it was lost. TCP stores
+packets in buffer until acknowledgement has been received, since they could be
 retransmitted in the immediate future.
 
 \begin{itemize}
-	\item \emph{rcv.Next} points at the next byte that is not yet being
+	\item \texttt{rcv.Next} points at the next byte that is not yet being
 		received;
-	\item \emph{rcv.User} points to the next byte to be received by the
+	\item \texttt{rcv.User} points to the next byte to be received by the
 		application. After \texttt{receive()} invokation by the
 		application, all delivered to the application bytes can now be
 		deleted, since there are no retransmission needs. 
@@ -668,53 +690,90 @@ retransmitted in the immediate future.
 \end{figure}
 
 
+Each TCP layer has \textbf{both} TX-buffer and RX-buffer. Sequence numbers in
+the two directions are independent each other, and they will increase as much
+as there is new data incoming from a direction.
 
+Each and every segment is accepted only if it contains \emph{new} data: that
+is, when the sequence number is the expected one \emph{or} when the segment
+contains novel sequence numbers. 
+
+Each segment also carries information on the length of its payload. This allows
+the receiver to reconstruct efficiently the segment, in order to compute the
+ending sequence number, and not only the starting sequence number.
 
 \section{Handling duplicates and loss}
 
 IP is an unreliable protocol. This means that \emph{packets can be loss}.
-Necessary mechanisms are
+Necessary mechanisms are two,
 
 \begin{itemize}
-	\item \textbf{retransmission};
-	\item \textbf{acknowledgement}, which is a kind of \emph{notification
-		of receipt}, in order to be sure that the receiver has received
-		all the data we sent them.
+	\item the \textbf{retransmission}, or when a segment is retransmitted;
+    \item the \textbf{acknowledgement}, which is a kind of \emph{notification of
+        receipt}, that is sent in order to make the other party sure that we
+        have received and collected the data it sent us.
 \end{itemize}
 
-Acknowledgements are a mechanism that assures receipt of a message by
-notifications. Every header of a segment contains the sequence number of
-\emph{snd.Next}. Every segment also \emph{carries an information regarding
-the bytes that are received}: the \textbf{acknowledgement number}, which tracks
-the state of the RX-buffer by the pointer \emph{rcv.Next}. This way, having
-both sequence number and acknowledgement number, one can successfully track the
-state of a TCP connection. Upon sending a TCP segment, both sequence number and
-acknowledgement number are sent, so that the receiver can reconstruct the state
-of the sender RX-buffer.
+\emph{Acknowledgements} are a mechanism that assures receipt of a message by
+means of \emph{notifications}. Every header of a segment contains the sequence
+number of \texttt{snd.Next}. Every segment also \emph{carries an information
+regarding the bytes that are received}: the \textbf{acknowledgement number},
+which tracks the state of the RX-buffer by following the pointer
+\texttt{rcv.Next}. This way, having both sequence number and acknowledgement
+number, one can successfully track the state of a TCP connection. Upon sending
+a TCP segment, both sequence number and acknowledgement number are delivered,
+so that the receiver can reconstruct the state of the sender RX-buffer.
 
-A fifth variable is needed: \emph{snd.Ack}, which \emph{points to the byte in
-TX-buffer that are both transmitted and acknowledged}. This variable is only
-increased upon receiving data (for instance, upon receiving a sequence with a
-greater ACK number from the sender). Data before \emph{snd.Ack} pointer can
-safely be discarded. Acknowledgements are crucial to a TCP connection, in order
-to guarantee \textbf{reliability} of a connection (TCP is connection-oriented).
-Therefore, transmission is always necessary even if TX-buffer is empty. That
-case, no payload will be transmitted, only information in header is sent
-(increasing acknowledgement number). 
+Basically, sequence number tracks the bytes a party \emph{has sent}, while
+acknowledgement number tracks the bytes a party \emph{has successfully
+received}. Both informations must be exchanged at every delivered segment.
 
-Data bytes between pointers \emph{snd.Ack} and \emph{snd.Next} is said to
-be \emph{in flight} data. These bytes have been transmitted but not yet
+A fifth variable is thus needed: \texttt{snd.Ack}, which \emph{points to the
+byte in TX-buffer before which any byte is both transmitted and acknowledged}.
+This variable is only increased upon receiving data (for instance, upon
+receiving a sequence with a greater ACK number from the sender). Data before
+\texttt{snd.Ack} pointer can safely be discarded. Acknowledgements are crucial
+to a TCP connection, in order to guarantee \textbf{reliability} of a connection
+(TCP is connection-oriented). Therefore, transmission is always necessary even
+if TX-buffer is empty. That case, no payload will be transmitted, only
+information in header is sent (increasing acknowledgement number).
+
+An important note is that \texttt{snd.Ack} is only updated when the received
+sequence number \texttt{segment.ack} is \emph{greater} than the value in
+\texttt{snd.Ack} \-- that is, when new data are correctly received.
+
+For this reason one can say that the sequence number tracks \texttt{snd.Next},
+while the acknowledgement number tracks \texttt{rcv.Next}. However, the
+sequence number will be at the value of the \emph{first} sent byte, that is the
+first byte the receiver is expecting.
+
+For instance, suppose the receiver has successfully received $130$ bytes from a
+sender: its \texttt{rcv.Next} points to the $130$-th element in the RX-buffer.
+In order to inform the sender, all the new incoming segments from the receiver
+will carry $130$ as sequence number. Upon receiving such packets, the sender
+will successfully interpret the sequence number, and set the \texttt{snd.Ack}
+variable to $130$: all the data prior to $130$ can be safely discarded.
+
+Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
+be \textbf{in flight} data. These bytes have been transmitted but not yet
 acknowledged.
+
+The reason why acknowledgements are important is pretty obvious: without
+acknowledgements, there would be \textbf{no way for the sender to tell wether
+sent data has been received or not}. This means that even though the receiver
+has no data, acknowledgements are still required and should be properly sent.
 
 
 \section{Delayed Acknowledgement}
 
-\emph{Delayed Acknowledgement} is a famous TCP algorithm. It is pretty
+\emph{Delayed Acknowledgement} is a notorious TCP algorithm. Its core idea is
+not to answer immediately with an acknowledgement, but to await some arbitrary
+time interval $T$ that depends on the operating system. The algorithm is pretty
 straightforward:
 
 \begin{quote}
 Upon receiving a segment, if delayed-ack timer $T$ has previously been set,
-transmit immediately. Else, set the delayed-ack timer $T$ to a value.
+transmit immediately. Else, set the delayed-ack timer $T$ to a specific value.
 \end{quote}
 
 Delayed-ack timer value depends on the operating system:
@@ -726,109 +785,149 @@ Delayed-ack timer value depends on the operating system:
 	\item RHEL sets $T = 4ms$.
 \end{itemize}
 
-If there is not much data to transmit, it will be likely that the timer $T$
-will expire. If the other part is sending a lot of data, the contrary will be
-more likely to occur, breaking the awaiting. \emph{In order to help the other
-part, acknowledges will be delivered as soon as a second segment is received}.
-The core idea is to both help the other end and minimize the number of segments
-to be sent. In fact, a delay time $T$ assured to save sending some segments, a
-feature that historically was of a crucial importance.
+The reasoning is as follows: if there is not much data to transmit, it will be
+likely that the timer $T$ will expire. Expiring timer means sending a packet
+with the proper acknowledgement number \-- a strategy that guarantees that the
+connection stays open and remains fresh. If the other part is sending a lot of
+data, the contrary will be more likely to occur, breaking the awaiting. In
+order to help the other part, acknowledges will be delivered as soon as a
+\emph{second segment} is received. 
+
+The core idea is to both help the other end and
+minimize the number of segments to be sent: this is done by preventing to
+respond with a segment whose sole purpose is to inform of acknowledged data
+\emph{at each segment received}, while still answering with ACK information
+even though there is little to no data received. In fact, a delay time $T$
+assured to save sending some segments, a feature that historically was of a
+crucial importance.
 
 \section{Retransmissions}
 
-The connection state includes three more variables:
+The connection state includes three more variables, related to
+\emph{retransmissions}:
 
 \begin{itemize}
-	\item a \textbf{retransmission timer};
+    \item a \textbf{retransmission timer}, which counts the time interval until
+        which the retransmission is held back;
 	\item a \emph{variable that describes the duration of retransmission
-		timer}, the \textbf{RTO};
-	\item a \textbf{retransmission counter}.
+        timer interval}, the \textbf{RTO (Retransmission Time-Out)};
+    \item a \textbf{retransmission counter}, that counts how many
+        retransmissions for a segment have been performed.
 \end{itemize}
 
-The algorithm is as follows:
+The \textbf{retransmission algorithm} is as follows:
 
 \begin{quote}
-Upon transmitting segment S, the counter is cleared and set to $0$, with the
-timer set to the RTO value. Upon receiving an ACK, \emph{snd.Ack} is set to
-the maximum value between \emph{snd.Ack} and \emph{segment.Ack}. If
-\emph{snd.Ack == snd.Next} the timer is switched off.
 
-When timer expires, the counter is incremented and if the counter has not yet
-reached a \emph{MAX\_COUNT} value, the segment is retransmitted. However, this
-time the timer value is set to RTO but \emph{RTO = 2 * RTO}. Only in-flight data
-should be retransmitted (and all of it after timer expires). Basically, data
-for which we are sure that it has been received, should not be retransmitted in
-case the timer expires.
+    Upon transmitting segment S, \emph{if timer is not already set}, then the
+    counter is cleared and set to $0$, with the timer set to the RTO value.
+    When an ACK is received, \texttt{snd.Ack} is updated to the maximum value
+    between \texttt{snd.Ack} and \texttt{segment.Ack}. If \texttt{snd.Ack ==
+    snd.Next} the timer is switched off, because the sent data has been
+    received by the other party correctly and as expected.
 
-When counter reached \emph{MAX\_COUNT} value, connection is closed.
+    When timer expires, the \emph{counter is incremented} and if the counter
+    has not yet reached a \texttt{MAX\_COUNT} value, the segment is
+    retransmitted. However, this time the timer value is set to RTO but
+    \texttt{RTO = 2 * RTO}, which is the double of the original value.
+    \emph{Only in-flight data should be retransmitted} (and all of it after
+    timer expires). Basically, data for which we are sure that it has been
+    received should not be retransmitted in case the timer expires, and the
+    sender should only focus on retransmitting not-yet-acknowledged data. At
+    each retransmission, the RTO is doubled, and the retransmission counter is
+    increased.
 
-A particular condition is when an ACK arrives for a portion of the data that
-has been sent. In that case, the timer resets (the receiver has responded) and
-the sender awaits ACK for missing segments.
+    When counter reached \texttt{MAX\_COUNT} value, an excessive number of
+    retransmissions has been attempted, and connection is closed.
+
+    Upon receiving an ACK for \textbf{all} the in-flight data, switch the timer
+    off.
+
+    A particular condition is when an ACK arrives \emph{for only a portion} of
+    the data that has been sent. In that case, the timer resets (the receiver
+    has responded) to the RTO value, \emph{as if those still not-ACKed had been
+    sent now}, and the sender awaits ACK for missing segments. 
 \end{quote}
 
-Windows closes connection after $5$ failed attempts, Linux after $15$. It is
-simple to realise that there may be a lot of unnecessary retransmissions. The
-timer can, for instance, run out too soon for the acknowledgement to reach the
-sender. Unnecessary retransmissions are a waste of resources, a fundamental
-problem. The reason could be one of those:
+MARK slide 48
+
+Value of \texttt{MAX\_COUNT} largely depends on the operating system. For
+instance, Windows closes connection after $5$ failed attempts, Linux after
+$15$. It is simple to realise that there may be a lot of unnecessary
+retransmissions: the timer can, for instance, run out too soon for the
+acknowledgement to reach the sender. Unnecessary retransmissions are a waste of
+resources, and definitely a fundamental problem. The reason could be one of those:
 
 \begin{itemize}
-    \item segments are \emph{lost};
-    \item segments \emph{which ACK are lost};
+    \item segments are \emph{lost}, retransmissions are necessary;
+    \item there could be segments \emph{whose ACKs are lost};
     \item RTO was set to a \emph{too small value}.
 \end{itemize}
 
 Thus, RTO should be set to an appropriate value, since a too short value leads
 to high overhead and possibly many unnecessary retransmissions, while a too
-long value results in high latency and possibly a slow connection. RTO value is
-basically a trade-off between few retransmissions and fast connection. RTO
-should be set \textbf{dinamically}. The RTO should be slightly greater than the
-\emph{RTT} (round-trip-time), and it is an idea from Jacobson algorithm. This
-is of a crucial importance for TCP to work. Initial RTO value is heuristical,
-and varies from one OS to another. Linux and Window start from same value,
-macOS use a different value, and so on.
+long value results in high latency and possibly a slow or non-responsive
+connection. RTO value is basically a \emph{trade-off} between exhibiting few
+retransmissions and having a fast and responsive connection. RTO should be set
+\textbf{dinamically}: it should be slightly greater than the \emph{RTT}
+(Round-Trip-Time), an idea from Jacobson algorithm. This is of a crucial
+importance for TCP to work. Initial RTO value is heuristical, and varies from
+one OS to another. Linux and Window start from same value, macOS use a
+different value, and so on.
+
 
 \section{Multiple default gateways}
 
 More default gateways could be added to a single node. Reasons to add more than
-one default gateway all boil up to \emph{failure avoidance}. To know whether a
+one default gateway all boil down to \emph{failure avoidance}. To know whether a
 gateway has stopped working, a heuristic TCP algorithm tries to detect a gateway failure:
 
 \begin{quote}
-	if the number of retransmissions is greater than a \emph{MAX\_COUNT}
-	divided by 2 number, the \emph{connection} changes its default gateway.
-	Moreover, if the number of connections that changed default gateway is
-	greater than the number of open connections divided by 4, the \emph{IP
-	layer} changes the default gateway. This last feature speeds up
-	reconfiguration of early connections that still have to make some
-	retransmission attemps.
+    If the number of retransmissions is greater than a \texttt{MAX\_COUNT}
+    divided by 2 number, the \emph{connection} changes its default gateway.
+    Moreover, if the number of connections that changed default gateway is
+    greater than the number of open connections divided by 4, the \emph{IP
+    layer} changes the default gateway as well. This last feature speeds up
+    reconfiguration of early connections that still have to make some
+    retransmission attemps.
 \end{quote}
 
 Basically, each connection can autonomously choose its own gateway, but the IP
 layer is able to force any \--- new or already present \--- connection to use a
-different default gateway.
+different default gateway. A connection that exceeds the total number of
+retransmissions will change default gateway, and if $4$ or more connections'
+default gateway switches are detected the IP layer will switch to a different
+default gateway as well, forcing all newly created TCP connections to switch to
+the new gateway.
 
-\section{Gaps in RX-buffer}
+\section{Selective Acknowledgements}
 
-Suppose that 4 segments are sent, and the second one has been lost. In this
-case, the receiver received all segments except the second one, however it has
-no method to inform the sender to retransmit only the second segment. Sending
+Suppose that 4 segments are sent, and the second one has been lost: in this
+case, the receiver got all segments except the second one, but it has
+no way to inform the sender to retransmit only the second segment. Sending
 ACK for only the first segment would result in unnecessary retransmission of
-segments 3 and 4, which were correctly received. The receive buffer could end
-up having some \textbf{gaps}, missing bytes that are supposed to be received.
-The solutions are \emph{Selective Acknowledgements} (SACK), a special kind of
-acknowledgements that carry both \emph{left and right sequence number edges} of
-each out-of-order \textbf{block} in RX-buffer, this way avoiding unnecessary
-retransmissions. SACK protocol must be supported by both members of a
-connection. SACK is very convenient, since many segments can be lost when a
-sender tries to deliver dozens of segments at once. This way, TCP can achieve
-\emph{efficient handling} of the connection.
+segments 3 and 4, which were correctly received. 
 
-Of course, out-of-order segments could still lead to gaps in RX-buffer. In this
-case, unnecessary retransmissions are unavoidable when an out-of-order segment
-reaches the receiver too late (however, SACK reduces a lot the burden to the
-sender since only missing segments should be selectively sent).
+For this reason, the receive buffer could end up having some \textbf{gaps}, missing bytes that
+are supposed to be received. The solutions are \textbf{Selective
+Acknowledgements} (SACK), a special kind of acknowledgements that carry both
+\emph{left and right sequence number edges} of each out-of-order \textbf{block}
+in RX-buffer, this way correctly informing the other party of a \emph{specific}
+missing portion of the data, avoiding unnecessary retransmissions. 
+
+SACK protocol must be supported by both members of a connection in order to be
+exploited. SACK is very convenient, since many segments can be lost when a
+sender tries to deliver dozens of segments at once. This way, TCP can achieve
+\emph{efficient handling} of the connection, minimizing the number of
+unnecessary retransmissions.
+
+Of course, out-of-order segments could still lead to gaps in RX-buffer, causing
+an unnecessary retransmission. In this case, unnecessary retransmissions are
+unavoidable when an out-of-order segment reaches the receiver too late, after a
+long time interval, since the receiver will send a SACK informing the sender of
+the missing segment, while the very same segment arrives late. However, no
+matter what, SACK is always convenient, since it reduces a lot the burden to
+the sender for only missing segments are to be sent.
 
 \section{Operating System TCP interrupts}
 
@@ -866,10 +965,10 @@ algorithm, the congestion control, constructs a state variable called
 \emph{congestion window}, whose goal is to model the maximum current throughput
 of the network. The number of in-flight bytes \emph{must be slower than both
 send window and congestion window multiplied by MSS}, so that
-$$\mbox{in-flight} \leq \min(\mbox{sndWin}, \mbox{congWin} \cdot \mbox{MSS}).$$
+$$\mbox{in-flight} \leq \min(\mbox{sndWin}, \mbox{congWin } \cdot \mbox{ MSS}).$$
 Basically, if the transmission buffer is full of data, a number of in-flight
 bytes equal to the minumum of both quantities should be sent, otherwise just
-send \emph{snd.User - snd.Ack} bytes (those still to send).
+send \texttt{snd.User - snd.Ack} bytes (those still to send).
 
 \section{Managing memory buffers}
 
@@ -890,7 +989,7 @@ could end up being filled up. At receiver's side, application invokes
 \texttt{receive()} much slower than incoming packages speed. This way, the
 RX-buffer could fill up as well. To solve this issues, application invokes
 \texttt{send()} only when TX-buffer is full, hence it is put to sleep (blocked)
-until TCP gets proper ACK and advances \emph{snd.Ack} (when it has more free
+until TCP gets proper ACK and advances \texttt{snd.Ack} (when it has more free
 space). TCP sender keeps track of free space in other end's RX-buffer by
 looking at a variable in header that informs it of how much free space is
 available, so that it can predict how much free space there is. When it guesses
@@ -901,17 +1000,17 @@ Larger windows enable pipelining of multiple segments in a row, enabling far
 more efficient usage of the connection.
 
 Flow control algorithm adopts the concept of \textbf{sliding window}. Each
-segment header has a \emph{WindowSize} field in the header that contains
+segment header has a \texttt{WindowSize} field in the header that contains
 \emph{how many free bytes are in the RX-buffer}. WindowSize field basically is
 the amount of free space available in RX-buffer. At sending side,
-\emph{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
+\texttt{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
 the other side}. Initially it is set to the receiver's buffer size, and it is
-updated dynamically upon sending a segment. If \emph{S.Ack} is greater or
-equal to \emph{snd.Ack}, then the variable \emph{snd.winSize} is set to
+updated dynamically upon sending a segment. If \texttt{S.Ack} is greater or
+equal to \texttt{snd.Ack}, then the variable \texttt{snd.winSize} is set to
 \emph{S.windowSize}. Basically, the number of in-flight bytes must never
-exceed the number of bytes in \emph{snd.winSize} that are available in the
+exceed the number of bytes in \texttt{snd.winSize} that are available in the
 RX-buffer. The goal of TCP is to reach a number of in-flight bytes that is as
-close as possible to the \emph{snd.winSize} number of bytes, in order to
+close as possible to the \texttt{snd.winSize} number of bytes, in order to
 optimize the connection efficiently.
 
 \begin{figure}[b]
@@ -1263,10 +1362,10 @@ transient, more than 100GB transmitted).
 Upon connection opening, since they are not set to zero, each of the two sides
 should agree to their initial sequence numbers. The ideal starting point is
 that every \emph{snd} pointer should be set to the same value, as well as the
-other party's \emph{rcv} buffer. A first idea could be to simply send initial
-segments in which \emph{snd.Next} are specified in header. Special segments
+other party's \texttt{rcv} buffer. A first idea could be to simply send initial
+segments in which \texttt{snd.Next} are specified in header. Special segments
 carry a flag that denotes a connection request (from the client) and `ok' (from
-the server). Both parties will set their initial \emph{rcv} pointers to the
+the server). Both parties will set their initial \texttt{rcv} pointers to the
 value read in the header from the other party. In reality, this first
 implementation has many issues:
 \begin{itemize}
