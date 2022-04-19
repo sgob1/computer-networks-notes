@@ -1,7 +1,7 @@
 \documentclass[10pt]{book}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[document]{ragged2e}
+%\usepackage[document]{ragged2e}
 \usepackage{microtype}
 \usepackage{notomath}
 \usepackage{CharisSIL}
@@ -61,9 +61,9 @@
 %\titleformat{\chapter}[display]
 %{\huge\bfseries}{}{0pt}{\thechapter\ \ \--\ \ }
 \titleformat{\section}[display]
-{\Large\bfseries}{}{0pt}{\medskip\thesection\ \ \--\ \ }
+{\Large\bfseries}{}{0pt}{\medskip\thesection\ \ \textasciitilde \ \ }
 \titleformat{\subsection}[display]
-{\large\bfseries}{}{0pt}{\medskip\thesubsection\ \ \--\ \ }
+{\large\bfseries}{}{0pt}{\medskip\thesubsection\ \ \textasciitilde \ \ }
 
 \begin{document}
 \setmonofont[Scale=.85]{Fira Code Retina}
@@ -88,22 +88,29 @@
 TCP is a procotol that has the following remarkable properties,
 
 \begin{enumerate}
-	\item is \emph{connection-oriented}: before transmitting data, a
+	\item it is \emph{connection-oriented}: before transmitting data, a
 		connection must be established \--- this is different to what
 		IP protocol does in network layer, since in IP protocol there
-		is no concept of connection, and messages are exchanged in
-		packets;
-	\item is \emph{reliable}: it assures all segments are correctly
+        lies no concept of connection, and messages are exchanged under the
+        paradigm of \emph{packet switching}\footnote{In telecommunications,
+        packet switching is a method of grouping data into packets that are
+    transmitted over a digital network. Packets are made of a header and a
+payload. Data in the header is used by networking hardware to direct the packet
+to its destination, where the payload is extracted and used by an operating
+system, application software, or higher layer protocols. Packet switching is
+the primary basis for data communications in computer networks worldwide. };
+	\item it is \emph{reliable}: it assures all segments are correctly
 		delivered through use of \emph{ACK} mechanism, and \textbf{at
 		most once} \--- again, this is different to IP layer, since IP
-		packets are unreliable and there is no guarantee that they will
-		be delivered, let alone in their correct ordering;
-	\item offers a \emph{sliding window} mechanism for congestion control
+        packets are just sent one after the other, unreliably, and there is no
+        guarantee that they will be delivered, let alone in their correct
+        ordering;
+	\item it offers a \emph{sliding window} mechanism for congestion control
 		and stream control. This assures read and send buffers are
 		well-optimized in both sender and receiver \--- this feature is
 		much important since it allows fine-tuning the connection and
 		avoiding waste of resources;
-	\item is \emph{byte-oriented}: the byte stream is fragmented into
+	\item it is \emph{byte-oriented}: the byte stream is fragmented into
 		multiple segments, and composed again after getting to
 		destination \--- in this manner, huge payloads can be reliably
 		delivered in multiple segments, each one having the correct
@@ -113,27 +120,30 @@ TCP is a procotol that has the following remarkable properties,
 \end{enumerate}
 
 Ultimately, TCP allows creating connections between application processes,
-offering multiple services to the upper layers.
+offering multiple services to the upper layers. Connections are possible thanks
+to the four above characteristics of the TCP layer.
 
 \subsection{Sockets}
 
 The TCP makes use of \emph{sockets} abstraction as a way of serving data to the
 above application layer. The logical structure is the following one: there are
-two entities, client and server. The client first authenticates to the server;
-after that, the server opens a connection and client executes the send-receive
-loop. Both server and client create a \emph{socket} $s$ (a UNIX-like file
-abstraction), and the client connect $s$ to \texttt{IP-srv}, \texttt{port-srv}.
-Each socket is then binded to a specific IP address and a specific \emph{port
-number}.
+two entities, the client and the server. The client first authenticates to the
+server; the server then opens a connection and the client executes the
+subsequent send-receive loop. Both server and client need to create a
+\emph{socket} $s$ (a UNIX-like file abstraction), that can be used to send and
+receive data. Client connect $s$ to \texttt{IP-srv}, \texttt{port-srv}, while
+the server operates a similar procedure on its own sockets. Each socket is then
+bound to a specific IP address and a specific \emph{port number}, according to
+the just-created connection specifics.
 
-The communication takes place on $s$ by means of application protocol, with
+The communication takes place on $s$ by means of an application protocol, with
 applications exchanging data each other. The connection is said to be
-\emph{reliable}: losses and packet loss are carefully managed by the TCP protocol, and
-segments\footnote{\emph{Segments} refer to the particular kind of package that
-TCP protocol exchange. Usually, in literature one could find the term package
-referring to TCP segments; while this is not fully correct, it may be
-acceptable when there is no ambiguity.} are collected in the very same order as
-they are sent.
+\emph{reliable}: losses and packet loss are carefully managed by the TCP
+protocol, and segments\footnote{\emph{Segments} refer to the particular kind of
+package that TCP protocol exchange. Usually, in literature one could find the
+term package referring to TCP segments; while this is not fully correct, it may
+be acceptable when there is no ambiguity.} are collected in the very same order
+as they are sent.
 
 A very simplified pseudo-code at client's side for TCP is as follows,
 
@@ -149,12 +159,14 @@ msg2 := receive(s,...);
 where the notation \emph{...} denotes possibly code in between two
 instructions. In the above code, a client wants to send data to a remove server
 having a specific IP address and a port number. The client first creates a
-socket, then connects it to the server IP address and to its port number. After
-connection has been established, the client can subsequently invoke
-\texttt{send()} to command TCP layer to deliver desired data to the other end.
-To the very same socket, data can be received as well: by invoking
+socket, then connects it to the server IP address and to the corresponding port
+number. After connection has been established, the client can subsequently
+invoke \texttt{send()} to command TCP layer to deliver desired data to the
+other end. To the very same socket, data can be received as well: by invoking
 \texttt{receive()} the client can successfully retrieve eventual data sent by
-the server.
+the server. Socket acts as an \emph{abstraction} for the application layer, for
+which a socket can be simply thought as a \textbf{data sink} or \textbf{data
+source}.
 
 At server side, the logical structure is quite different. A server creates
 a socket \texttt{s1}, chooses a port number to bind to that socket (usually a
@@ -162,16 +174,19 @@ standard one), then it declares \emph{willingness to accept connections} on
 \texttt{s1}, and finally it awaits for connection requests on \texttt{s1}. Upon
 receiving a connection request, the server handles it by creating
 \emph{another} socket \texttt{s2} and managing the connection on this newly
-generated socket, this time with a different port number.  Basically, it
-creates two different sockets, the first to accept a new connection, and the
-second one to actually manage the connection. A server usually remains on
-\emph{sleep} until a connection is requested.
+generated socket, this time with a different port number. 
+
+Basically, it creates two different sockets: the first is kept alive to accept
+new connections, and the second one is created on-demand, and it is required to
+actually manage the connection. A \emph{different} socket is required for each
+connection. A server usually remains on \emph{sleep} until a connection is
+requested, awaiting a request on the main socket.
 
 \begin{verbatim} 
 s1 := socket(...);
 bind(s1, portsrvm ...);
 listen(s1,...);
-s2 := accept(s1,...); // another socket 
+s2 := accept(s1,...); // another socket
 ... 
 msg1 := receive(s2,...);
 ...
@@ -184,37 +199,40 @@ operating.
 
 \section{TCP Implementation}
 
-In TCP, communication is \emph{bidirectional}, with a pattern that depends on
-the application protocol. The send-receive patterns heavily depend on the
-application itself \--- browser-related send\----receive sequences are very
-different from, let's say, an e-mail client send-receive sequence. There is no
-guarantee that two different application protocols will exchange a similar
-amount and kind of TCP messages, let alone the very same messages.
-
-TCP layer is built on top of the IP layer. Since there are many differences
+TCP layer is built \emph{on top} of the IP layer. Since there are many differences
 between TCP and IP, set aside their abstraction layer, TCP should be properly
 built to manage IP differences and quirks. 
 
 IP protocol operates between \emph{nodes}: it is \emph{connectionless},
-\textbf{unreliable}, and is \emph{message-oriented}. The \textbf{Maximum Transmission
-Unit} size of an IP packet is $MTU = 64KB$: this means a TCP segment can never
-be greater than the MTU.
+\textbf{unreliable}, and is \emph{message-oriented}. The \textbf{Maximum
+Transmission Unit} size of an IP packet is $MTU = 64KB$: this implicitly means
+a TCP segment can never be greater than the MTU, because a TCP segment is
+carried \emph{inside} an IP packet.
 
-TCP layers communicate between themselves in terms of \emph{segments}. A
-segment is a single \emph{message between TCP layers}, and contains a \emph{TCP
-header} and \--- eventually \--- data, that is said to be \emph{payload}. The
-difference between information in header and information in payload is that the
-first one is required by the TCP layer, while the second one is required by the
-application layer, and it may be absent in some segments.
+In TCP, communication happens to be \textbf{bidirectional}, with a pattern that
+depends on the application protocol. The send\----receive patterns heavily depends
+on the application itself \-- browser-related send\----receive sequences are
+very different from, let's say, an e-mail client send\----receive sequence.
+There is no guarantee that two different application protocols will exchange a
+similar amount and kind of TCP messages, let alone the very same ones.
 
-Payload in fact can either be $0$ bytes long or carry some information (wanted by the
-application layer). \emph{A TCP segment must be
-small enough to fit in a single IP packet}, hence IP header and TCP segment
-size should be no greater than $64KB$, the MTU of an IP packet.
+As already mentioned, TCP layers communicate between themselves in terms of
+\emph{segments}. A segment is a single \emph{message between TCP layers}, and
+contains a \emph{TCP header} and \--- eventually \--- data, that is said to be
+\emph{payload}. The difference between information in header and information in
+payload is that the first one is strictly required by the TCP layer, while the
+second one is information required by the application layer. The latter may be
+absent in some segments.
+
+Payload in fact can either be $0$ bytes long or carry some information (wanted
+by the application layer). \emph{A TCP segment must be small enough to fit in a
+single IP packet}, hence IP header and TCP segment size should be no greater
+than $64KB$, the MTU of an IP packet.
 
 Since a packet is composed by a IP header, whose payload is a TCP segment, and the
 TCP segment is in turn composed by a TCP header, followed by eventual
-application data, the shape of a packet can be summarized as follows,
+application data, the shape of a packet plus its segment can be summarized as
+follows,
 
 \begin{verbatim}
 | IP header | TCP header |  Payload ***  |
@@ -222,31 +240,33 @@ application data, the shape of a packet can be summarized as follows,
 
 Usually, IP header size is usually $20$ bytes, as well as TCP
 header that is $20$ bytes. The IP datagram can be greater up to $64KB$, with
-the first $40$ to $50$ bytes reserved to headers.
+the first $40$ to $50$ bytes reserved to headers. Thus,
 
 \begin{verbatim}
 | IP header | TCP header |  Payload ***  |
    20 byte     20 byte        greater
 \end{verbatim}
 
-Segments can carry portions of the original data (for instance, in a video
-stream many segments should be sent to client in order to carry enough
-information and let application layer reconstruct the video correctly). For
-this reason, in application layer, one application message could correspond to
-\emph{many segments} in TCP layer, in \textbf{both} directions. In fact, at TCP
+Segments can carry portions of the original data. For instance, in a video
+stream many, many segments should be sent to client in order to carry enough
+information and let application layer reconstruct the video correctly. For
+this reason, in application layer, one huge application message could correspond to
+\emph{many segments} in TCP layer, in \textbf{both} directions. At TCP
 level multiple segments are usually required in order to send a single
-application-level message.
+`big' application-level message.
 
 Basically, this means that while for the application layer a single
 \texttt{send()} may suffice to send an entire file or all the information
 required, from the TCP layer's point of view many and many segments may be
-required, many more than the number of \texttt{send()} commands invoked by the
-application.
+required, typically many more than the number of \texttt{send()} commands
+invoked by the application (at least, an number of them equal to the
+\texttt{send()} invocation should be sent).
 
 \subsection{The connection state}
 
-TCP takes care of creating \emph{connections} between processes. Connections do
-have their own \emph{state}, which fundamentally univocally describes a
+TCP takes care of creating \emph{connections} between processes. There would be
+no actual TCP data exchange without an established connection. Connections do
+possess their own \emph{state}, which fundamentally and univocally describes a
 connection. It is enough to represent each connection with their \texttt{<id>}
 and \texttt{<state>}, with the \texttt{<id>} field that contains essentially
 $4$ informations,
@@ -257,25 +277,34 @@ $4$ informations,
     \item the \texttt{remote port} number.
 \end{enumerate}
 
-Each connection is then associated to a \texttt{state}, that serves as a
-description of the actual state in which the connection lies.
+Four and only four informations are required: the IP address and the
+port number of each connection's endpoint.
 
-IP addresses are extracted from the IP header, while port numbers are extracted
+Each connection is then associated to a \texttt{state}, that serves as a
+description of the actual state in which the connection lies. The state of the
+connection describes precisely the condition in which the connection lies (is
+it running? is it closed?).
+
+Information regarding a TCP connection must reside in the packet and in the segment
+header, so each received segment can be sorted out and managed properly. IP
+addresses are extracted from the IP header, while port numbers are extracted
 from TCP header, thus it suffices to look at the IP packet plus the TCP header.
-Packets are thus managed accordingly. The connection <state> also includes
-information on the \textbf{Maximum Segment Size} (MSS), which is the maximum size
-of the \emph{data part} of a segment that the other part is willing to achieve.
-The MSS is negotiated upon connection opening \--- this value is, in practice,
-identical in both direction and \textbf{is not arbitrary}. In most cases and for
-historical reasons, there are only $2$ possible values that depend whether the
-connection:
+
+Information in header is not sufficient: each endpoint must keep track of the
+connection with a \emph{state variable}. The connection <state> includes
+information on the \textbf{Maximum Segment Size} (MSS), which is the maximum
+size of the \emph{data part} of a segment that the other part is willing to
+receive. The MSS is negotiated upon connection opening \--- this value is, in
+practice, identical in both direction and \textbf{not arbitrary}. In most
+cases and for historical reasons, there are only $2$ possible values that
+depend whether the connection:
 
 \begin{itemize}
-    \item \emph{lies on different networks} (through internet), MSS is $536$
-        bytes (MTU=576), that is the maximum segment size that can fit in the
-        smallest possible packet \-- historically this was the most reliable
-        option;
-    \item \emph{lies on the same network} (for example, ethernet), MSS is
+    \item \emph{lies on different networks} (connection through internet), MSS
+        is $536$ bytes (MTU=576), that is the maximum segment size that can fit
+        in the smallest possible packet \-- historically this was the most
+        reliable option;
+    \item \emph{lies on the same network} (connection through ethernet), MSS is
         $1460$ bytes (MTU=1500), which corresponds to ethernet MTU minus the IP
         header and TCP header \-- this is a good choice in order to fit to a
         single ethernet frame.
@@ -439,14 +468,17 @@ structure,
 
 \section{TCP Architecture}
 
-\subsection{The unpredictable and unrepeatable nature of TCP}
+\subsection{TCP bears an unpredictable and unrepeatable nature}
 
-TCP has many different implementations, depending mostly on OS of choice.
+TCP carries many different implementations, depending mostly on OS of choice.
 Several variants of its components have been written, with many of them largely
-optional. TCP works in segments. Execution flow at application level works
-independently and unpredictably with respect to the TCP-level flow: when an
-application sends something, multiple TCP packages are exchanged \-- how many
-and when they are sent is not predictable. 
+optional, or deprecated. As already mentioned, execution flow at application
+level works independently and unpredictably with respect to the TCP-level flow:
+when an application sends something, multiple TCP packages are exchanged;
+how many and when they are sent is \emph{not predictable}.
+
+TCP works by first copying data that should be sent in a buffer, and then send
+them later.
 
 The sequence of bytes is first copied to a buffer (sliding window) and the
 \texttt{send()} function is, for example, invoked \--- the exact time in which a
@@ -455,7 +487,7 @@ many things, over which the application has little to no control. This means
 that application cannot \emph{deterministically predict} the exact time in
 which the transmission will occur \--- instead, the TCP layer will deliver the
 payload at a specific time determined by the protocol\footnote{However, also on
-TCP there is a level of unpredictability. Many more effects can concur: for
+TCP layer there is a level of unpredictability. Many more effects can concur: for
 instance, the Operating System may not be ready to send a segment, or may be
 busy with other resources. These situation will cause delay in sending
 information, even from the TCP layer's point of view.}.
@@ -471,7 +503,7 @@ On TCP, various \emph{events} can induce a transmission of data:
         detail that the TCP protocol will send a \emph{response} that
         \emph{acknowledges} the receipt of a segment, for the other party's
         sake;
-	\item TCP layer \emph{receives a segment} \--- the same as above;
+    \item TCP layer \emph{receives a segment} \--- the same as above;
     \item a \emph{timeout} occurs \--- TCP layer will inform the other party of
         this;
 \end{itemize}
@@ -484,15 +516,17 @@ useful data to transmit} (e.g. if the transmission buffer is empty) \-- in that
 case, a segment will only carry the header, which has information useful to the
 protocol itself. Basically, regardless of the presence of data in the
 transmission buffer the TCP protocol will exchange vital protocol information.
+Protocol information is, in fact, necessary to keep the connection alive and
+well-performing.
 
 Upon transmission, TCP may deliver a varying number of bytes, ranging from
 empty up to a number of bytes \emph{larger than Maximum Segment Size} ($536$ in
 Internet network, $1460$ for same Ethernet network). Since huge payloads cannot
 fit into a single segment with a predefined MSS, the TCP protocol
-\emph{fragments} it before delivery, resulting in \emph{multiple segments
+\emph{fragments} them before delivery, resulting in \emph{multiple segments
 delivered in sequence}. TCP protocol will try its best to send as many segments
 as possible, for efficiency's sake: it is not uncommon that $2$ or $3$ segments
-are initially delivered before receiving the acknowledgement for them.
+are initially delivered before receiving the other party's response.
 
 \begin{table}[ht]
 \centering
@@ -528,7 +562,7 @@ As we will see in following chapters, the first factor is handled by the
 \textbf{Flow Control} algorithm, while the second one is kept under control by
 the \textbf{Congestion Control} system.
 
-\subsection{TCP transmission: the \texttt{send()} system call}
+\subsection{How an application asks for data to be transmitted}
 
 The system call \texttt{send()} processes the data transmission through the
 network. The \texttt{send} function passes a memory buffer contained in
@@ -547,47 +581,50 @@ copied to the TCP transmission buffer, to be sent immediately or later. New
 invokations of \texttt{send()} will copy data in TCP buffer \textbf{after} the
 data that is already present.
 
-Invoking \texttt{send()} \textbf{does not guarantee} any immediate transmission, all it
-does is pushing application data into TX-buffer to be sent in future. TCP will
-then independently establish the proper moment and way to transmit data present
-in transmission buffer.
+Invoking \texttt{send()} \textbf{does not guarantee} any immediate
+transmission: all it does is pushing application data into TX-buffer to be sent
+in future. TCP will then \emph{independently} establish the proper moment and
+way to transmit data present in transmission buffer.
 
-Suppose to send $N$ bytes with $K$ consecutive \texttt{send()} invocations. How
-many segments will be exchanged? How many transmission events?
+Suppose now one has to send $N$ bytes with $K$ consecutive \texttt{send()}
+invocations. How many segments will be exchanged? How many transmission events?
 
-The number of segments will not depend on $K$, since no matter how many times
-$send()$ is invoked, the end result will be to insert $N$ bytes in the TX-buffer.
-As a first approximation, the number of transmitted segments will roughly be
-$$\mbox{\#transmitted } = \frac{N}{MSS} + 1,$$ with the last segment $+1$
-smaller than the previous ones. Things, however, can be much more complex due
-to packet loss and retransmissions. Recall that the number is not predictable
-and not repeatable.
+First and foremost, the number of segments will not depend on $K$, since no
+matter how many times \texttt{send()} is invoked, the end result will be to simply
+insert those $N$ bytes in the TX-buffer, because the sole effect of
+\texttt{send()} is to insert the passed number of bytes into the TX-buffer,
+triggering a transmission. As a first approximation, the number of transmitted
+segments will roughly be $$\mbox{\#transmitted } = \frac{N}{MSS} + 1,$$ with
+the last segment $+1$ smaller than the previous ones. Things, however, can go
+wrong and be much more complex due to packet loss and retransmissions. Recall
+that for all these reasons, the exact number is neither predictable nor
+repeatable.
 
-\subsection{Receiving data: the \texttt{receive()} system call}
+\subsection{Retrieving data from TCP}
 
-System call \texttt{receive()} is quite similar to the \texttt{send()} call:
-both receiver's TCP layer and Application layer execution flows act
-independently to each other, and receiving buffer is not guaranteed to contain
-any data.
+Data retrieval occurs with another system call, \texttt{receive()}. System call
+\texttt{receive()} is quite similar to the \texttt{send()} call: both
+receiver's TCP layer and Application layer execution flows act independently to
+each other, and receiving buffer is not guaranteed to contain any data.
 
 When data reaches the receiver, the data is copied into the receiving buffer
-(\textbf{RX-buffer}). The receiving buffer stores all received bytes and is flushed only
-when the application invokes \texttt{receive()}. The function
+(\textbf{RX-buffer}). The receiving buffer stores all received bytes and is
+flushed only when the application invokes \texttt{receive()}. The function
 \texttt{receive()} copies (at least a portion of) the receiver buffer into the
 application buffer by means of passing a buffer with known \emph{address} and
-\emph{length}. Function \texttt{receive()} copies bytes without exceeding the size of
-the buffer (\emph{length}) and it returns how many bytes are copied into the
-provided buffer. As argument, \texttt{receive()} also takes the number of bytes
-to fetch from the TCP receiving buffer. Basically, \texttt{receive()} must
-receive a buffer to which data should be copied, its length (in C length
-information is \textbf{not} intrinsic to arrays) and the expected number of
-bytes to be retrieved.
+\emph{length}. Function \texttt{receive()} copies bytes without exceeding the
+size of the buffer (\emph{length}) and it \textbf{returns} how many bytes have
+been copied into the provided buffer. As argument, \texttt{receive()} also
+takes the number of bytes to fetch from the TCP receiving buffer. Basically,
+\texttt{receive()} needs to accept a buffer to which data should be copied, its
+length (in C length information is \textbf{not} intrinsic to arrays) and the
+expected number of bytes to be retrieved.
 
 There are three possible outcomes for the \texttt{receive()} call:
 
 \begin{itemize}
     \item the \emph{receive buffer is empty}: the application is suspended and
-		the process is put to sleep until some data is available;
+        the process is put to sleep until some data is available;
     \item \emph{more than \texttt{length} bytes are available}: a
         \texttt{length} number of bytes is fetched and delivered to the
         application as soon as possible. More \texttt{receive()} calls are
@@ -598,8 +635,12 @@ There are three possible outcomes for the \texttt{receive()} call:
         yield all requested bytes, and more calls should be used.
 \end{itemize}
 
-Let a buffer have length equal to $800$ bytes. Suppose \texttt{receive()} is
-invoked in the following scenarios,
+Basically, each time a number of bytes is requested, TCP will provide \emph{up
+to} that number of bytes. The application is held back only in the case when there
+is no data available.
+
+Now with an example: let a buffer have length equal to $800$ bytes. Suppose
+\texttt{receive()} is invoked in the following scenarios,
 \begin{enumerate}
     \item in the first scenario, there are $600$ bytes in the RX-buffer. Upon
         \texttt{receive()} call, all $600$ bytes are delivered to the
@@ -618,24 +659,25 @@ invoked in the following scenarios,
 \section{Sequence numbers}
 
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
-in different order from which they were sent), each data byte is implicitly
-identified by a $32$ bit \textbf{sequence number}. The association is
-\emph{implicit} \--- the sender applies a sequence number to a segment, and the
-receiver uses that information to reconstruct the original order of segments.
-Segments are then reconstructed, and the data assembled as it originally was.
+in different order from which they were sent). To overcome this huge
+shortcoming, each data byte is implicitly identified by a $32$ bit
+\textbf{sequence number}. A sequence number is a label for each transmitted and
+received byte, so that both correct ordering and amount of data can be properly
+determined. The association is \emph{implicit} \--- the sender applies a
+sequence number to a segment, and the receiver uses that information to
+reconstruct the original order of segments. This way, segments are
+reconstructed even if they show up haphazardly, and the data can be assembled
+as it originally was.
 
-There are several sequence numbers. \texttt{snd.User} is the variable carrying
-the value of the next byte the \textbf{application} will send.
-The variable \texttt{snd.Next} carries the value of the next byte that the
-\textbf{TCP layer} will transmit \--- its value is contained in the TCP header
-(initial byte of the sequence, of course). Basically, \texttt{snd.User} refers
-to the next byte that will be filled by the invocation of \texttt{send()},
-while \texttt{snd.Next} is the next byte yet to transmit by the TCP layer. The
-sequence number of application level must be computed from other information.
-\footnote{An important detail is that \textbf{sequence numbers are 32-bit integers}.
-    Therefore, the sequence numbers can only go from $0$ to $2^{32} - 1$, so
-there may be \emph{wrap-arounds} in an overflow-like fashion. TCP should
-internally handle these comparisons in a proper manner.}
+There are many variables involved in sequence numbers. \texttt{snd.User} is the
+variable carrying the value of the next byte the \textbf{application} will
+send. The variable \texttt{snd.Next} carries the value of the next byte that
+the \textbf{TCP layer} will transmit \--- its value is contained in the TCP
+header (initial byte of the sequence, of course). Basically, \texttt{snd.User}
+refers to the next byte that will be filled by the invocation of
+\texttt{send()}, while \texttt{snd.Next} is the next byte yet to transmit by
+the TCP layer. The sequence number of application level must be computed from
+other information. 
 
 The variable \texttt{snd.Next} is carried in the TCP segment header, in
 \emph{sequence number} space (16 bit).
@@ -646,46 +688,52 @@ In short,
 	\item \texttt{snd.Next} is the boundary between transmitted data and
 		yet-to-transmit data;
 	\item \texttt{snd.User} is the boundary between in TX-buffer data (data
-		sent by application) and not-yet-associated bytes.
+        sent by application) and not-yet-associated bytes, the free space in
+        the buffer.
 \end{itemize}
 
+Upon sending a segment, the \emph{sequence number} will be inferred from the
+\texttt{snd.Next} variable, and will be the \emph{next byte the other endpoint
+expects}.
 
 \begin{figure}[b]
         \centering
-        \includegraphics[ width=1.3\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
+        \includegraphics[ width=1.2\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/TxBuffer.png}
 	\caption{TX-Buffer and its flags \texttt{snd.Ack}, \texttt{snd.Next} and \texttt{snd.User}.}
         \label{fig:TxBuffer}
 \end{figure}
 
-From the receiver's point of view, there is a variable, \texttt{rcv.Next}, that
-is the boundary between content of RX-buffer and not-yet-received data (right
-boundary of the data currently in buffer). The variable \texttt{rcv.Next} is
-similar to the variable \texttt{rcv.Next} in the sense that it points at the
-next byte yet to receive. Only packets having \emph{expected sequence number}
-are collected and put in the buffer. 
+From the receiver's point of view, the variable \texttt{rcv.Next} is the
+boundary between content of RX-buffer and not-yet-received data (right boundary
+of the data currently in buffer). The variable \texttt{rcv.Next} is similar to
+the variable \texttt{rcv.Next} in the sense that it points at the next byte yet
+to receive. Only packets having the \emph{expected sequence number} are collected
+and brought into the buffer.
 
-There is the case where some segment carries new parts of information and sequence
-numbers that are not collected, with a portion of them already collected: in
-that case the incoming segment will still be collected, with duplicated bytes
-thrown away. There may be two reasons for packet duplications: IP duplication,
-and TCP sender retransmission because it thought it was lost. TCP stores
-packets in buffer until acknowledgement has been received, since they could be
-retransmitted in the immediate future.
+There is a special case where some segment carries new parts of information and
+sequence numbers that are not collected, with a portion of them already
+collected: in that case the incoming segment will still be collected, with
+duplicated bytes thrown away. There may be two reasons for packet duplications:
+either IP layer duplicates them, or the TCP sender retransmits them because it
+thought they were lost. In order to be able to retransmit packets, TCP stores
+all sent data in buffer until acknowledgement has been received, since they
+could be retransmitted in the immediate future.
 
 \begin{itemize}
-	\item \texttt{rcv.Next} points at the next byte that is not yet being
-		received;
-	\item \texttt{rcv.User} points to the next byte to be received by the
-		application. After \texttt{receive()} invokation by the
-		application, all delivered to the application bytes can now be
-		deleted, since there are no retransmission needs. 
+    \item \texttt{rcv.Next} points at the next byte that is not yet being
+        received;
+    \item \texttt{rcv.User} points to the next byte to be received by the
+        application. After \texttt{receive()} invokation by the application,
+        all bytes that have been successfully delivered to the application can
+        now be safely deleted.
 \end{itemize}
 
 \begin{figure}[b]
         \centering
         \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/RxBuffer.png}
     \caption{RX-buffer and its flags. Notice that RX-buffer only uses two flags
-    instead of three (no ACK flag needed).}
+    instead of three (no ACK flag needed). Indeed, there is no need to keep
+track of sent ACKs: they will be sent as soon as segments are acquired.}
         \label{fig:RxBuffer}
 \end{figure}
 
@@ -698,9 +746,14 @@ Each and every segment is accepted only if it contains \emph{new} data: that
 is, when the sequence number is the expected one \emph{or} when the segment
 contains novel sequence numbers. 
 
-Each segment also carries information on the length of its payload. This allows
-the receiver to reconstruct efficiently the segment, in order to compute the
-ending sequence number, and not only the starting sequence number.
+Each segment also carries information on the \emph{length} of its payload. This
+allows the receiver to efficiently reconstruct the segment, in order to compute
+the ending sequence number, and not only the starting sequence number.
+
+An important remark is that \textbf{sequence numbers are 32-bit integers}.
+Therefore, the sequence numbers can only go from $0$ to $2^{32} - 1$, so there
+may be \emph{wrap-arounds} in an overflow-like fashion. TCP should internally
+handle these comparisons in a proper manner.
 
 \section{Handling duplicates and loss}
 
@@ -708,10 +761,12 @@ IP is an unreliable protocol. This means that \emph{packets can be loss}.
 Necessary mechanisms are two,
 
 \begin{itemize}
-	\item the \textbf{retransmission}, or when a segment is retransmitted;
-    \item the \textbf{acknowledgement}, which is a kind of \emph{notification of
-        receipt}, that is sent in order to make the other party sure that we
-        have received and collected the data it sent us.
+    \item the \textbf{retransmission}, or when a segment is regarded to be
+        sent again;
+    \item the \textbf{acknowledgement}, which is a kind of \emph{notification
+            of receipt}, that is sent by the receiver in order to make the
+            other party sure that it has received and collected the data sent
+            to it.
 \end{itemize}
 
 \emph{Acknowledgements} are a mechanism that assures receipt of a message by
@@ -729,14 +784,17 @@ acknowledgement number tracks the bytes a party \emph{has successfully
 received}. Both informations must be exchanged at every delivered segment.
 
 A fifth variable is thus needed: \texttt{snd.Ack}, which \emph{points to the
-byte in TX-buffer before which any byte is both transmitted and acknowledged}.
+byte in TX-buffer before which any transmitted byte had been acknowledged}.
 This variable is only increased upon receiving data (for instance, upon
-receiving a sequence with a greater ACK number from the sender). Data before
-\texttt{snd.Ack} pointer can safely be discarded. Acknowledgements are crucial
-to a TCP connection, in order to guarantee \textbf{reliability} of a connection
-(TCP is connection-oriented). Therefore, transmission is always necessary even
-if TX-buffer is empty. That case, no payload will be transmitted, only
-information in header is sent (increasing acknowledgement number).
+receiving a sequence with a greater ACK number from the sender). Since it has
+been safely collected, all data before \texttt{snd.Ack} pointer can be
+forgotten. 
+
+Acknowledgements mechanism is crucial to a TCP connection, in order to
+provide \textbf{reliability} to a connection. Therefore, transmission of
+acknowledgements is always necessary even if TX-buffer is empty. In that case, no
+payload will be transmitted, and only protocol information is sent (increasing
+acknowledgement number).
 
 An important note is that \texttt{snd.Ack} is only updated when the received
 sequence number \texttt{segment.ack} is \emph{greater} than the value in
@@ -748,22 +806,29 @@ sequence number will be at the value of the \emph{first} sent byte, that is the
 first byte the receiver is expecting.
 
 For instance, suppose the receiver has successfully received $130$ bytes from a
-sender: its \texttt{rcv.Next} points to the $130$-th element in the RX-buffer.
+sender: its \texttt{rcv.Next} points to the $130$th element in the RX-buffer.
 In order to inform the sender, all the new incoming segments from the receiver
-will carry $130$ as sequence number. Upon receiving such packets, the sender
-will successfully interpret the sequence number, and set the \texttt{snd.Ack}
-variable to $130$: all the data prior to $130$ can be safely discarded.
+will carry $130$ as sequence number (it points to the $131$st element). Upon
+receiving such packets, the sender will successfully interpret the sequence
+number, and set the \texttt{snd.Ack} variable to $130$: all the data prior to
+$130$ can be safely discarded.
 
 Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
 be \textbf{in flight} data. These bytes have been transmitted but not yet
-acknowledged.
+acknowledged, and are potentially eligible for retransmission.
 
-The reason why acknowledgements are important is pretty obvious: without
-acknowledgements, there would be \textbf{no way for the sender to tell wether
+The reason why acknowledgements are important is pretty straightforward: without
+acknowledgements, there would be \textbf{no way for the sender to tell whether
 sent data has been received or not}. This means that even though the receiver
 has no data, acknowledgements are still required and should be properly sent.
 
+In the end, acknowledgements are a crucial component of TCP, without them it
+wouldn't be possible to provide either a reliable or a predictable connection,
+with no chance of keeping track of actually and successfully delivered
+information.
 
+
+MARK
 \section{Delayed Acknowledgement}
 
 \emph{Delayed Acknowledgement} is a notorious TCP algorithm. Its core idea is
