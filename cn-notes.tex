@@ -20,7 +20,7 @@
 \definecolor{blue}{rgb}{0.164,0.317,0.600}
 \definecolor{background}{rgb}{0.990,0.990,0.990}
 \lstset {
-	frame=lrtb,
+    frame=lrtb,
 	language=java,
 	aboveskip=0.7cm,
 	belowskip=0.2cm,
@@ -661,7 +661,7 @@ Now with an example: let a buffer have length equal to $800$ bytes. Suppose
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
 in different order from which they were sent). To overcome this huge
 shortcoming, each data byte is implicitly identified by a $32$ bit
-\textbf{sequence number}. A sequence number is a label for each transmitted and
+\textbf{sequence number}\marginpar{\small\textsc{Sequence number}}. A sequence number is a label for each transmitted and
 received byte, so that both correct ordering and amount of data can be properly
 determined. The association is \emph{implicit} \--- the sender applies a
 sequence number to a segment, and the receiver uses that information to
@@ -669,9 +669,9 @@ reconstruct the original order of segments. This way, segments are
 reconstructed even if they show up haphazardly, and the data can be assembled
 as it originally was.
 
-There are many variables involved in sequence numbers. \texttt{snd.User} is the
+There are many variables\marginpar{\small\textsc{snd.User}} involved in sequence numbers. \texttt{snd.User} is the
 variable carrying the value of the next byte the \textbf{application} will
-send. The variable \texttt{snd.Next} carries the value of the next byte that
+send. The variable \texttt{snd.Next}\marginpar{\small\textsc{snd.Next}} carries the value of the next byte that
 the \textbf{TCP layer} will transmit \--- its value is contained in the TCP
 header (initial byte of the sequence, of course). Basically, \texttt{snd.User}
 refers to the next byte that will be filled by the invocation of
@@ -783,7 +783,7 @@ Basically, sequence number tracks the bytes a party \emph{has sent}, while
 acknowledgement number tracks the bytes a party \emph{has successfully
 received}. Both informations must be exchanged at every delivered segment.
 
-A fifth variable is thus needed: \texttt{snd.Ack}, which \emph{points to the
+A fifth variable\marginpar{\small\textsc{snd.Ack}} is thus needed: \texttt{snd.Ack}, which \emph{points to the
 byte in TX-buffer before which any transmitted byte had been acknowledged}.
 This variable is only increased upon receiving data (for instance, upon
 receiving a sequence with a greater ACK number from the sender). Since it has
@@ -828,7 +828,6 @@ with no chance of keeping track of actually and successfully delivered
 information.
 
 
-MARK
 \section{Delayed Acknowledgement}
 
 \emph{Delayed Acknowledgement} is a notorious TCP algorithm. Its core idea is
@@ -838,16 +837,21 @@ straightforward:
 
 \begin{quote}
 Upon receiving a segment, if delayed-ack timer $T$ has previously been set,
-transmit immediately. Else, set the delayed-ack timer $T$ to a specific value.
+\emph{transmit immediately}. Else, set the delayed-ack timer $T$ to a specific
+value.
 \end{quote}
+
+When receiving a packet, simply set a timer, and send the response segment
+after timer expires. However, if you receive yet another segment before the
+timer expires, then send immediately the response.
 
 Delayed-ack timer value depends on the operating system:
 
 \begin{itemize}
-	\item RFC suggests $T = 500ms$;
-	\item Windows has $T = 200ms$;
-	\item Linux in general has $T = 40ms$;
-	\item RHEL sets $T = 4ms$.
+    \item RFC suggests $T = 500ms$;
+    \item Windows has $T = 200ms$;
+    \item Linux in general has $T = 40ms$;
+    \item RHEL sets $T = 4ms$.
 \end{itemize}
 
 The reasoning is as follows: if there is not much data to transmit, it will be
@@ -868,13 +872,13 @@ crucial importance.
 
 \section{Retransmissions}
 
-The connection state includes three more variables, related to
-\emph{retransmissions}:
+The connection state includes three more actors, related to
+\emph{retransmission}:
 
 \begin{itemize}
     \item a \textbf{retransmission timer}, which counts the time interval until
         which the retransmission is held back;
-	\item a \emph{variable that describes the duration of retransmission
+	\item a variable that describes the \emph{duration of retransmission
         timer interval}, the \textbf{RTO (Retransmission Time-Out)};
     \item a \textbf{retransmission counter}, that counts how many
         retransmissions for a segment have been performed.
@@ -883,14 +887,17 @@ The connection state includes three more variables, related to
 The \textbf{retransmission algorithm} is as follows:
 
 \begin{quote}
-
     Upon transmitting segment S, \emph{if timer is not already set}, then the
     counter is cleared and set to $0$, with the timer set to the RTO value.
+    At the beginning, then, a new counter is spawned and the timer is set to
+    a value which is the RTO value.
+
     When an ACK is received, \texttt{snd.Ack} is updated to the maximum value
     between \texttt{snd.Ack} and \texttt{segment.Ack}. If \texttt{snd.Ack ==
-    snd.Next} the timer is switched off, because the sent data has been
-    received by the other party correctly and as expected.
+    snd.Next}, the timer is switched off: the sent data has been received by
+    the other party correctly and as expected.
 
+    There may be occasions in which the timer expires, though.
     When timer expires, the \emph{counter is incremented} and if the counter
     has not yet reached a \texttt{MAX\_COUNT} value, the segment is
     retransmitted. However, this time the timer value is set to RTO but
@@ -906,22 +913,30 @@ The \textbf{retransmission algorithm} is as follows:
     retransmissions has been attempted, and connection is closed.
 
     Upon receiving an ACK for \textbf{all} the in-flight data, switch the timer
-    off.
+    off (that is, when \texttt{snd.Ack == snd.Next}).
 
     A particular condition is when an ACK arrives \emph{for only a portion} of
     the data that has been sent. In that case, the timer resets (the receiver
     has responded) to the RTO value, \emph{as if those still not-ACKed had been
-    sent now}, and the sender awaits ACK for missing segments. 
+    sent now}, and the sender awaits ACK for missing segments. This basically
+    occurs when a partial ACK comes, and prevents unnecessary retransmissions.
 \end{quote}
 
-MARK slide 48
+Exact\marginpar{\small\textsc{Choosing RTO}} timings of retransmissions are hard to predict. A sender is completely
+blind if it does not receive any ACK: should it send again in-flight segments,
+or should it wait a little bit more? In practice, how long should the timer be
+set? Basically, a rule of thumb is that it should be ``slightly larger'' than
+Round\----Trip Time. In order to do so, since RTT largely varies depending on
+connections, time, and many other conditions, RTO is \textbf{dinamically updated}
+by algorithms such as \emph{Jacobson algorithm}.
 
-Value of \texttt{MAX\_COUNT} largely depends on the operating system. For
-instance, Windows closes connection after $5$ failed attempts, Linux after
-$15$. It is simple to realise that there may be a lot of unnecessary
-retransmissions: the timer can, for instance, run out too soon for the
-acknowledgement to reach the sender. Unnecessary retransmissions are a waste of
-resources, and definitely a fundamental problem. The reason could be one of those:
+Regarding the maximum number of retransmissions\marginpar{\small\textsc{Max\_Count}}, value of \texttt{MAX\_COUNT}
+largely depends on the operating system. For instance, Windows closes
+connection after $5$ failed attempts, Linux after $15$. It is simple to realise
+that there may be a lot of unnecessary retransmissions: the timer can, for
+instance, run out too soon for the acknowledgement to reach the sender.
+Unnecessary retransmissions are a waste of resources, and definitely a
+fundamental problem. The reason could be one of those:
 
 \begin{itemize}
     \item segments are \emph{lost}, retransmissions are necessary;
@@ -945,25 +960,28 @@ different value, and so on.
 
 More default gateways could be added to a single node. Reasons to add more than
 one default gateway all boil down to \emph{failure avoidance}. To know whether a
-gateway has stopped working, a heuristic TCP algorithm tries to detect a gateway failure:
+gateway has stopped working, a heuristic TCP algorithm tries to detect a
+gateway failure:
 
 \begin{quote}
-    If the number of retransmissions is greater than a \texttt{MAX\_COUNT}
-    divided by 2 number, the \emph{connection} changes its default gateway.
-    Moreover, if the number of connections that changed default gateway is
-    greater than the number of open connections divided by 4, the \emph{IP
-    layer} changes the default gateway as well. This last feature speeds up
-    reconfiguration of early connections that still have to make some
+    If the number of retransmissions is greater than \texttt{MAX\_COUNT}
+    divided by 2, the \emph{connection} changes its default gateway (if
+    possible). Moreover, if the number of connections that changed default
+    gateway is greater than the number of open connections divided by 4, the
+    \emph{IP layer} changes the default gateway as well. This last feature
+    speeds up reconfiguration of early connections that still have to make some
     retransmission attemps.
 \end{quote}
 
 Basically, each connection can autonomously choose its own gateway, but the IP
-layer is able to force any \--- new or already present \--- connection to use a
-different default gateway. A connection that exceeds the total number of
-retransmissions will change default gateway, and if $4$ or more connections'
+layer is able to \textbf{force} any \--- new or already present \--- connection
+to use a different default gateway. A connection that exceeds the total number
+of retransmissions will change default gateway, and if $4$ or more connections'
 default gateway switches are detected the IP layer will switch to a different
 default gateway as well, forcing all newly created TCP connections to switch to
 the new gateway.
+
+MARK slide 60
 
 \section{Selective Acknowledgements}
 
@@ -1523,10 +1541,10 @@ Application layer just requests opening a connection. The TCP layer will handle
 the connection opening with appropriate system calls. The system calls in sequence are
 
 \begin{itemize}
-	\item socket;
-    \item bind;
-    \item listen(num,...);
-    \item accept.
+	\item \texttt{socket};
+    \item \texttt{bind};
+    \item \texttt{listen(num, ...};
+    \item \texttt{accept}.
 \end{itemize}
 
 System call listen has a \emph{num} in argument that tells \emph{how many
@@ -1636,12 +1654,8 @@ Typical threat models involve the following scenarios, in increasing pessimism:
     \item \textbf{Physical access} \--- attacker has physical access to an
         endpoint;
     \item \textbf{Insider/Supply chain} \--- attacker has access to portion of
-        the software supply chain, e.g. libraries, infrastructure.
+        the software supply chain, e.g.\ libraries, infrastructure.
 \end{itemize}
 
 
-
-
-
 \end{document}
-
