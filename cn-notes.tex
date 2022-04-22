@@ -4,7 +4,8 @@
 %\usepackage[document]{ragged2e}
 \usepackage{microtype}
 \usepackage{notomath}
-\usepackage{CharisSIL}
+%\usepackage{CharisSIL}
+\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
@@ -57,16 +58,17 @@
 
 \usepackage{titlesec}
 \titleformat{\part}[display]
-{\Huge\bfseries}{}{10pt}{\center{ Parte \thepart\ \ \\ \ \ }}
+{\Huge\bfseries\sffamily}{}{10pt}{\center{ Parte \thepart\ \ \\ \ \ }}
 %\titleformat{\chapter}[display]
 %{\huge\bfseries}{}{0pt}{\thechapter\ \ \--\ \ }
 \titleformat{\section}[display]
-{\Large\bfseries}{}{0pt}{\medskip\thesection\ \ \textasciitilde \ \ }
+{\Large\bfseries\sffamily}{}{0pt}{\medskip\thesection\ \ \textasciitilde \ \ }
 \titleformat{\subsection}[display]
-{\large\bfseries}{}{0pt}{\medskip\thesubsection\ \ \textasciitilde \ \ }
+{\large\bfseries\sffamily}{}{0pt}{\medskip\thesubsection\ \ \textasciitilde \ \ }
 
 \begin{document}
-\setmonofont[Scale=.85]{Fira Code Retina}
+%\setmonofont[Scale=.85]{Fira Code Retina}
+\setsansfont{IBM Plex Sans}
 
 
 \include{cn-titlepage}
@@ -74,7 +76,7 @@
 \setlength{\headsep}{30pt}
 \setlength{\footskip}{40pt}
 \setlength{\marginparsep}{20pt}
-\setlength{\marginparwidth}{60pt}
+\setlength{\marginparwidth}{50pt}
 %\title{Computer Networks 2 and Introduction to Cybersecurity}
 %\author{Marco Sgobino}
 %\maketitle
@@ -661,7 +663,7 @@ Now with an example: let a buffer have length equal to $800$ bytes. Suppose
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
 in different order from which they were sent). To overcome this huge
 shortcoming, each data byte is implicitly identified by a $32$ bit
-\textbf{sequence number}\marginpar{\small\textsc{Sequence number}}. A sequence number is a label for each transmitted and
+\textbf{sequence number}\marginpar{\small\textsf{Sequence number}}. A sequence number is a label for each transmitted and
 received byte, so that both correct ordering and amount of data can be properly
 determined. The association is \emph{implicit} \--- the sender applies a
 sequence number to a segment, and the receiver uses that information to
@@ -669,9 +671,9 @@ reconstruct the original order of segments. This way, segments are
 reconstructed even if they show up haphazardly, and the data can be assembled
 as it originally was.
 
-There are many variables\marginpar{\small\textsc{snd.User}} involved in sequence numbers. \texttt{snd.User} is the
+There are many variables\marginpar{\small\textsf{snd.User}} involved in sequence numbers. \texttt{snd.User} is the
 variable carrying the value of the next byte the \textbf{application} will
-send. The variable \texttt{snd.Next}\marginpar{\small\textsc{snd.Next}} carries the value of the next byte that
+send. The variable \texttt{snd.Next}\marginpar{\small\textsf{snd.Next}} carries the value of the next byte that
 the \textbf{TCP layer} will transmit \--- its value is contained in the TCP
 header (initial byte of the sequence, of course). Basically, \texttt{snd.User}
 refers to the next byte that will be filled by the invocation of
@@ -783,7 +785,7 @@ Basically, sequence number tracks the bytes a party \emph{has sent}, while
 acknowledgement number tracks the bytes a party \emph{has successfully
 received}. Both informations must be exchanged at every delivered segment.
 
-A fifth variable\marginpar{\small\textsc{snd.Ack}} is thus needed: \texttt{snd.Ack}, which \emph{points to the
+A fifth variable\marginpar{\small\textsf{snd.Ack}} is thus needed: \texttt{snd.Ack}, which \emph{points to the
 byte in TX-buffer before which any transmitted byte had been acknowledged}.
 This variable is only increased upon receiving data (for instance, upon
 receiving a sequence with a greater ACK number from the sender). Since it has
@@ -922,7 +924,7 @@ The \textbf{retransmission algorithm} is as follows:
     occurs when a partial ACK comes, and prevents unnecessary retransmissions.
 \end{quote}
 
-Exact\marginpar{\small\textsc{Choosing RTO}} timings of retransmissions are hard to predict. A sender is completely
+Exact\marginpar{\small\textsf{Choosing RTO}} timings of retransmissions are hard to predict. A sender is completely
 blind if it does not receive any ACK: should it send again in-flight segments,
 or should it wait a little bit more? In practice, how long should the timer be
 set? Basically, a rule of thumb is that it should be ``slightly larger'' than
@@ -930,7 +932,7 @@ Round\----Trip Time. In order to do so, since RTT largely varies depending on
 connections, time, and many other conditions, RTO is \textbf{dinamically updated}
 by algorithms such as \emph{Jacobson algorithm}.
 
-Regarding the maximum number of retransmissions\marginpar{\small\textsc{Max\_Count}}, value of \texttt{MAX\_COUNT}
+Regarding the maximum number of retransmissions\marginpar{\small\textsf{Max\_Count}}, value of \texttt{MAX\_COUNT}
 largely depends on the operating system. For instance, Windows closes
 connection after $5$ failed attempts, Linux after $15$. It is simple to realise
 that there may be a lot of unnecessary retransmissions: the timer can, for
@@ -981,7 +983,13 @@ default gateway switches are detected the IP layer will switch to a different
 default gateway as well, forcing all newly created TCP connections to switch to
 the new gateway.
 
-MARK slide 60
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/timeSequenceTCP.png}
+    \caption{Time plot of sequence numbers. Dots correspond to sent segments. Some retransmissions occur.}
+    \label{fig:timeSequence}
+\end{figure}
 
 \section{Selective Acknowledgements}
 
@@ -989,20 +997,27 @@ Suppose that 4 segments are sent, and the second one has been lost: in this
 case, the receiver got all segments except the second one, but it has
 no way to inform the sender to retransmit only the second segment. Sending
 ACK for only the first segment would result in unnecessary retransmission of
-segments 3 and 4, which were correctly received. 
+segments 3 and 4, which were instead correctly received. 
 
-For this reason, the receive buffer could end up having some \textbf{gaps}, missing bytes that
-are supposed to be received. The solutions are \textbf{Selective
-Acknowledgements} (SACK), a special kind of acknowledgements that carry both
-\emph{left and right sequence number edges} of each out-of-order \textbf{block}
-in RX-buffer, this way correctly informing the other party of a \emph{specific}
-missing portion of the data, avoiding unnecessary retransmissions. 
+For this reason, the receive buffer could end up having some \textbf{gaps},
+missing bytes that are supposed to be received. The solutions are
+\textbf{Selective Acknowledgements} (SACK), a special kind of acknowledgements
+that carry both \emph{left and right sequence number edges} of each
+out-of-order \textbf{block} in RX-buffer, this way correctly informing the
+other party of a \emph{specific} missing portion of the data, avoiding
+unnecessary retransmissions. Selective Acknowledgements can selectively mark
+which bytes should be transferred again, and only those.
 
-SACK protocol must be supported by both members of a connection in order to be
-exploited. SACK is very convenient, since many segments can be lost when a
-sender tries to deliver dozens of segments at once. This way, TCP can achieve
-\emph{efficient handling} of the connection, minimizing the number of
+SACK protocol must be \emph{supported by both members} of a connection in order
+to be useful. The protocol is very convenient, since many segments can be lost
+when a sender tries to deliver dozens of segments at once. This way, TCP can
+achieve \emph{efficient handling} of the connection, minimizing the number of
 unnecessary retransmissions.
+
+In SACK\--supporting segments, a \texttt{TCP Option} field exist, in which both
+\texttt{left edge} and \texttt{right edge} are inserted, and they allow for
+correct data reconstruction after it has been lost, only for that portion
+delimited by the two edges.
 
 Of course, out-of-order segments could still lead to gaps in RX-buffer, causing
 an unnecessary retransmission. In this case, unnecessary retransmissions are
@@ -1012,89 +1027,149 @@ the missing segment, while the very same segment arrives late. However, no
 matter what, SACK is always convenient, since it reduces a lot the burden to
 the sender for only missing segments are to be sent.
 
-\section{Operating System TCP interrupts}
+To optimize out-of-order gaps, \textbf{Fast retransmit} algorithm should be
+adopted (not part of this course).
+
+\section{Operating System TCP interrupts and the real TCP execution flow}
 
 Upon packet arrival, a \emph{system interrupt} is sent. 
 
+An operating system executes many concurrenct activities: application process, other networking processes, manages other system interrupts, and so on.
+
+When a system interrupt is cast, the operating system will try its best to fetch data from the network physical device.
+
+From the TCP point of view, after data comes from the operating system, he will
+analyze the packet to sort it by \emph{looking at the connection table}, and
+then it will \textbf{push in the input queue} the relative packet. The input
+queue holds a certain amount of segments, stored in the order given by sequence
+number.
+
+When the TCP protocol decides it's time to process all segments in queue, it
+deeply analyzses them, picks their payload, grabs their header information, and
+processes all of them. After processing all segments in input queue, the buffer
+is emptied.
+
+Basically, TCP can never \textbf{immediately} process a segment upon arrival.
+What it can do best, is to await some time, receive an amount of segments
+depending on the operating system's load at that moment and many other factors,
+and then process them altogether. Since many of them are processed at the same
+time, only a single acknowledgement will be sent back to the sender.
+
+Since there are \emph{many} different sources of randomness, let alone things
+that are completely out of TCP's control (just think of connection's quality,
+operating system's load, the other's end capabilities, packet loss,
+send\----receive invocations), there is \textbf{no} single correct way for TCP
+protocol to exchange a given amount of data with another party.
+
 \chapter{Flow and Congestion Control}
+
+To behave optimally, TCP needs to establish the correct amount of data that
+should be exchanged in an interval of time.
 
 Whenever TCP decides to transmit, there are three possible scenarios: 
 \begin{enumerate}
-	\item an empty segment is sent when there is no payload;
-	\item it transmits a single segment if payload data is smaller than MSS;
-	\item it transmits multiple segments if payload size exceeds MSS.
+    \item an empty segment is sent when there is no payload \-- that is the
+        case, for instance, of acknowledgements or when timer expires;
+    \item it transmits a single segment if payload data is smaller than MSS \--
+        that is for few data;
+    \item it transmits multiple segments if payload size exceeds MSS \-- that's
+        the case for huge payloads.
 \end{enumerate}
 
-TCP initially starts slowly, then \emph{increases its transfer speed} according
-to the rate in which acknowledgements are received. The overall interaction is
-bidirectional and quite complicated, since TCP implementation at sender's side
-tries to adapt to both connection properties and receiver's side properties.
-As a general rule, the number of in-flight bytes is always lower than an upper
-bound that is dynamically updated \--- since the upper bound is chosen
-according to proper criteria, TCP can \emph{adapt} to the peculiar
-characteristics of the connection and receiver's speed. Naturally speaking, a
-sender should not send more segments than how many can be managed by the
-receiver \--- \emph{how many} is an upper limit that dynamically adapts.
+However, not all connections are equally good, and not all endpoints are fast
+enough to cope with a sender's speed. A sender should not send more segments
+than how many can be managed by the receiver \--- \emph{how many} is an upper
+limit that should be dynamically changed.
 
-There are two different algorithms that will set two different bounds: the
-\textbf{flow control} and the \textbf{congestion control}. The TCP layer will
-always send less data than the minimum between the two upper bounds. The first
-algorithm constructs a bound in such a way that the capacity of the receiver is
-always respected. Let an extremely fast computer send data faster than a
-receiving, slow, computer. Slower computer has not enough speed to collect all
-data that has been sent \--- the flow control algorithm lets the sender speed
-adapt to the receiver speed by means of a \emph{send window}. The second
-algorithm, the congestion control, constructs a state variable called
-\emph{congestion window}, whose goal is to model the maximum current throughput
-of the network. The number of in-flight bytes \emph{must be slower than both
-send window and congestion window multiplied by MSS}, so that
-$$\mbox{in-flight} \leq \min(\mbox{sndWin}, \mbox{congWin } \cdot \mbox{ MSS}).$$
-Basically, if the transmission buffer is full of data, a number of in-flight
-bytes equal to the minumum of both quantities should be sent, otherwise just
-send \texttt{snd.User - snd.Ack} bytes (those still to send).
+The overall idea is the following one: TCP \textbf{starts slowly}, then
+\emph{increases its transfer speed} according to the rate in which
+acknowledgements are received. Since the interaction is bidirectional and
+quite complicated, TCP implementation at sender's side tries to adapt to
+both connection properties and receiver's side properties. 
 
-\section{Managing memory buffers}
+As a general rule, the number of in-flight bytes is \emph{always lower than an
+upper bound that is dynamically updated}, with an upper bound that is chosen
+according to proper criteria. This means that TCP can automatically
+\emph{adapt} to the peculiar characteristics of the connection and receiver's
+speed.
+
+In order to adapt the two different aspects of a TCP connection \-- the
+\emph{connection quality} and the \emph{receiver's speed} \-- two bounds should
+be adopted: the \textbf{Flow Control} and the \textbf{Congestion Control}. The
+TCP layer will always send less data than the minimum between the two upper
+bounds. 
+
+The first algorithm constructs a bound in such a way that the capacity of the
+receiver is always respected. Let an extremely fast computer send data faster
+than a receiving, slow, computer. Slower computer has not enough speed to
+collect all data that has been sent \--- the flow control algorithm lets the
+sender speed adapt to the receiver speed by means of a \emph{send window}. 
+
+The second algorithm, the congestion control, constructs a state variable
+called \emph{congestion window}, whose goal is to \emph{model the maximum current
+throughput of the network}. 
+
+The number of in-flight bytes \emph{must be slower than both send window and
+congestion window multiplied by MSS}, so that $$\mbox{in-flight} \leq
+\min(\mbox{sndWin}, \mbox{congWin} \cdot \mbox{MSS}).$$ 
+
+The mental model should be the following one: if the transmission buffer is
+full of data, a number of in-flight bytes equal to the minumum of both
+quantities should be sent, otherwise just send \texttt{snd.User - snd.Ack}
+bytes (those still to send).
+
+\section{Flow control}
 
 Buffers cannot increase indefinitely: boundaries must be set in order to assure
-system stability. In Linux kernel, buffer size are set upon compilation and are
-fixed in size. In case data cannot be pushed into the TX-buffer anymore because
-it is full, application should be suspended. When the RX-buffer is full,
-packets have to be discarded since they cannot be collected. Flow control will
-act to prevent this situation by letting the sender know how much free space is
-available to the RX-buffer.
-\section{Flow control}
+system stability. In Linux kernel, buffer sizes are set upon compilation and are
+then fixed; different operating systems may show other behaviors. In case data
+cannot be pushed into the TX-buffer anymore because it is full, application
+should be suspended. When the RX-buffer is full, packets have to be discarded
+since they cannot be collected. Flow control will act to prevent this situation
+by letting the sender know how much free space is available to the RX-buffer. 
 
 The goal of flow control is to keep a fast transmitter from overrunning a
 slower receiver.
 
-Since application sends much data and faster than ACK arrive, the TX-buffer
-could end up being filled up. At receiver's side, application invokes
-\texttt{receive()} much slower than incoming packages speed. This way, the
-RX-buffer could fill up as well. To solve this issues, application invokes
-\texttt{send()} only when TX-buffer is full, hence it is put to sleep (blocked)
-until TCP gets proper ACK and advances \texttt{snd.Ack} (when it has more free
-space). TCP sender keeps track of free space in other end's RX-buffer by
-looking at a variable in header that informs it of how much free space is
-available, so that it can predict how much free space there is. When it guesses
-that receiver's RX-buffer could be full and have no space available, it stops
-transmission and suspends the application. If the maximum window corresponds to
-the size of a single segment, the protocol is called \textbf{stop-and-wait}.
-Larger windows enable pipelining of multiple segments in a row, enabling far
-more efficient usage of the connection.
+Since application sends data much faster than ACK arrive, the TX-buffer could
+end up being filled up by incoming segments. Suppose at receiver's side the
+application invokes \texttt{receive()} much slower than incoming packages
+speed. This way, the RX-buffer could fill up as well. To solve this issues,
+application invokes \texttt{send()} only when TX-buffer is full, hence it is
+put to sleep (blocked) until TCP gets proper ACK and advances \texttt{snd.Ack}
+(when it has more free space).
 
-Flow control algorithm adopts the concept of \textbf{sliding window}. Each
+TCP sender keeps track\marginpar{\small\textsf{Window Size}} of free space in other end's RX-buffer by looking at a
+variable in header (WindowSize) that informs it of how much free space is
+available, so that it can actually predict how much free space there is. When
+it guesses that receiver's RX-buffer could have no space left, it stops
+transmission and suspends the application. If the maximum window corresponds to
+the size of a single segment, the protocol is called \textbf{stop-and-wait}
+(that is \-- send a single segment, than wait for ACK). Larger windows enable
+pipelining of multiple segments in a row, allowing far more efficient usage of
+the connection.
+
+Flow control algorithm\marginpar{\small\textsf{Sliding Window}} adopts the concept of \textbf{sliding window}. Each
 segment header has a \texttt{WindowSize} field in the header that contains
-\emph{how many free bytes are in the RX-buffer}. WindowSize field basically is
-the amount of free space available in RX-buffer. At sending side,
+\emph{how many free bytes are in the RX-buffer}. From sender's point of view,
 \texttt{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
-the other side}. Initially it is set to the receiver's buffer size, and it is
-updated dynamically upon sending a segment. If \texttt{S.Ack} is greater or
-equal to \texttt{snd.Ack}, then the variable \texttt{snd.winSize} is set to
-\emph{S.windowSize}. Basically, the number of in-flight bytes must never
-exceed the number of bytes in \texttt{snd.winSize} that are available in the
-RX-buffer. The goal of TCP is to reach a number of in-flight bytes that is as
-close as possible to the \texttt{snd.winSize} number of bytes, in order to
-optimize the connection efficiently.
+the other side}.
+
+The value is initially set to the receiver's entire buffer size, and it is
+updated dynamically upon sending a segment. If a segment \texttt{S} carries
+\texttt{S.Ack} that is greater or equal to \texttt{snd.Ack}, then the variable
+\texttt{snd.winSize} is updated and set to \emph{S.windowSize}. The
+\texttt{snd.WinSize} value ranges from $0$ to the buffer size at the receiver's
+end.
+
+Ultimately, the number of in-flight bytes must never exceed the number of bytes
+in \texttt{snd.winSize} that are available in the RX-buffer. This means that
+\texttt{snd.Next - snd.Ack} should \textbf{never} be greater than
+\texttt{snd.WinSize}.
+
+The end goal of TCP is to reach a number of in-flight bytes that is as close as
+possible to the \texttt{snd.winSize} number of bytes, in order to optimize the
+connection efficiently.
 
 \begin{figure}[b]
     \centering
@@ -1112,16 +1187,28 @@ the acknowledgement's time to arrive at the original sender's side.}
 
 \section{Performance estimation}
 
-From flow control, let's determine the maximum T-IN-TCP that can be obtained.
+From flow control, let's determine the maximum T-IN-TCP (input throughput) that can be obtained.
 TCP is injecting some throughput into the network, and the amount of it is
 controlled by the flow control algorithm. 
 
-The best case one can get by flow control is $M * MSS$ every RTT \--- this is
+Suppose the receiver has a window size of $M \cdot MSS$, and the application
+requesting data invokes \texttt{receive()} on a large buffer, such that the
+buffer is emptied as soon as there is new data.
+
+The best case one can get by flow control is $M \cdot MSS$ every RTT \--- this is
 the case where the receiver's application empties the RX-buffer the moment the
-segments arrive. In the case the application empties \emph{half} the buffer at
-periodic intervals, the throughput would be the half as well, $M/2 * MSS$ every
-RTT. If the entire buffer is emptied but with a delay or not aligned with the
-receipt of segments, the throughput would be $M * MSS$ every RTT + $\Delta$
+segments arrive. Suppose in fact $M \cdot MSS$ bytes are sent at each round,
+and no packet loss occurs: in that case, the receiver would immediately and
+successfully grab all segments, sending the corresponding acknowledgment
+answer.
+
+In the case the application empties \emph{half} the buffer at periodic
+intervals, the throughput would be the half as well, $M/2 * MSS$ every RTT.
+After the first round, only half of the segments would be sent, since the
+window size is indeed the half of the total one. 
+
+If the entire buffer is emptied at once, but with a delay, or not aligned with
+the receipt of segments, the throughput would be $M * MSS$ every RTT + $\Delta$
 (more time than plain RTT). Combining all cases, one could get less than $M *
 MSS$ data every \emph{longer} than RTT, depending on the parameters and the
 circumstances of the network.
@@ -1133,39 +1220,41 @@ have been made:
         Figure~\ref{fig:idealThroughput};
     \item all the segments arrive together, or at least not after a time which
         is irrelevant or already counted in $T$.;
-    \item acknowledgement arrives immediately, and not after a huge delay.
+    \item acknowledgement arrives immediately, and not after a huge delay;
+    \item receiver is perfect in managing segments, and provides an
+        acknowledgment segment for the full data.
 \end{itemize}
 
 In every case, a greater RX-buffer will result in higher throughput, since
-there is a proportionality. Viceversa, greater RTT will result in less
-throughput \--- LANs will have greater throughput than WANs. However, in this
-formula quality of the network is not taken in account: segments can be loss,
-especially when too many of them are injected through the internet. For this
-reason, this much-optimistic model cannot be applied in cases where the
-throughput is high (read \--- when RX-buffer is insanely huge). Every time a
-retransmission is needed, throughput becomes much smaller than the ideal case,
-and this phenomenon is much heavier as the RTT increases, since retransmissions
-are harder to assess.
+there is a proportionality between throughput and buffer size. Viceversa,
+greater RTT will result in less throughput \--- LANs will have greater
+throughput than WANs since they possess a lesser Round\----Trip Time. However,
+in this formula the \emph{quality} of the network is not taken in account:
+segments can be loss, especially when too many of them are injected through the
+internet. For this reason, this much-optimistic model cannot be applied in
+cases where the throughput is high (read \--- when RX-buffer is insanely huge).
+Every time a retransmission is needed, \emph{detection and recovery} takes
+place, and throughput becomes much smaller than the ideal case. This
+phenomenon is much heavier as the RTT increases, since retransmissions are
+harder to assess; Moreover, it is far from being predictable.
 
-Another thing to consider is maximum network speed. Injected throughput could
+Another thing to consider is \emph{maximum network speed}. Injected throughput could
 be \emph{even greater} than maximum network speed, in that case many segments
 would be loss, resulting in a sub-optimal efficiency\footnote{This is solved by
 Congestion control mechanism.}.
 
 \subsection{Establishing size of RX-buffer}
 
-Size of RX-buffer should have the following characteristics:
-\begin{itemize}
-    \item the size should be \emph{a multiple of MSS} \--- this is done to
-        avoid leaving unused space at the end of the buffer, since in the lucky
-        case exactly a multiple of MSS will be delivered;
-    \item the RX-buffer size is a \emph{trade-off} between greater ideal
-        throughput and lower throughput due to excessive retransmissions, and
-        should be chosen accordingly;
-    \item usually, $64KB$ are chosen; the value is OS-dependent. The size is
-        managed as if it were a multiple of MSS \--- when almost full, pretend
-        it is full and ignore last portion of buffer.
-\end{itemize}
+Size of RX-buffer\marginpar{\small\textsf{Receiver's Buffer Size}} should have the following characteristic: the size should be
+\emph{a multiple of MSS} \--- this is done to avoid leaving unused space at the
+end of the buffer, since in the lucky case exactly a multiple of MSS will be
+delivered. Non\--multiple sizes would make no sense.
+
+However, the RX-buffer size is a \emph{trade-off} between greater ideal
+throughput and lower throughput due to excessive retransmissions, and should be
+chosen accordingly. Unexpectedly, $64KB$ are chosen; the value is OS-dependent.
+The size is managed as if it were a multiple of MSS \--- when almost full,
+pretend it is full and ignore last portion of buffer.
 
 \begin{table}[ht]
 \centering
@@ -1181,13 +1270,12 @@ Size of RX-buffer should have the following characteristics:
 
 \section{Sustainable throughput}
 
-A sustainable throughput is not potentially infinite. After a certain injected
-throughput \emph{T\_MAX}, the network bottlenecks and starts losing segments
-\--- this behavior will certainly lead to less overall performance. Thus, an
-optimal throughput should be determined and largely depends on connection
-quality. Basically, injected segments are delivered at same speed only if the
-injected throughput is lower than the maximum possible throughput,
-\emph{T\_MAX}.
+A sustainable throughput is indeed \textbf{not infinite}. After a certain injected
+throughput \emph{T\_MAX}, the network bottlenecks and starts losing segments, exhibiting a
+behavior that will lead to less performance. Thus, an optimal throughput should
+be determined by and largely depends on \emph{connection quality}. Injected
+segments are delivered at same speed only if the injected throughput is lower
+than the maximum possible throughput, that is \emph{T\_MAX}.
 
 \begin{figure}[b]
     \centering
@@ -1197,7 +1285,6 @@ injected throughput is lower than the maximum possible throughput,
         throughput.}
     \label{fig:networkCollapse}
 \end{figure}
-
 
 
 An excessive throughput \textbf{will} result in the following consequences:
@@ -1211,60 +1298,82 @@ An excessive throughput \textbf{will} result in the following consequences:
         maintained for a longer time.
 \end{itemize}
 
-Congestion issues happen mostly because networks have different speeds, and at
-lower level this cannot be perceived \--- it is up to the TCP layer to detect
-issues during path, and slow down segments injection. Routers commonly have a
-mechanism for packet queuing, which can be filled up, resulting in packet
-discarding. Such discarded packets will need a retransmission, leading in lower
-performance. New segments and packets will increase the time for which the
-queue is dissolved.
+Intuitively, a network collapse happens because networks possess different
+maximum speeds, a quality that cannot be appreciated by TCP, let alone for
+networks \emph{different} than the one in which the device is sending data.
+
+It is then up to the TCP layer to detect issues during path, and slow down
+segments injection. Routers commonly have a mechanism for packet queuing, which
+can be filled up, resulting in packet discarding. Such discarded packets will
+need a retransmission, leading in even lower performance. New injected segments
+and packets will increase the time for which the queue is dissolved.
 
 \section{Congestion control}
 
+\textbf{Congestion Control} algorithm takes into account the quality of the
+network, allowing the sender to adapt to it instead of making it collapse.
+
 Suppose the bound of flow control is so large that congestion control is
-predominant (snd.congWin*MSS < snd.WinSize). A congestion control algorithm
+predominant (which means snd.congWin*MSS < snd.WinSize). A congestion control algorithm
 could try do infer the maximum throughput by looking at the RTT and calculating
-MSS/RTT < T\_MAX. However, this is unfeasible, since it requires too much data.
-A second issue is that the quantity \emph{T\_MAX} \emph{varies during time}:
+MSS/RTT < T\_MAX. However, this is unfeasible, since it requires too much
+rounds and tentatives to be inferred.
+
+A second issue is that the quantity T\_MAX \emph{varies during time}:
 it depends on nominal throughput of networks and routers, and on
 \textbf{competition} of different injected throughputs in the network.
-Basically, the competition is \emph{unpredictable} and \emph{time-varying}.
+Basically, the competition in the network is \emph{unpredictable} and
+\emph{time-varying}, allowing no fixed\--value algorithm to work.
 
 \subsection{Actual algorithm}
 
-Congestion control algorithm have some important components,
+Congestion control algorithm has some important components,
 \begin{enumerate}
-	\item slow start;
-    \item congestion avoidance;
-    \item fast retransmit;
-    \item fast recovery;
+    \item the \emph{slow start};
+    \item the \emph{congestion avoidance};
+    \item the \emph{fast retransmit};
+    \item the \emph{fast recovery};
 \end{enumerate}
 
 each one with several variants and many parameters to be properly set. We will
 see \emph{Tahoe} algorithm, but the most used one is the \emph{Reno}
 algorithm.
+\begin{enumerate}
+    \item The state variable \emph{CongestionWindow(t)} keeps track of a
+        `virtual window' that is the actual quantity of data that can be
+        injected through the network, and is initially set to a very small
+        value (\emph{slow start principle}). Its value will increase whenever
+        Acknowledgements are received in time \--- the network is assumed to be
+        not congested. Upon retransmission (timeout expiration) the state
+        variable is decreased a lot, and the network is assumed to be
+        congested. 
 
-The state variable \emph{CongestionWindow(t)} is set to an initial very small
-value. Its value will increase whenever Acknowledgements are received in time
-\--- the network is assumed to be not congested. Upon retransmission (timeout
-expiration) the state variable is decreased a lot, and the network is assumed
-to be congested. Another state variable, called \emph{SlowStartThreshold}, is
-a threshold under which \emph{CongestionWindow(t)} increases very fast, while
-below it the same state variable increases slowly. Initial values of
-\emph{snd.congWin} and \emph{snd.ssThresh} are, respectively, (usually) $3$ MSS
-and $64KB$. Whenever an acknowledgement is received in time, if the congestion
-window is lower than the threshold, increase fast with \emph{slow start
-algorithm}; otherwise, increase slowly with \emph{congestion avoidance}
-algorithm. Upon retransmission (timeout expiration), the congestion window is
-reset to MSS and the threshold is reset to the maximum value between $2$ MSS
-and (snd.Next - snd.Ack)/2 \--- that is, the maximum value between the double
-of MSS and the half of the in-flight bytes. The assumption upon retransmission
-is that the network is congested: this behavior is hugely inefficient, since
-\emph{many} concurrent causes may determine a packet loss \--- for instance,
-small RTO, network loss (e.g. WiFi). The congestion window is increased by +MSS
-whenever an in-time ACK is received. Congestion avoidance algorithm does the
-same, but only upon receipt of \textbf{the last} in-time ACK (only if
-snd.congWin bytes are ACK'ed). 
+    \item Another state variable, called \emph{SlowStartThreshold}, is
+        a threshold under which \emph{CongestionWindow(t)} increases very fast,
+        while above it the same state variable increases with a slower rate.
+        Initial values of \emph{snd.congWin} and \emph{snd.ssThresh} are,
+        respectively, $3$ MSS and $64KB$.
+
+    \item Whenever an acknowledgement is received in time, the congestion
+        window is increased. If the congestion window is lower than the
+        threshold, increase fast with \textbf{slow start algorithm}; otherwise,
+        increase slowly with \textbf{congestion avoidance} algorithm. 
+
+    \item Upon retransmission (timeout expiration), the congestion window is
+        reset to MSS and the threshold is set to the maximum value between $2$
+        MSS and \texttt{(snd.Next - snd.Ack)/2} \--- that is, the maximum value
+        between the double of MSS and the half of the in-flight bytes. The
+        assumption upon retransmission is that the network is congested: this
+        behavior is apparently inefficient, since \emph{many} concurrent causes may
+        determine a packet loss \--- for instance, small RTO, network loss
+        (e.g. WiFi) \--- but it's the best one can do to avoid any possible
+        congestion. MARK slide 64
+
+    \item The congestion window is increased by +MSS whenever an in-time ACK is
+        received. Congestion avoidance algorithm does the same, but only upon
+        receipt of \textbf{the last} in-time ACK (only if snd.congWin bytes are
+        ACK'ed).
+\end{enumerate}
 
 The two algorithms increase the congestion window at \emph{much} different
 speed. Slow start algorithm, despite its name, will \emph{double} the
