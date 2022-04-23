@@ -1,11 +1,12 @@
-\documentclass[10pt]{book}
+\documentclass[11pt]{book}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 %\usepackage[document]{ragged2e}
 \usepackage{microtype}
 \usepackage{notomath}
 %\usepackage{CharisSIL}
-\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
+%\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
+\usepackage[p]{scholax}
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
@@ -49,30 +50,19 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[LE,RO]{\leftmark}
-%\fancyhead[RE,LO]{Programmazione Avanzata}
-%\fancyfoot[CE,CO]{\leftmark}
 \fancyfoot[LE,RO]{\thepage}
 
 \renewcommand{\headrulewidth}{1pt}
 %\renewcommand{\footrulewidth}{1pt}
 
 \usepackage{titlesec}
-\titleformat{\part}[display]
-{\Huge\bfseries\sffamily}{}{10pt}{\center{ Parte \thepart\ \ \\ \ \ }}
-%\titleformat{\chapter}[display]
-%{\huge\bfseries}{}{0pt}{\thechapter\ \ \--\ \ }
-\titleformat{\section}[display]
-{\Large\bfseries\sffamily}{}{0pt}{\medskip\thesection\ \ \textasciitilde \ \ }
-\titleformat{\subsection}[display]
-{\large\bfseries\sffamily}{}{0pt}{\medskip\thesubsection\ \ \textasciitilde \ \ }
 
 \begin{document}
-%\setmonofont[Scale=.85]{Fira Code Retina}
-\setsansfont{IBM Plex Sans}
+\setmonofont[Scale=.93]{IBM Plex Mono Medium}
 
 
 \include{cn-titlepage}
-\setstretch{1.35}
+\setstretch{1.30}
 \setlength{\headsep}{30pt}
 \setlength{\footskip}{40pt}
 \setlength{\marginparsep}{20pt}
@@ -87,6 +77,7 @@
 \chapter{TCP Basis}
 
 \section{Recap}
+
 TCP is a procotol that has the following remarkable properties,
 
 \begin{enumerate}
@@ -1271,11 +1262,11 @@ pretend it is full and ignore last portion of buffer.
 \section{Sustainable throughput}
 
 A sustainable throughput is indeed \textbf{not infinite}. After a certain injected
-throughput \emph{T\_MAX}, the network bottlenecks and starts losing segments, exhibiting a
+throughput \texttt{T\_MAX}, the network bottlenecks and starts losing segments, exhibiting a
 behavior that will lead to less performance. Thus, an optimal throughput should
 be determined by and largely depends on \emph{connection quality}. Injected
 segments are delivered at same speed only if the injected throughput is lower
-than the maximum possible throughput, that is \emph{T\_MAX}.
+than the maximum possible throughput, that is \texttt{T\_MAX}.
 
 \begin{figure}[b]
     \centering
@@ -1290,7 +1281,7 @@ than the maximum possible throughput, that is \emph{T\_MAX}.
 An excessive throughput \textbf{will} result in the following consequences:
 \begin{itemize}
     \item packets exit \textbf{slower} than they entered;
-    \item network's max sustainable throughput \emph{T\_MAX} will
+    \item network's max sustainable throughput \texttt{T\_MAX} will
         \emph{collapse} \--- this fenomenon is called \textbf{network
         congestion};
     \item network \textbf{will need some time to remove its congestion},
@@ -1338,6 +1329,21 @@ Congestion control algorithm has some important components,
 each one with several variants and many parameters to be properly set. We will
 see \emph{Tahoe} algorithm, but the most used one is the \emph{Reno}
 algorithm.
+
+The core idea of the TCP Congestion Control is to increase the so called
+\textbf{congestion window}, a window size\--tracking variable, every time an
+acknowledgement is received, while decreasing it a lot after a retransmission
+timeout had expired, starting again from a lower speed. 
+
+Initially, the
+congestion window is set to a very low value: that is called \emph{the slow
+start algorithm}. The slow start algorithm takes place if the congestion window
+value is below a certain threshold, called \emph{SlowStartThreshold}; under the
+slow start algorithm, the size of the congestion window increases very, very
+quickly. After the congestion window size is above the threshold, the
+\emph{congestion control algorithm} takes place, and makes the window increase
+very slowly.
+
 \begin{enumerate}
     \item The state variable \emph{CongestionWindow(t)} keeps track of a
         `virtual window' that is the actual quantity of data that can be
@@ -1357,22 +1363,31 @@ algorithm.
     \item Whenever an acknowledgement is received in time, the congestion
         window is increased. If the congestion window is lower than the
         threshold, increase fast with \textbf{slow start algorithm}; otherwise,
-        increase slowly with \textbf{congestion avoidance} algorithm. 
+        increase slowly with \textbf{congestion avoidance} algorithm. The first
+        will cause a fast growth in size of the window, the latter will instead
+        produce a slower growth.
 
     \item Upon retransmission (timeout expiration), the congestion window is
-        reset to MSS and the threshold is set to the maximum value between $2$
+        reset to MSS. Differently, the threshold is set to the maximum value between $2$
         MSS and \texttt{(snd.Next - snd.Ack)/2} \--- that is, the maximum value
-        between the double of MSS and the half of the in-flight bytes. The
+        between the double of MSS and the half of the currently in-flight bytes. The
         assumption upon retransmission is that the network is congested: this
-        behavior is apparently inefficient, since \emph{many} concurrent causes may
-        determine a packet loss \--- for instance, small RTO, network loss
-        (e.g. WiFi) \--- but it's the best one can do to avoid any possible
-        congestion. MARK slide 64
+        behavior is inefficient in the case the network is not congested. Since
+        \emph{many} concurrent causes may determine a packet loss \--- for
+        instance, small RTO, network loss (e.g. WiFi) \--- one can end up with
+        a congestion control algorithm forcing a slower pace of the network
+        even though there is no actual congestion.
 
-    \item The congestion window is increased by +MSS whenever an in-time ACK is
-        received. Congestion avoidance algorithm does the same, but only upon
-        receipt of \textbf{the last} in-time ACK (only if snd.congWin bytes are
-        ACK'ed).
+    \item The congestion window is increased according to the algorithm running at a given moment: 
+        \begin{description}
+            \item[Slow start algorithm] Congestion window is increased by +MSS
+                whenever \textbf{any} in-time ACK is received. This is usually
+                unaccurate, since the congestion window is usually
+                \emph{doubled} after all segments have been received;
+            \item [Congestion avoidance algorithm] Congestion window is
+                increased by +MSS whenever \textbf{the last} in-time ACK is
+                received, for all in-flight data.
+        \end{description}
 \end{enumerate}
 
 The two algorithms increase the congestion window at \emph{much} different
@@ -1394,19 +1409,23 @@ linear growth.
 
 
 
-\subsection{Congestion control pattern in case of exponential growth}
+\subsection{Congestion control and maximum throughput of the network}
+
+What can happen on start?
 
 Let's assume all segments are lost, and retransmission occurs after RTT (that
 means, RTO is a good approximation of RTT). Let's also assume slow start
 produces an exponential growth. Initial value of \emph{ssThresh\_start} is
-$64KB$. Starting with threshold value below \emph{T\_MAX}, slow start will
+$64KB$. Starting with threshold value below \texttt{T\_MAX}, slow start will
 yield an exponential growth; after some time, congestion avoidance will enter,
 a segment loss will occur and the congestion window will be reset to half the
-\emph{ssThresh\_start} original value. Initial threshold above \emph{T\_MAX}
+\emph{ssThresh\_start} original value. 
+
+Initial threshold above \texttt{T\_MAX}
 will trigger a segment loss, and a reset of the threshold (without congestion
 avoidance algorithm, that has not enough time to act). After the first segment
 loss, threshold will be halved by setting it at half of the in-flight bytes,
-and system will act as it started below the \emph{T\_MAX} throughput. The
+and system will act as it started below the \texttt{T\_MAX} throughput. The
 ``exponential, linear, drop'' pattern will occur \emph{forever}, and the three
 phases (slow start, congestion avoidance, loss detection) will happen one after
 the other.
@@ -1420,81 +1439,119 @@ the other.
 \end{figure}
 
 
+
 \clearpage
 
-\subsection{Congestion control pattern in case of linear growth}
+With same assumptions as above, but with slow start provoking a \textbf{linear}
+kind of growth, the pattern will be \emph{completely linear}, since no
+exponential growth occurs. Basically, only the starting phase of each cycle
+will be different. The end result in both patterns, however, is that the
+average \texttt{T\_IN} value will be \textbf{much} smaller than \texttt{T\_MAX}:
+the TCP congestion control cannot expoit internetwork capacity
+efficiently. Injected throughput will always be lower than the maximum
+possible: the consequence, is that the average throughput is lower than what
+the network could sustain, however, this is very important in order to avoid
+network collapse and congestion. 
 
-With same assumptions as above, but with slow start provoking a linear growth,
-the pattern will be \emph{completely linear}, since no exponential growth
-occurs. Basically, only the starting phase of each cycle will be different. The
-end result in both patterns, however, is that the average \emph{T\_IN} value
-will be \textbf{much} smaller than \emph{T\_MAX} \--- the TCP congestion
-control cannot expoit internetwork capacity efficiently. Injected throughput
-will always be lower than the maximum possible: the consequence, is that the
-average throughput is lower than what the network could sustain, however, this
-is very important in order to avoid network collapse and congestion.
+There is a good reason for that: it is almost impossible to predict how the
+network will behave. A network could host many devices, each one having
+different demands, producing many kinds of traffic, each one with its own
+\emph{volume}. The end result will be an unpredictable mess of network traffic.
+The only way to adapt to this is to adopt an algorithm using a heuristic
+behavior, that tries to adapt to the network as well as avoiding congestion the
+most.
 
 \subsection{Fast retransmit in a nutshell}
 
-Suppose $K$ segements are transmitted in a burst, and a single segment appears
-to be lost. Resetting congWin to its minimum value is largely inefficient,
-since only a single segment of the row has been lost. Another strategy could be
-waiting for a timeout before resetting the congWin: the solution is inefficient
-too, since waiting before retransmitting could lead to long breaks (how much to
-wait? how to estimate a correct time interval?). The solution is to retransmit
-\emph{immediately only} what appears to be the missing segment, and decrease
-congWin \emph{but not} to its minimum value.
+Suppose $K$ segements are transmitted in a burst, and a single segment among
+them appears to be lost. Resetting the congestion window to its minimum value
+is an inefficient move; since only a single segment of the row has been lost,
+one could argue there is no need to drastically decrease the congestion window.
+
+Another strategy could be \emph{waiting for a timeout before resetting the
+congestion window}: the solution is inefficient too, since waiting before
+retransmitting could lead to long breaks (how much to wait? how to estimate a
+correct time interval?).
+
+The \textbf{Fast retransmit} algorithm addresses precisely this kind of issue:
+the solution is to retransmit \emph{immediately only} what appears to be the
+missing segment, and decrease the window \emph{but not} to its minimum value
+(that is, the maximum value between 2MSS and half of the current in-flight
+bytes).
 
 \subsection{Reasons of congestion control to slow down the network so much}
 
 Intuitively, one would like to reach the maximum possible value for the
-congestion window and the maximum throughput sustainable; however, they are
+congestion window and the maximum throughput sustainable; however, both are
 \textbf{unknown}. We can detect detect its value only after having injected an
-excessive throughput, by detecing segment loss. An aggressive slow down occurs
-at each detection of segment loss, in order to prevent the collapse of the
+excessive throughput, by detecing segment loss. However, whenever a segment loss occurs, the network is already congested. 
+
+An aggressive slow down occurs
+at each detection of segment loss, in order to prevent further collapsing of the
 network. In fact, suppose many machines are injecting a throughput which is
 closer to the maximum possible: in that case, if the network is congested,
 \emph{it will require more time to return to its normal state}, because all
 machines are insisting injecting throughputs close to unsustainable ones, and
-removing congestion \emph{will} require larger time. Basically, this is a
+removing congestion \textbf{will} require larger time. Basically, this is a
 heuristic way to avoid congestion on a network where multiple machines are
 using transmission resources altogether.
 
-In the end, congestion control strives to ensure \textbf{fairness}. Fairness is
-the tendency of each competing TCP connection on a router to consume the same
-fraction of the router capacity. Each connection, on the average, will consume
-an equal fraction of router's capacity. However, today's standard impose
-\textbf{node-level fairness}: this means that each node should have the same
-amount of network capacity (thousands of TCP connections can be opened at the
-same time from a single node). Note that UDP connections \emph{do not}
-implement any flow or congestion control, and transmit at full-speed: they are
-`selfish'.
+In the end, congestion control strives to ensure \textbf{fairness} with respect
+to other devices. Fairness is the tendency of each competing TCP connection on
+a router to consume the same fraction of the router capacity. Each connection,
+on average, will try to consume an equal fraction of router's capacity. However,
+today's standard impose \textbf{node-level fairness}: this means that each node
+should have the same amount of network capacity (thousands of TCP connections
+can be opened at the same time from a single node). Note that UDP connections
+\emph{do not} implement any flow or congestion control, and transmit at
+full-speed: they are `selfish'. Basically, the end goal is to grant anyone the
+same access of the network, at the expense of `our' networking speed (one could
+argue, however, that if anyone tries to push as much traffic as possible in the
+network, no one could be able to use the network, not even the same people that
+are pushing all that massive traffic).
 
 \subsection{Estimating the average throughput}
 
-Some assumptions should be made in order to compute average throughput:
+Some assumptions should be made in order to compute average throughput, given Congestion Control algorithm is running properly:
 \begin{itemize}
-    \item slow start has \emph{linear growth};
-    \item \emph{T\_MAX} is constant and in between $K\cdot MSS$ and$(K+1)\cdot MSS$;
+    \item slow start has \emph{linear growth}. The congestion window starts
+        from $1$ and goes up to $k+1$;
+    \item \texttt{T\_MAX} is constant and in between $K\cdot MSS$
+        and$(K+1)\cdot MSS$;
     \item \emph{all} segments are lost at once (no wild retransmissions);
+    \item all segments are received up to $k$-th round; segments in round
+        $k+1$-th are all lost at once;
 \end{itemize}
 
-The average throughput that is injected is the average number of bytes in each
-pattern, divided by $(K + 1)\cdot RTT$, that is FIXME
+The \emph{average throughput} that is injected is the average number of bytes in each
+pattern, divided by $(K + 1)\cdot RTT$. The number of bytes in each pattern is
+equal to MSS * number of segments in each pattern \-- since we are assuming a
+linear growth, the segments are increasing linearly up to $k+1$, that means the
+number of segments belonging to a pattern is $\frac{k \cdot (k + 1)}{2}$;
+hence, the \emph{average throughput formula} is
+
 $$A_t = \frac{MSS\cdot \frac{K(K+1)}{2}}{(K+1)\cdot RTT} = \frac{MSS\cdot
-K/2}{RTT}.$$ Thus, the injected throughput is the same one would obtain by
-having a \emph{constant window} of $K/2 \cdot MSS$ size \--- on the average,
-one can only get \textbf{half} of the maximum network throughput.
+K/2}{RTT}.$$ 
+
+Thus, the injected throughput is the same one would obtain by
+having a \emph{constant window} of $K/2 \cdot MSS$ size \--- on average and
+under ideal conditions, one can only get \textbf{half} of the maximum network
+throughput.
 
 Slow start in exponential fashion makes this calculation quite more complex,
-but we will genuinely assume a linear growth in all our calculations.
+but we will genuinely assume a linear growth in all our calculations, to make
+them simpler.
 
-Another important scenario is not transmitting data after many RTTs. Without a
-reset, one would use the last values that were determined by the congestion
-control algorithm. In order to avoid bad performance, the sender \textbf{resets
-both congWin and ssThresh} after a timeout. Basically, the approach is very
+Another important scenario that has not been disclosed yet is about \emph{not
+transmitting data after many RTTs}. Without a reset, one would use the last
+values that were determined by the congestion control algorithm. In order to
+avoid bad performance, the sender \textbf{resets both congestion window and
+slow start threshold} after a timeout. Basically, by resetting the connection
+state regarding previously achieved speed, the approach tries to be very
 pessimistic and conservative, in order to avoid any kind of congestion in the
 network.
+
+MARK slide 111
 
 \section{Interaction between flow control and congestion control}
 
