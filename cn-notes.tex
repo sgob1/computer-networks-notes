@@ -1,17 +1,21 @@
-\documentclass[11pt]{book}
+\documentclass[10pt]{book}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 %\usepackage[document]{ragged2e}
 \usepackage{microtype}
-\usepackage{notomath}
+%\usepackage{notomath}
+\usepackage[libertine]{newtxmath}
+\usepackage{XCharter}
 %\usepackage{CharisSIL}
 %\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
-\usepackage[p]{scholax}
+%\usepackage[p]{scholax}
+%\usepackage[default,regular,bold]{sourceserifpro}
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
 \usepackage[pdfa]{hyperref}
 \usepackage{color}
+\usepackage{makecell}
 \usepackage{setspace}
 \usepackage{parskip}
 \usepackage[a4paper, inner=4.0cm, outer=5.0cm]{geometry}
@@ -58,11 +62,11 @@
 \usepackage{titlesec}
 
 \begin{document}
-\setmonofont[Scale=.93]{IBM Plex Mono Medium}
+%\setmonofont[Scale=.93]{IBM Plex Mono Medium}
 
 
 \include{cn-titlepage}
-\setstretch{1.30}
+\setstretch{1.25}
 \setlength{\headsep}{30pt}
 \setlength{\footskip}{40pt}
 \setlength{\marginparsep}{20pt}
@@ -636,7 +640,7 @@ Now with an example: let a buffer have length equal to $800$ bytes. Suppose
 \texttt{receive()} is invoked in the following scenarios,
 \begin{enumerate}
     \item in the first scenario, there are $600$ bytes in the RX-buffer. Upon
-        \texttt{receive()} call, all $600$ bytes are delivered to the
+        \texttt{re\-cei\-ve()} call, all $600$ bytes are delivered to the
         application. The RX-buffer is now empty;
     \item in the second scenario, there are $1000$ bytes in the RX-buffer. Upon
         \texttt{receive()} invocation, only $800$ of the $1000$ bytes are saved
@@ -1156,7 +1160,7 @@ end.
 Ultimately, the number of in-flight bytes must never exceed the number of bytes
 in \texttt{snd.winSize} that are available in the RX-buffer. This means that
 \texttt{snd.Next - snd.Ack} should \textbf{never} be greater than
-\texttt{snd.WinSize}.
+\texttt{snd.\-WinSize}.
 
 The end goal of TCP is to reach a number of in-flight bytes that is as close as
 possible to the \texttt{snd.winSize} number of bytes, in order to optimize the
@@ -1479,7 +1483,10 @@ missing segment, and decrease the window \emph{but not} to its minimum value
 (that is, the maximum value between 2MSS and half of the current in-flight
 bytes).
 
-\subsection{Reasons of congestion control to slow down the network so much}
+\subsection{Avoiding collapse of the network and the concept of fairness}
+
+The congestion control slows down the network in order to assure both
+\emph{collapse avoidance} and \emph{fairness}.
 
 Intuitively, one would like to reach the maximum possible value for the
 congestion window and the maximum throughput sustainable; however, both are
@@ -1497,18 +1504,20 @@ heuristic way to avoid congestion on a network where multiple machines are
 using transmission resources altogether.
 
 In the end, congestion control strives to ensure \textbf{fairness} with respect
-to other devices. Fairness is the tendency of each competing TCP connection on
-a router to consume the same fraction of the router capacity. Each connection,
-on average, will try to consume an equal fraction of router's capacity. However,
-today's standard impose \textbf{node-level fairness}: this means that each node
-should have the same amount of network capacity (thousands of TCP connections
-can be opened at the same time from a single node). Note that UDP connections
-\emph{do not} implement any flow or congestion control, and transmit at
-full-speed: they are `selfish'. Basically, the end goal is to grant anyone the
-same access of the network, at the expense of `our' networking speed (one could
-argue, however, that if anyone tries to push as much traffic as possible in the
-network, no one could be able to use the network, not even the same people that
-are pushing all that massive traffic).
+to the other devices. Fairness is the tendency of each competing TCP connection
+on a router to consume the same fraction of the router capacity. Each
+connection, on average, will try to consume an equal fraction of router's
+capacity. However, today's standard impose \textbf{node-level fairness}: this
+means that each node should have the same amount of network capacity (thousands
+of TCP connections can be opened at the same time from a single node). Note
+that UDP connections \emph{do not} implement any flow or congestion control,
+and transmit at full-speed: they are said to be `selfish'. 
+
+Basically, the end goal of fairness is to grant anyone the same access of the
+network, at the expense of your own networking speed (one could argue, however,
+that if anyone tries to push as much traffic as possible in the network, no one
+could be able to use the network, not even the same people that are pushing all
+that massive traffic).
 
 \subsection{Estimating the average throughput}
 
@@ -1542,39 +1551,61 @@ Slow start in exponential fashion makes this calculation quite more complex,
 but we will genuinely assume a linear growth in all our calculations, to make
 them simpler.
 
-Another important scenario that has not been disclosed yet is about \emph{not
-transmitting data after many RTTs}. Without a reset, one would use the last
-values that were determined by the congestion control algorithm. In order to
-avoid bad performance, the sender \textbf{resets both congestion window and
-slow start threshold} after a timeout. Basically, by resetting the connection
-state regarding previously achieved speed, the approach tries to be very
-pessimistic and conservative, in order to avoid any kind of congestion in the
-network.
+\subsection{Idle connections}
 
-MARK slide 111
+Another important scenario that has not been disclosed yet is about \emph{not
+transmitting data after many RTTs}, the case of \emph{idle connections}. The
+basic idea is to reset the values of congestion window and slow start threshold
+after a timeout expired (RTO).
+
+Without a reset, one would use the last values that were determined by the
+congestion control algorithm. In order to avoid bad performance, the sender
+\textbf{resets both congestion window and slow start threshold} after a
+timeout. Basically, by resetting the connection state regarding previously
+achieved speed, the approach tries to be very pessimistic and conservative, in
+order to avoid any kind of congestion in the network.
 
 \section{Interaction between flow control and congestion control}
 
-The interaction between the two TCP control systems is not straightforward. At
-connection opening, the bound imposed by congestion control is \emph{much}
-tighter than the flow control one (2-4 MSS instead of $64KB$). Hence, at the
-beginning the network will follow congestion control's dictated bounds \---
-data arrives slowly.
+The interaction between the two TCP control systems is not straightforward.
+After connection opening, the bound imposed by congestion control is
+\emph{much} tighter than the flow control one (2-4 MSS instead of $64KB$).
+
+Hence, at the beginning the network \emph{will follow congestion control}'s
+dictated bounds: data transfer begins slowly.
 
 After connection opening (steady-state), there are two possible cases:
 \begin{itemize}
-    \item T-MAX > T-FLOW-CONTROL \--- maximum network throughput is greater
-        than maximum flow control throughput: in this case, the bottleneck is
-        the \textbf{receiver's capacity}. The steady state throughput will be
-        $\frac{M\cdot MSS}{RTT}$, while its connection opening transient
-        throughput will be half of that value;
-    \item T-MAX < T-FLOW-CONTROL \--- maximum network throughput is lower
-        than maximum flow control throughput: in this other case, the
-        bottleneck is the \textbf{internetwork}, and congestion window will go
-        up and down, never reaching the value corresponding to the receiver's
-        buffer size. The steady state throughput will be $\frac{K\cdot
-        MSS}{2MSS}$.
+    \item \texttt{T-MAX > T-FLOW-CONTROL} \--- when the maximum network
+        throughput is greater than the maximum flow control throughput: in this
+        case, the bottleneck is the \textbf{receiver's capacity}. The steady
+        state throughput will be $\frac{M\cdot MSS}{RTT}$, while its connection
+        opening transient throughput will be half of that value, that is
+        $\frac{M \cdot MSS}{2RTT}$. What happens here is that there is a
+        steady-state with a fixed value due to the flow control algorithm,
+        while before reaching it and during the opening phase the speed
+        increased following congestion control (slow start or congestion
+        avoidance depending on how the slow start threshold has been initially
+        selected);
+    \item \texttt{T-MAX < T-FLOW-CONTROL} \--- when the maximum network
+        throughput is lower than the maximum flow control throughput: in this
+        other case, the bottleneck is the \textbf{internetwork}, and congestion
+        window will go up and down, never reaching the value corresponding to
+        the receiver's buffer size. The steady state throughput will be
+        $\frac{K\cdot MSS}{2MSS}$. Basically, in this case the flow control
+        never occurs, both receivers will never reach their full speed and the
+        real culprit would be the internetwork.
 \end{itemize}
+
+Since the steady state during congestion control is variable and corresponds to
+half of the actual internetwork speed, reaching a flow control steady state is
+much more desirable, especially when the flow control window size is set
+slightly below the maximum throughput. However, the exact \texttt{T\_MAX} value
+is unknown and varies overtime, therefore it is impossible to reach such an
+ideal scenario.
+
+
+\subsection{Congestion control variants}
 
 Many variants of Congestion control have been developed. In particolar, there
 are many families for different use-cases:
@@ -1586,27 +1617,79 @@ are many families for different use-cases:
         connections (e.g. backbones), with \emph{high bandwidth-delay product}.
 \end{description}
 
+The latter is the case of \emph{backbones}, with very-high bandwidth-delay
+product \--- those are all the networks that, if TCP is left as default, will
+lead to several minutes of connection start and gigabytes of data exchanged for
+the sole goal of bringing the connection to full-speed! In order to optimize
+them, several variants of TCP have been developed.
 
-The latter is the case of backbones, with very-high bandwidth-delay product
-\--- those are all the networks that, if TCP is left as default, will lead to
-several minutes of connection start and gigabytes of data exchanged for the
-sole goal of bringing the connection to full-speed. In order to optimize them,
-several variants of TCP have been developed.
+As an example, suppose a sustainable throughput $T_{MAX} = K \cdot MSS /
+RTT$, and suppose the length of the first initialization period be $t_{init} =
+K \cdot RTT$. Solving in $K$ leads to $$t_{init} = \frac{T_{MAX} \cdot
+RTT^2}{MSS}.$$ By looking at the formula, one recognizes that the initial time
+has a squared dependency over round-trip time, a direct proportionality over
+$T_{MAX}$ and is inversely proportional to MSS. In all connections where both
+RTT and $T_{MAX}$ are large or extremely large, the initialization time could
+become relevant as well as the sheer quantity of the data that is needed (more
+than $3$ minutes of transient, more than 100GB transmitted). For this reason,
+variants of TCP for backbones are mandatory.
 
-Suppose a sustainable throughput is $T_{MAX} = K \cdot MSS / RTT$, and suppose
-the length of the first initialization period be $t_{init} = K \cdot RTT$.
-Solving in $K$ leads to $$t_{init} = \frac{T_{MAX} \cdot RTT^2}{MSS}.$$ By
-looking at the formula, one recognizes that the initial time has a squared
-dependency over round-trip time, a direct proportionality over $T_{MAX}$ and is
-inversely proportional to MSS. In all connections where both RTT and $T_{MAX}$
-are large or extremely large, the initialization time could become relevant as
-well as the sheer quantity of the data that is needed (more than $3$ minutes of
-transient, more than 100GB transmitted).
+The following Table~\ref{tab:warmUp} sums up the values for some kinds of
+connections, in the case of congestion control only.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{r|cccc}
+    & \textbf{\makecell{10Mb/s\\ 10ms RTT}} & \textbf{\makecell{10Mb/s\\ 2ms RTT}} & \textbf{\makecell{1Gb/s\\ 10ms RTT}} & \textbf{\makecell{10Gb/s\\ 10ms RTT}} \\
+    \hline
+    \textbf{MSS} & 536B & 536B & 536B & 536B \\
+    \\
+    \textbf{Maximum congWin} & 23 & 5 & 2332 & 23321 \\
+    \\
+    \textbf{\makecell{Congestion control\\ throughput (Mb/s)}} & 5 & 5 & 500 & 5000 \\
+    \\
+    \textbf{Transient} & 0.2s & $\sim$0.0s & 23.3s & 3.9m \\
+    \\
+    \textbf{Transmitted data} & 145.8 KB & 5.8 KB & 1475.6 MB & 145.76 GB
+\end{tabular}
+\caption{Warm up time for different kinds of connections, using the standard
+TCP protocol with a standard congestion control. Notice the sheer number of
+seconds required to warm up a 10-gigabit network and the unsustainable quantity
+of transferred data when adopting the standard TCP protocol.}\label{tab:warmUp}
+\end{table}
+\bigskip
+
+\subsection{Estimating the data exchange time}
+
+Let \texttt{T\_MAX} be known and let $M$ the flow control window size be known
+as well; $B$ bytes should be sent. To estimate the time of the entire data
+exchange, a solution could be to first estimate the maximum number of bytes in
+the transient phase, that is $$N = MSS \cdot [(\frac{M \cdot (M + 1)}{2}) -
+3];$$ if the obtained quantity $N > B$, then the entire data exchange occurs
+under congestion control. Otherwise, a portion $B - N$ of the bytes would fall
+under one of the two possible steady states, depending on the relationship
+between the maximum throughput of the network \texttt{T\_MAX}, and the window
+size $M \cdot MSS$.
+
+Notably, throughput in congestion control cannot be assumed to be exactly
+$\frac{T\_MAX}{2}$ -- in fact, that is the average value over \emph{multiple}
+periods, possibly many of them. In the case of a small value $B$ to delivery,
+one could not have enough periods to assume the average throughput is the half
+of the maximum throughput of the network.
+
+Knowing \texttt{T\_FC} in place of $M$, one can easily find a solution by the
+same means as above. However, one should take in account that in order to
+understand whether the steady state lies in congestion control or in flow
+control, one has to confront the throughputs so that only in the case of
+$T\_MAX < T\_FC$ the steady state occurs under congestion control.
 
 
 \chapter{Connection opening}
 
 \section{Sequence numbers initialization}
+
+Opening a TCP connection surely involves the decision of the starting sequence
+numbers, whose value is not necessarily set to $0$.
 
 Upon connection opening, since they are not set to zero, each of the two sides
 should agree to their initial sequence numbers. The ideal starting point is
@@ -1742,9 +1825,9 @@ initiation can demonstrate its legitimacy.
 
 \chapter{TCP Reliability}
 
-TCP a \emph{reliable} protocol. Reliable only means that data are received, in
-order, and with no duplicates. However, application layer do not know how many
-bytes are received by the other side of the connection. \texttt{send()} may
+TCP is a \emph{reliable} protocol. Reliable only means that data are received, in
+order, and with no duplicates. However, application layer does not know how many
+bytes are received by the other side of the connection. The \texttt{send()} call may
 complete with no error, but no byte could be transmitted \--- no way to know
 how many packages are actually delivered to the other party. Upon an error
 taken during the $n+1$-th send invocation, there is no way to know if previous
@@ -1823,5 +1906,288 @@ Typical threat models involve the following scenarios, in increasing pessimism:
         the software supply chain, e.g.\ libraries, infrastructure.
 \end{itemize}
 
+\part{Attacks}
+
+\section{Attacking an organization}
+
+\subsection{Lateral movement}
+
+\textbf{Lateral movement} is the phase in which an attacker, after having
+obtained access to a single point internal to the organization, performs
+attacks and operation in which tries to access new devices, usually in the same
+privilege sphere that the already attacked device lies. 
+
+Usually, the lateral
+movement phase comes after the attacker gained foothold during the first phase,
+after having guaranteed \textbf{persistence} with related techniques, thanks to
+which the infected device remains so even across restarts and changed
+credentials. 
+
+Also the phase of so\--called \textbf{Command \& Control} is
+relevant prior to lateral movement, allowing an attacker to communicate with
+the system under their control, by usually \emph{mimicking normal traffic} such
+as DNS queries or HTTPS traffic to \emph{avoid detection}. Attacker's location
+in that phase is also \emph{obfuscated}, to prevent to be found out in case of
+detection of fraudulent behavior. Command \& Control phase detection is nearly
+impossible in the case of traffic hidden in DNS queries or HTTPS traffic. 
+
+A technique is the so\--called \emph{DNS Tunneling}, for which any message is
+encoded in a DNS query, by CNAME. This works by performing a \texttt{CNAME} DNS
+request, in which a message is encoded in the subdomain, apparently a legit
+request to a server. The DNS server will reply with another domain, carrying
+the encoded response.
+
+A link had been established between the
+attacker and the device.
+
+\chapter{Categorizing the attacks}
+
+\section{Target categories}
+
+There are three attack categories. The first one is to \emph{organizations},
+the second one is to \emph{Industrial Control Systems}, and the third one
+is against \emph{single individuals}.
+
+\subsection{Attacking Industrial Control Systems}
+
+Attacks on Industrial Control Systems are much less likely than attacks to
+organizations. Industrial Control Systems attacks are typically
+\emph{targeted}, \emph{techniques cannot be used again} and are \emph{harder to
+get money from}. Differently, attacking an organization does not typically
+require tergeted efforts and techniques, and ultimately there are consolidated
+means to obtain money from them.
+
+However, some important remarks should be done. Attacks to Industrial Control
+System are usually motivated by \emph{strategic} and \emph{intelligence}
+reasons. The so--called \emph{state\--backed groups} are fundamentally hired
+by state\--level adversaries whose interests are different from the common
+criminal group. A country or an organization could be interested in \emph{data
+stealing} for tactical or techonological reasons. Another motivation is
+\emph{disruption}, in which the functioning of a strategic industry is
+prevented by means of a cyberattack. In all cases, a huge amount of resources
+is available to attackers, while interests are not related to money.
+
+Typically, an attack to Industrial Control System begins with many months of
+extensive \emph{reconnaissance}, with a very\--carefully crafted \textbf{spear
+phishing} attack which is quite impossible to detect and to prevent. The later
+lateral movement phase is made easier due to the extensive data collection on
+the specific target.
+
+Disruptions happens at the ``digital level'', however they can affect physical
+world as well, such as when an attacker disables critical sensors, deletes all
+data available, prevents working of automation systems, or provokes
+volunitarily damages to the facilities through altering machine--controlled
+mechanisms. State--sponsored disruption can create very high damages across
+target, such as in the case of targeted fuel pipelines, nuclear power plants,
+and military facilities.
+
+
+\subsection{Attacking single individuals}
+
+Attacker is usually interested in affecting and debilitating a single device.
+For this reason, attacks on \textbf{single individuals} follow a rather simple
+pattern when compared to the previous kind of targets: there are the initial
+phases of \emph{initial access}, \emph{execution} and \emph{persistence}, along
+with \emph{Command \& Control}, however there immediately comes the
+\textbf{impact} phase. No \emph{discovery} and no \emph{lateral movement} are
+usually adopted, much frequently for a reason of costs.
+
+Impact comes through adoption of \emph{ransomwares}, \emph{exfiltration}, and
+\emph{disruption of operations}. Especially the first one is employed to
+directly ask for money to the individual.
+
+In fact, regarding attacks related to a single individual the most frequent
+motivation is \textbf{money}. Single individuals category of attacks is
+\textbf{never targeted} -- the attacker employs techinques crafted for a category
+of devices, and puts into effect the attack to as many targets as possible.
+Each target can yield little money with respect to attacking a single
+enterprise, however the sheer number of affected users can quickly lead to huge
+amounts of money.
+
+Attacks to individuals are usually \textbf{automated}. First, it is much
+simpler to create a tool that is effective in attacking a single individual
+than creating a tool that is effective in attacking a large organization. Since
+there is no need for lateral movement, discovery phase, and it is much easier
+to just adopt a ransomware, it is much quicker to build automated tools for
+compromising a device, encrypt all the data and ask for money. The only way for
+an attacker to make those attacks \emph{economically viable} is to use
+automation as the fundamental technique, for each target will yield only a small
+economic gain.
+
+\section{Attack categories}
+
+An ideal set of attacks represents all possible categorization of attacks.
+Partitioning this set can be done in many ways -- one of them is due to
+\emph{Steve Bellovin}, who categorized attacks in \textbf{$4$ classes}:
+\begin{itemize}
+    \item \textbf{targeted} attacks;
+    \item \textbf{not targeted} attacks;
+\end{itemize}
+
+\subsection{Targeted attacks}
+
+\textbf{Targeted attacks} are all those attacks in which one \emph{selects} a
+target, \emph{collects information} on the target, and only then
+\emph{executes} the attack.
+
+Targeted attacks are very hard to automate (is possible) and may be lengthy or
+costly, depending on the target in question. To justify the huge investment,
+expected gain should be high enough.
+
+For these reasons, targeted attacks possess low likelyhood, and usually single
+individuals have no reason to think they should be targeted by this kind of
+threat. Targeted attacks are relevant to organizations, ICS, nations, and many
+other kinds of large organizations.
+
+\subsection{Not targeted attacks}
+
+\textbf{Not targeted attacks} are attacks in which there is no unique target:
+one \emph{selects} a target, \emph{collects information}, then \emph{executes
+attack}; however, \emph{if the attack becomes too difficult, then target is
+quickly changed}. Since money is the most frequent motivation, a
+cost--effectice target should be chosen. Any attacker will simply look for the
+low--hanging fruit: \emph{who pays is irrelevant}, as long as it pays a proper
+amount of money.
+
+Since not targeted attacks yield money and quickly, they are very frequently
+adopted.
+
+Not targeted attacks can be inflicted to individual users as well.
+In those cases, attacker will construct a tool that can execute an
+\emph{automated} attack, choose a large set of \emph{almost random targets},
+and attempt to use the tool on as many targets as possible. This kind of attack
+is very cost--effective: one initial investment could quickly and effectively
+lead to many gain opportunities, with even a very small expected gain
+per--garget that could justify the time and money spent for crafting the
+attack. Users are chosen according to vulnerabilities in their operating
+system, applications, websites of choice.
+
+Not targeted attacks are usually feasible against single users, a lot
+less against organizations (automated attacks have less effect on
+organizations). Attacking organization is more costly, but yield much more
+money per--target.
+
+\bigskip
+
+Now, we have partitioned the attack set into two categories, the first one of
+less--frequent, targeted attacks, and the second one of more--frequent,
+non--targeted attacks.
+
+The other relevant way to categorize the attack is according to the
+\textbf{skills} of the attacker and their \textbf{amount of resources}.
+
+\subsection{High--skilled attacks}
+
+Skilled people with lot of time and resources will produce attacks belonging to
+this category. High--skilled attackers are capable of attacking a \emph{broad
+range} of systems, employing a lot of \emph{manual} and \emph{stealthy}
+operations required to target highly--valuable people and organizations.
+
+\subsection{Low--skilled attacks}
+
+Low--skilled attackers with little to none resources will craft automated tools
+with one--shot usage. They are tailored to \emph{specific} and \emph{common}
+systems with vulnerabilities, and they usually affect only a very specific set
+of systems.
+
+\subsection{The Threat Matrix}
+
+The \textbf{Threat Matrix} arranges all possible $4$ categories in a matrix:
+\begin{enumerate}
+    \item the \textbf{opportunistic} (\emph{non--targeted}, \emph{high--skill})
+        attacks. Opportunistic category usually targets organizations and looks
+        for \emph{money}. Attacks in this category are rather frequent. An
+        opportunistic attacker will simply switch the target the moment he
+        realizes it is too hard to compromise the security of an organization,
+        and will look for better opportunities (the low--hanging fruits). The
+        most representative attackers belonging to this category are
+        \emph{crime groups};
+    \item the \textbf{Advanced Persistent Threat (APT)} (\emph{targeted},
+        \emph{high--skill}) attacks. Attacks belonging to this category are
+        performed by \emph{state--sponsored groups}, \emph{national
+        intelligence agencies} and are backed by a lot of resources. The
+        targeted attack is usually motivated by \emph{information stealing} and
+        \emph{disruption}, with less frequent attacks. Persistence of these
+        attacks lies on the fact that the attack is very interested in
+        compromising the target, not stopping after the first unsuccessfull
+        attempts;
+    \item the \textbf{low--skilled}, \textbf{non--targeted} attacks. Those
+        attacks are motivated by money, and are always automated. The low
+        investment involved means that a lot of potential attackers can exist
+        and employ the necessary skills to perform these attacks;
+    \item the \textbf{low--skilled}, \textbf{targeted} attacks. This category
+        is not very interesting due to the low skill and few resources
+        involved, and no attacker with rational behavior exists in this
+        category.
+\end{enumerate}
+
+From a defender's point of view, \textbf{low--skill attacks} are very frequent
+and practically unavoidable: for this reason, these kind of attacks
+\textbf{must be addressed} by basic security hygiene, which usually suffices to
+defend against these attacks. Those attacks are uneffective against system
+updates, basic controls, an enough careful user.
+
+By far, the most dangerous category is the \textbf{high--skill},
+\textbf{non--targeted} attacks. These attacks are relatively frequent, and it
+is \emph{very} unlikely that the defender's resources exceed those of the
+attacker -- this means that the attacker will \emph{almost always} surpass the
+capabilities of a defender, especially because the defender's focus is not
+defense. Moreover, costs are \textbf{highly asymmetrical}: the attacker
+may concentrate his efforts on a few points in a few moments, while any
+defender must defend \emph{everything} and \emph{always}. For this reason, even
+with comparable resources, the attacker is almost certain to win. An attacker
+that believes the target is too difficult will simply switch to another one
+until it finds a low--hanging fruit.
+
+As an example of this asymmetry, just consider an enterprise having hundreds of
+personal computers or notebooks, end--of--life web frameworks, network
+printers, webcams, heating and cooling systems\dots While an attacker simply
+has a few computers, network resources, probably a botnet at their disposal
+(much cheaper)!
+
+It is evident that the attacker almost always has the advantage over the
+defender.
+
+The most effective and most rational behavior for a defender towards
+opportunistic attacks is to \emph{encourage the attacker to change target}.
+Penetration should be \emph{expensive}, defense must (at least) \emph{appear}
+good, and many techniques such as \textbf{defense in depth} can be employed to
+implement \emph{multiple independent layers}. Another technique is to prevent
+workstations to communicate each other, making lateral movement close to
+impossible, convincing the attacker to switch to another, easier, target.
+
+As a golden rule for defensive choice, \emph{for every dollar spent in a
+defensive mechanism, an attacker is forced to spend much more than a dollar}.
+The cost of the tool should force the attacker to spend much more to overcome
+the tool. Examples of defensive mechanisms belonging to this category are
+\emph{HTTPS}, \emph{HTTP Strict Transport Security}, properly configured
+\emph{endpoint firewalls}, and many other.
+
+In the last attack category, \textbf{Advanced Persistent Threat}, the attacker
+usually has more resources than the defender.
+
+The most rational behavior for a defender is to just ``cross the fingers'' and
+hope the APT attack will never come. A strong focus on opportunistic category
+of attacks should instead be enforced.
+
+\chapter{Botnets}
+
+A \textbf{bot} is a device with a \emph{stealthy} and
+\emph{remotely--controlled} malware running on it. A very large set of bots is
+said to be a \textbf{botnet}, whose components are collectively controlled by a
+single entity, called the \textbf{botnet master}. Usually, a botnet master is a
+criminal group.
+
+To survive, a botnet needs a dedicated Command \& Control network. A botnet is
+extremely relevant in practice -- as of today there are several botnets around
+the world, resulting in many problems.
+
+A botnet is usually created by implanting malware by \emph{automated} and
+\emph{not--targeted}, very cheap, attacks, to a lot of devices, making them
+bots. Devices can involve single individual devices (smartphones, home routers,
+PCs) or within an organization (PCs, workstations, printers, routers). Some of
+the largest botnets nowadays are solely composed of home routers.
+
+Botnets usually exist for \emph{money} reasons.
 
 \end{document}
