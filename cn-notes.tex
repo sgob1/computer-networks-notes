@@ -1,15 +1,16 @@
-\documentclass[10pt]{book}
+\documentclass[10pt]{extbook}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-%\usepackage[document]{ragged2e}
+\usepackage[document]{ragged2e}
 \usepackage{microtype}
-%\usepackage{notomath}
-\usepackage[libertine]{newtxmath}
-\usepackage{XCharter}
+\usepackage{mlmodern}
+%\usepackage[bitstream-charter]{mathdesign}
+%\usepackage{scholax}
+%\usepackage{XCharter}
 %\usepackage{CharisSIL}
 %\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
 %\usepackage[p]{scholax}
-%\usepackage[default,regular,bold]{sourceserifpro}
+\usepackage[default,regular,bold]{sourceserifpro}
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
@@ -75,6 +76,17 @@
 %\author{Marco Sgobino}
 %\maketitle
 \tableofcontents
+
+\setsansfont{Source Serif 4 Display}
+
+\titleformat{\part}[display]
+{\Huge\bfseries\sffamily}{}{0pt}{\center{ Part \thepart\ \ \\ \ \ }}
+\titleformat{\chapter}[display]
+{\Huge\bfseries\sffamily}{}{0pt}{Chapter \thechapter\\\bigskip}
+\titleformat{\section}[display]
+{\LARGE\bfseries\sffamily}{}{0pt}{\medskip\thesection\ \ \ \ \ }
+\titleformat{\subsection}[display]
+{\Large\bfseries\sffamily}{}{0pt}{\medskip\thesubsection\ \ \ \ \ }
 
 \part{Transmission Control Protocol internals}
 
@@ -1683,23 +1695,99 @@ understand whether the steady state lies in congestion control or in flow
 control, one has to confront the throughputs so that only in the case of
 $T\_MAX < T\_FC$ the steady state occurs under congestion control.
 
+\section{Reliability of TCP}
 
-\chapter{Connection opening}
+TCP is a \textbf{reliable} protocol. The reliability in TCP only means that
+exchanged data are received, in order, and with no duplicates.
+
+A common misconception about TCP is that the \texttt{send()} system call
+provides both delivery and reliability. Unfortunately, the \texttt{send()} call
+only guarantees that the data has been handed to the underlying operating
+system, without being able to tell whether the data has been successfully
+delivered or not. In order to do so and achieve reliability, the application
+must ask for data by invoking \texttt{receive()} -- the \texttt{receive()} call
+will check whether there is a segment with a correct \texttt{ACK} or not.
+
+Application layer invoking \texttt{send()} does not know how many bytes are
+received by the other side of the connection. The \texttt{send()} call may
+complete with no error, but no byte could have been transmitted \--- there is
+no way to know how many packages are actually delivered to the other party.
+
+Suppose the \texttt{send()} invocation ends with an error message.
+Upon an error taken during the $n+1$-th send invocation, there is no way to
+know if previous messages were actually delivered or not. Despite TCP being
+reliable, there is \textbf{no guarantee} that messages up to $n$-th were
+delivered and transmitted, since the error message for \texttt{send()} call
+simply means there have been a failure in the TCP protocol, and data cannot be
+handed over to the operating system.
+
+The correct reasoning is that all bytes \emph{up to} $k$ are correctly
+delivered, but one cannot know the exact value of $k$. 
+
+Regarding bytes delivered to the application level at the other end, bytes were
+received by TCP layer up to $k$ but probably $k - k'$ bytes \emph{are still to
+be delivered to the application}. This means only a portion of them, $k'$, have
+been delivered. Both $k$ and $k'$ are \emph{unknown}.
+
+Hence, there is no exact possible reasoning on TCP when it comes to a
+\texttt{send()} invocation, since application should call \texttt{receive()}
+instead to be sure all the data up to $k$ has ben received.
+
+Only after \emph{receive} call, with all ACK correctly received, one can be
+sure that all previous data have been successfully delivered. 
+
+Upon \texttt{receive()} or \texttt{send()} error, one \emph{cannot tell
+anything about the previous \texttt{send()} invocations up to that
+\texttt{receive()} call}, since there is no clue whether the packet has been
+received correctly or not.
+
+Any of these scenarios might be the reason for a \texttt{send()} failure:
+\begin{itemize}
+    \item \emph{not received}: packet never received by the partner;
+    \item \emph{not delivered}: packet arrived, but partner crashed before
+        reply;
+    \item \emph{delivered}: packet delivered, but not reaching, connection is
+        broken.
+\end{itemize}
+
+All these scenarios must be handled differently and correctly. Response to
+failure should always be a correct failure handling and proper recovery from
+damage, no matter its kind. Typical examples of error handling are:
+\begin{enumerate}
+	\item first, take an error;
+    \item repeat the message;
+    \item wait some time;
+    \item send request again;
+    \item do until receiving a response.
+\end{enumerate}
+
+However, this approach is often wrong. In fact, the party is repeating the same
+request over and over, possibly producing an effect multiple times.
+
+When dealing with financial transactions, same requests can be performed
+multiple times, and lead to catastrofic errors and wrong operations. Only read
+operations can be handled this way effectively.
+
+
+\chapter{Opening a TCP connection}
 
 \section{Sequence numbers initialization}
 
-Opening a TCP connection surely involves the decision of the starting sequence
-numbers, whose value is not necessarily set to $0$.
+Opening a TCP connection involves the decision of the \textbf{starting sequence
+numbers}, whose value is not necessarily set to $0$.
 
 Upon connection opening, since they are not set to zero, each of the two sides
 should agree to their initial sequence numbers. The ideal starting point is
-that every \emph{snd} pointer should be set to the same value, as well as the
-other party's \texttt{rcv} buffer. A first idea could be to simply send initial
+that every \texttt{snd} pointer should be set to the same value, as well as the
+other party's \texttt{rcv} buffer. 
+
+A first idea could be to simply send initial
 segments in which \texttt{snd.Next} are specified in header. Special segments
-carry a flag that denotes a connection request (from the client) and `ok' (from
-the server). Both parties will set their initial \texttt{rcv} pointers to the
-value read in the header from the other party. In reality, this first
-implementation has many issues:
+could carry a flag that denotes a connection request (from the client) and \texttt{OK}
+(from the server). Both parties will set their initial \texttt{rcv} pointers
+accordingly to the value read in the header from the other party. 
+
+In reality, this first implementation suffers from many issues:
 \begin{itemize}
     \item delayed duplicates from client may be received after a long time \---
         the server might uncorrectly believe another connection request is
@@ -1707,28 +1795,37 @@ implementation has many issues:
         connection will be opened only in case the previous one has been
         closed);
     \item delayed duplicates from server may be received after a long time \---
-        this way, an opening with wrong sequence numbers may occur.
+        this way, an opening with wrong sequence numbers may occur. In fact,
+        suppose a server initial \texttt{snd.Next} number is equal to $63$ and
+        sent via a delayed segment. Now, if the server has sent another segment
+        (which has not been delayed) with, let's say, \texttt{snd.Next} equal
+        to $91$, the client would believe the server has chosen $91$ as the
+        starting sequence number. This is not correct, indeed.
 \end{itemize}
 
 The solution to the above problems, in which delayed packets may be
-undistinguishable from not delayed ones: the ``\emph{cross your finigers}''
-approach. The machines \emph{assume} that a predefined, maximum segment
-lifetime exist \--- segments cannot exist after this supposed lifetime. Since
-the assumption does not match reality, the algorithm execution does not provide
-any guarantees. The lifetime in question is named \textbf{Maximum Segment
-Lifetime (MSL)}, and it is arbitrarily set to $2 min$ ($120s$). After such MSL
-time passed, the machine assumes that the segment will never reach it. This is,
-in reality, wrong: IP do not have concept of time, and packets are discarded
-only based off their number of \emph{hops}. 
+undistinguishable from not delayed ones, is the ``\emph{cross your fingers}''
+approach. Both machines \emph{assume} that a predefined, \emph{maximum segment
+lifetime} exist, after which segments cannot exist. 
+
+ The lifetime in question is named \textbf{Maximum Segment Lifetime (MSL)}, and
+ it is arbitrarily set to $2 min$ ($120s$). After such MSL time passed, the
+ machine simply assumes that the missing segment will never reach it. This is,
+ in reality, wrong: IP do not have concept of \emph{time}, and packets are
+ discarded only based off their number of \emph{hops}. Since the assumption
+ does not match reality, the algorithm execution does not provide any
+ guarantees --- it does, however, guarantee that no wrong duplicates may
+ possibly reach the other endpoint.
+
 
 \subsection{The three-way handshake protocol}
 
 The sequence numbers are generated by the \textbf{ISN-generator} (initial
 sequence number generator), a $32$-bit counter increased every $4\mu s$, even
-when the node is switched off. Overflow will happen every 4-5 hours. The
-generator is used to generate an initial sequence number from its current
-value. A sequence number can used again at least after $4$ hours.
-
+when the connection is switched off. Overflow will eventually happen every $4$ to $5$
+hours. The generator is used to generate an initial sequence number from its
+current value; a sequence number can be used again after at least $4$ hours,
+after the ISN-generator will overflow.
 \begin{figure}[b]
     \centering
     \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/tcp/threeWayHandshake.png}
@@ -1736,31 +1833,48 @@ value. A sequence number can used again at least after $4$ hours.
     \label{fig:threeWayHandshake}
 \end{figure}
 
-
+Upon connection opening, the initial sequence number will be obtained by
+querying the ISN-generator.
 
 The three-way handshake protocol (Figure~\ref{fig:threeWayHandshake} will begin
-with sequence number initialization, from the ISN-generator (suppose it's $x$),
-and send a SYN(seq=x)\footnote{SYN bit is a flag in TCP header that is always
-zero, except in the first and second segments, and it is used only for
-requesting connections.} packet to the server. The latter will answer with a
-package such as SYN(SEQ=y, ACK=x+1). The client will then respond with a second
-message, containing data and having sequence and acknowledgement numbers
-(SEQ=x+1, ACK=y+1); now, connection has been established and both parties will
-assume the connection is successfully opened. The client side will be sure that
-no delayed duplicates are coming since $x$ should have come from a connection
-which has been opened more than $4$ hours ago! The same reasoning happens from
-the server side: any delayed duplicate should have been traveling for more than
-$4$ hours. This protocol even protects in the case old duplicates are received:
-that case, the other party will receive a wrong packet \--- for something they
-did not request at all \--- and respond with a REJECT packet\footnote{RST is a
-header flag as well as SYN, and it is used only to reject connections.}. The
-client will respond with a REJECT(ACK=y).
+with sequence number initialization, whose value has been obtained from the
+ISN-generator (suppose it's $x$), and send a \texttt{SYN(seq=x)}\footnote{SYN bit is a
+flag in TCP header that is always zero, except in the first and second
+segments, and it is used only for requesting connections.} packet to the
+server. The latter will answer with a package such as \texttt{SYN(SEQ=y,
+ACK=x+1)}, signaling both server's initial sequence number and that it has been
+acknowledged bytes up to $x$, and it is ready to receive the next (actually the
+first) byte.
 
-A very unlucky case is where the server receives two delayed duplicates,
-however, there is little to no chance that the ACK values are correct (and, in
-that case, it would have traveled for more than $4$ hours, much more than MSL
-value of 2 minutes). The same goes if the server receives a REJECT (it cannot
-be a duplicate). The mechanism is shown in Figure~\ref{fig:threeWHduplicates}.
+The client will then respond with a second
+message, containing data and having sequence and acknowledgement numbers
+\texttt{(SEQ=x+1, ACK=y+1)}, showing that it is ready to receive the first byte
+after $y$ as well; now, connection has been established and both parties will
+assume the connection is successfully opened. 
+
+The client side will be sure that no delayed duplicates are coming, otherwise
+$x$ would have come from a connection which has been opened more than $4$ hours
+ago! The same reasoning happens from the server side: any delayed duplicate
+should have been traveling for more than $4$ hours, which is almost impossible
+to happen. 
+
+This protocol even protects in the case \emph{old duplicates} are delivered to
+a server: in that case, the server will open a connection since the request looks legitimate. However, when the client receives the packet from the server \--- for
+something they did not request at all \--- it will respond with a
+\texttt{REJECT} packet\footnote{\texttt{RST} is a header flag as well as
+\texttt{SYN}, and it is used only to reject connections.}. The server will
+finally answer with a \texttt{REJECT(ACK=y+1)} to signal it has correctly
+acknowledged the request to close the connection.
+
+A very unlucky case is where the server receives two delayed duplicates, one
+coming to open a connection and the other one just after the server sent its
+\texttt{ACK}; however, there is little to no chance that the ACK values are
+correct (and, in that case, it would have traveled for more than $4$ hours,
+much more than MSL value of 2 minutes). In fact, in those cases, rogue packets
+from a client would contain \texttt{CR(seq = x)} and \texttt{DATA(seq=x+1,
+ack=z)}, with the server expecting an acknowledged sequence number \texttt{y}.
+The same goes if the server receives a \texttt{REJECT} (it cannot be a
+duplicate). The mechanism is shown in Figure~\ref{fig:threeWHduplicates}.
 
 \begin{figure}[b]
     \centering
@@ -1773,21 +1887,25 @@ preventing the server to waste resources with no reason.}
 
 
 
-RST segments are send in two cases,
+As we have already said, \texttt{RST} flags are used to reset a connection, or
+close an unwanted one. \texttt{RST} segments should be sent in two cases,
 \begin{itemize}
-	\item unexpected rcv-seqnum in 3-way handshake;
+    \item unexpected \texttt{rcv-seqnum} in 3-way handshake;
     \item received segment for closed connection;
 \end{itemize}
-in those cases, send a RST segment with seqnum expected by peer.
+and in those cases, the \texttt{RST} segment is sent with the sequence number that is
+expected by the peer.
 
-In case the RST packet is legit (that is, when it carries the sequence number
+In case the \texttt{RST} packet is legit (that is, when it carries the sequence number
 the machine expects), then \textbf{close} the connection and \textbf{ignore}
-rcv-segment.
+\texttt{rcv-segment}.
 
 \section{Interface between 3-way handshake and application layer}
 
-Application layer just requests opening a connection. The TCP layer will handle
-the connection opening with appropriate system calls. The system calls in sequence are
+To open a connection, application layer just requests TCP to open a connection.
+The TCP layer will handle the connection opening with the appropriate system
+calls, with the protocol as described above.
+The system calls in sequence are
 
 \begin{itemize}
 	\item \texttt{socket};
@@ -1796,77 +1914,46 @@ the connection opening with appropriate system calls. The system calls in sequen
     \item \texttt{accept}.
 \end{itemize}
 
-System call listen has a \emph{num} in argument that tells \emph{how many
-connections can be queued}, that is, the number of incoming SYN segments that
-should be queued. Until listen call, no connection can be opened and the server
-will respond with RST. Up to \emph{num} SYN segments can be accepted at the
-same time \emph{before} invocation of accept and delivery of SYN-ACK packages.
-Closing a connection happens with FIN flag. It is handled the same way as SYN
-is, and where one party wants to close connection, sets FIN flag to $1$ and the
-other party will respond with a FIN flag to $1$ as well.
+System call \emph{listen} has a \emph{num} in argument that tells \emph{how many
+connections can be queued}, that is, the number of incoming \texttt{SYN} segments that
+should be queued before opening connections. Until \texttt{listen} call has
+been invoked, no connection can be opened and the server will respond with
+\texttt{RST}. Up to \emph{num} \texttt{SYN} segments can be accepted at the
+same time \emph{before} invocation of accept and delivery of \texttt{SYN-ACK}
+packages. For instance, if \texttt{num=5}, the server will wait for $5$
+connection requests before actually answering to the client and opening the
+connections.
+
+Closing a connection is done with the \texttt{FIN} flag. It is handled the same
+way as \texttt{SYN} is, and where one party wants to close connection, sets
+\texttt{FIN} flag to $1$ and the other party will respond with a \texttt{FIN}
+flag to $1$ as well.
 
 This protocol can be abused to block a server with little to no effort. Attacks
 whose goal is to prevent the target working are called \textbf{Denial of
 Service} attack. An example of DoS attack is the \textbf{SYN-flood} attack.
-SYN-flood attacks are very hard to detect and very cheap to operate. The idea
-is to keep sending SYN segments so that server queue \emph{is always full}: the
-effect will be that legitimate SYN requests from legitimate clients will be
-discarded. Some variants even hide the IP-src by modifying it, in order to hide
-attack origin. SYN-ACKs responses will be delivered to (fake) IP-src address.
-Randomly forging IP-src addresses makes almost impossible to filter them out
-with a firewall. SYN-flood attacks are cheap: for $128$ opened connections
-every $3$ minutes, only $128\cdot 40 = 5120B every 180s = 228 bps$ bytes are
-needed to the attacker to forge necessary packets. To forge $1280$ connections,
-$1280\cdot 40 = 51200B every 3 m = 6826bps.$ A small cost of sending a packet
-causes the listener to force a listening to a connection, a \textbf{much}
-higher cost. By designing a new protocol, one would likely avoid spending
-resources upon the first SYN, by operating \emph{statelessly} until the
-initiation can demonstrate its legitimacy.
 
-\chapter{TCP Reliability}
+The idea is to keep sending \texttt{SYN} segments so that server queue \emph{is
+always full}: the effect will be that legitimate \texttt{SYN} requests from
+legitimate clients will be discarded. Some variants even hide the
+\texttt{IP-src} by modifying it, in order to hide attack origin. This way, it
+is impossible for a defender to prevent the SYN-flood by blacklisting IP
+addresses. Moreover, \texttt{SYN-ACK}s responses will be delivered to (fake)
+IP-src address.
 
-TCP is a \emph{reliable} protocol. Reliable only means that data are received, in
-order, and with no duplicates. However, application layer does not know how many
-bytes are received by the other side of the connection. The \texttt{send()} call may
-complete with no error, but no byte could be transmitted \--- no way to know
-how many packages are actually delivered to the other party. Upon an error
-taken during the $n+1$-th send invocation, there is no way to know if previous
-messages were actually delivered or not. Despite TCP being reliable, there is
-\textbf{no guarantee} that messages up to $n$-th were delivered and
-transmitted. FIXME-6
+SYN-flood attacks are very hard to detect and very cheap to operate.
+Indeed, randomly forging \texttt{IP-src} addresses makes almost impossible to
+filter them out with a firewall. SYN-flood attacks are also cheap: for $128$
+opened connections every $3$ minutes, only $128\cdot 40 = 5120B \mbox{ every }
+180s = 228 bps$ bytes are needed to the attacker to forge necessary packets. To
+forge $1280$ connections, $1280\cdot 40 = 51200B \mbox{ every } 3 m = 6826bps.$
+A small cost of sending a packet causes the listener to force a listening to a
+connection, a \textbf{much} higher cost. 
 
-The correct reasoning is that all bytes \emph{up to} $k$ are correctly
-delivered, but one cannot know exact $k$ value. Regarding bytes delivered to
-the application level at the other end, bytes were received by TCP layer up to
-$k$ but probably $k - k'$ bytes \emph{are still to be delivered to the
-application}. Only a portion of them, $k'$, have been delivered. Both $k$ and
-$k'$ are \emph{unknown}. Only after \emph{receive} call, with all ACK correctly
-received, one is sure that all previous data have been successfully delivered.
-Upon receive error, one \textbf{cannot tell anything about the previous send
-invocation}, since there is no clue that the packet has been received correctly
-or not. Any of these scenarios might be the reason:
-\begin{itemize}
-    \item \emph{not received}: packet never received by the partner;
-    \item \emph{not delivered}: packet arrived, but partner crashed before
-        reply;
-    \item \emph{delivered}: but not reaching, connection broke.
-\end{itemize}
-
-All these scenarios must be handled differently and correctly. Response to
-failure should always be a correct failure handling and proper recovery from
-damage, no matter the kind of it. Typical examples of error handling are:
-\begin{enumerate}
-	\item take an error;
-    \item repeat;
-    \item wait some time;
-    \item send request again;
-    \item until receiving a response.
-\end{enumerate}
-
-However, this approach is wrong, especially when dealing with financial
-transactions, where same requests, multiple times, can lead to catastrofic
-errors and wrong operations. Only read operations can be handled this way
-effectively.
+By designing a new protocol, one would likely avoid spending resources upon the
+first \texttt{SYN}, by operating \emph{statelessly} until the initiation can
+demonstrate its legitimacy. However, a new protocol is almost impossible to
+design, since existing network architectures cannot simply be replaced.
 
 
 
@@ -1874,37 +1961,217 @@ effectively.
 
 \chapter{Understanding threat model}
 
-TCP offers no authentication. It means that if in DNS the address has been
-maliciously altered, a connection can be opened to the attacker's service
-rather than to the legitimate one. Network attacker may be in control of the
-router \--- he may switch DNS request and respond with fake responses. TCP
-offers no integrity either. A network attacker might change what the machine
-sends and receives \--- a communication may be altered by an entity that acts
-in between the parties. An improved version of TCP, \textbf{TLS}, is available.
-It acts on top of TCP and uses cryptography to protect integrity and offer
-authentication.
+TCP offers \textbf{no authentication mechanism}. It means that if, for example, the
+address has been maliciously altered in DNS, a connection can be opened to the
+attacker's service rather than to the legitimate one and the client would not
+notice the difference. Network attacker may be in control of the router, too
+\--- he might be capable of switching DNS requests and respond with fake
+responses.
 
-Suppose now the client has been infected by malware \--- attacker can control
-the client's behavior from remote, for example modifying web pages, opening
-connections, attempting priviledge escalation. In this case, TLS does not
-guarantee secrecy, integrity, authentication. 
+TCP offers \textbf{no integrity mechanism} either. A network attacker might
+change what the machine sends and receives \--- a communication may be altered
+by an entity that acts in between the two legitimate parties. Fortunately, an
+improved version of TCP, \textbf{TLS (Transport Layer Security)}, is available.
+It works by acting on top of TCP, and uses \emph{cryptography} to provide
+integrity to protect the message and offers a strong authentication mechanism.
 
-Basically, it depends on \textbf{threat model}. The threat model is the set of
-actions that we assume the attacker can execute. Reasoning about security of a
-system without a well-posed threat model makes no sense.
+However, TSL can still be compromised: Suppose in fact the client has been
+infected by a \emph{malware}\footnote{A \emph{malware} is a malicious software,
+secretly installed by the attacker and against the user's consent, to perform
+ill--intentioned behavior} --- then the attacker can control the client's
+behavior from remote, for example modifying web pages, opening connections,
+attempting privilege escalation\footnote{\emph{Privilege escalation} is a
+technique in which an attacker that has gained unprivileged access to the
+machine tries to obtain super--privileged access by means of exploits,
+vulnerabilities and by other techniques. For instance, an attacker could try to
+obtain \emph{root access} and root privileges to perform anything he wants on
+the machine.} on the machine. In this case, TLS does not guarantee secrecy,
+integrity, authentication.
+
+An crucial question arises: \emph{is then TLS vulnerable and therefore pointless?}
+
+Basically, it all depends on \textbf{threat model}. A threat model is the set
+of actions that \emph{we assume the attacker can execute}. One makes an
+\emph{hypothesis} on the set of attacks that are possible, and then it reasons
+accordingly. In fact, reasoning about security of a system without a well-posed
+threat model makes no sense at all, because an attacker that doesn't have a
+predefined set of attacks and can do anything is an attacker it is impossible
+to defend against. That said, a \emph{real attacker} may not be confined in a
+single, limited, threat model, because it both may be modeled unaccurately and
+it may be unpredictable.
+
+An important remark is that all protections in software are designed with a
+specified threat model in mind. They do not work outside their threat model
+which they are based on, and for this reason software should be chosen
+accordingly. Both protections and possible kinds of attackers are important to
+be established before acting, in order to minimize expenses, maximize defense
+capabilities, and increase the chance an attacker is successfully repelled.
+
+Important questions when dealing with attackers are the following ones, 
+
+\bigskip
+\setsansfont{Source Sans 3}
+\begin{quote}
+\begin{center}
+    \sffamily {What's the \emph{threat model} for that specific attack technique?
+
+\bigskip
+    What's the \emph{least pessimism} required in order to execute an attack?
+
+\bigskip
+    What's the \emph{best software} in terms of \emph{cost}, \emph{defensive
+    capabilities} and \emph{chance to be attacked} that should be used to
+defend to a given attack?}
+\end{center}
+\end{quote}
+\bigskip
+\setsansfont{Source Serif 4 Display}
 
 Typical threat models involve the following scenarios, in increasing pessimism:
 \begin{itemize}
-    \item \textbf{Network attacker} \--- attacker can only operate in the
-        network. He is able to observe and communicate. DoS and MITM attacks
-        are usually what a network attacker can do;
-    \item \textbf{Compromised endpoint} \--- attacker has compromised a node in
-        the network with a malware;
-    \item \textbf{Physical access} \--- attacker has physical access to an
-        endpoint;
-    \item \textbf{Insider/Supply chain} \--- attacker has access to portion of
-        the software supply chain, e.g.\ libraries, infrastructure.
+    \item \textbf{Network attacker} \--- the attacker can only operate in the
+        network. He is able to observe and communicate. DoS (Denial of Service)
+        and MITM (Man in the Middle) attacks are usually what a network
+        attacker can do;
+    \item \textbf{Compromised endpoint} \--- the attacker compromised a node in
+        the network with a malware. That node is fully compromised and should be
+        considered not trusted;
+    \item \textbf{Physical access} \--- the attacker obtained physical access to an
+        endpoint. Regardless of the fact a machine is already infected or not,
+        physical access grants much more privileges than the above threat models,
+        for instance it can compromise much more easily an endpoint or can
+        install devices that are physically capable of acting as man in the
+        middle;
+    \item \textbf{Evil maid} \--- a \emph{variant} of both \emph{physical
+        access} and \emph{insider} threat models in which an person that has
+        frequent physical access to a machine is instructed to perform
+        operations on the device. An evil maid has no access on supply chain or
+        organization internals, though;
+    \item \textbf{Insider/Supply chain} \--- this very dangerous attacker has
+        access to portion of the \emph{software supply chain}, for instance it
+        can manipulate software libraries the main software depends on,
+        infrastructure on which the software development occurs, and so on. In
+        the case of the insider, it also has access to the internal
+        communications and is able to actively spy the organization he is into.
 \end{itemize}
+
+The TLS (and by extension, the HTTPS protocol) grants \emph{secrecy},
+\emph{integrity} and \emph{authentication} only for a network attacker--based
+threat model. Outside that model, TLS and HTTPS offer no guarantee of
+protection.
+
+\subsection{Choosing the defenses}
+
+Threat models are also useful to define from which kinds of attacks one should
+defend, from which ones one cannot defend and should act accordingly, and from
+which ones one simply has to ``cross his fingers'' (do nothing).
+
+The first category of attacks should be treated with proper software that
+offers protection against a well--defined threat model. Outside that model, the
+software should be considered useless and the system that it protects is
+compromised and not anymore trusted. This category of attacks is rather
+frequent, doesn't cost too much, and poses immediate danger to the activity of
+the organization. 
+
+The second category, whose best defense is \emph{damage compensation}, is the
+category of attacks that are not very frequent and whose relative defensive
+mechanisms cost too much to be economically viable and sustainable for the
+defending organization. In these cases the organization simply prepares for
+damage mitigation, with strategies such as \emph{data backups}, \emph{backups
+of systems} and by other means.
+
+The third category is both rare and costly. These kinds of attacks are very
+dangerous, but occur extremely rarely. It is therefore rational to simply allow
+this kind of risk to happen, without taking any countermeasure in account.
+
+An crucial remark is that for \emph{choosing the defenses}, it is not important
+\textbf{how} an attacker has managed to operate an attack, and it suffices to
+know the specific threat model and attack set an attacker is able to conduct.
+For \emph{assessing likelihood} of a threat model, in order to decide the
+actions to take, it suffices to know how an attacker has been able to achieve a
+certain attack capability.
+
+In fact, the details on how an attack works and how it is only necessary to
+find and determine the cause of a given vulnerability or exploit.
+
+The first step of a defender should be to determine a threat model by looking
+at how simple is for an attacker to achieve a certain specific attack. The next
+step is to determine the best defenses \emph{given} a threat model.
+
+
+\section{The network attacker threat model}
+
+The \emph{network attacker} threat model is implicitly assumed in this book. A
+network attacker can only operate in the network, by communicating, observing
+and altering existing traffic. An attacker of this kind cannot act on the
+endpoints.
+
+The implicit assumptions are that everything on the endpoints is perfectly
+implemented, operated and maintained -- this means that there are no
+vulnerabilities, no exploits, and no obvious mistakes by the system
+administrator. Software is perfectly maintained as well. No mistakes are
+allowed, no remote code execution, no vulnerability, no mistakes from the
+users, in cryptography, protocols and communication, and operating systems.
+
+These kind of assumptions are important to confine the attacker to the network
+threat model; otherwise, an attacker could be able to infect an endpoint,
+upgrading the threat model to the \emph{compromised endpoint} threat
+model.
+
+The key defensive tool against a network attacker is \textbf{cryptography}.
+Cryptography allows both \emph{secrecy} and \emph{integrity}, and by means of a
+structured trust system it allows \emph{authentication} as well. All of these
+protocols make use of cryptography:
+\begin{itemize}
+    \item TLS and HTTPS;
+    \item Kerberos;
+    \item Windows Active Directory;
+    \item OAuth (SPID);
+    \item SSH;
+    \item IPSec;
+    \item Legally binding digital signature;
+    \item WhatsApp, Signal, Telegram;
+    \item and so on.
+\end{itemize}
+
+Examples of possible attacks a network attacker is capable of are listed below,
+\begin{itemize}
+    \item \textbf{DNS Spoofing} -- a DNS attack in which an attacker modifies
+        the IP address (and the ID in header) contained in the response to a
+        DNS query, in order to hijack a client to an attacker controlled
+        server, and act as man in the middle, or showing a perfect copy of
+        another website. Windows systems are particularly vulnerable to this
+        kind of attack, since by default they prefer any IPv6 server and
+        happily substitute the preconfigured IPv4 server upon a malicious
+        packet containing new instructions arrive;
+    \item \textbf{ARP Spoofing} -- fake responses crafted by an attacker, whose
+        goal is to make a device change its default gateway to an attacker's
+        controlled device, so that it can act as man in the middle. Open WiFi
+        is vulnerable to this kind of attacks;
+    \item \textbf{BGP Spoofing} -- highly--skilled attack in which an attacker
+        manages to alter the routing of the internet, so that it can direct
+        traffic to different places. Border Gateway Protocol messages are not
+        authenticated; Autonomous Systems can claim ownership of any IP
+        address;
+    \item \textbf{Dishonest system administrators} can act as man in the middle;
+    \item \textbf{Judicial authorities} or \textbf{intelligence agencies}
+        possess huge available resources, and can force organizations, internet
+        nodes and system administrator to act as man in the middle.
+\end{itemize}
+
+
+\chapter{Attacking TCP connections}
+
+A legitimate threat model for a TCP connection is the network attacker threat
+model. A network attacker can observe, communicate and alter traffic by acting
+as man in the middle in all communications between two endpoints.
+
+The objective of the first kind of attack we will encounter is the \emph{client
+impersonation} in a TCP connection between a client and a server. The server
+will see the IP of the client at the other end of the communication, whilst
+packets are actually sent and received by the attacker.
+
+There are three possible ways to perform such an attack: MARK slide 3
 
 \part{Attacks}
 
