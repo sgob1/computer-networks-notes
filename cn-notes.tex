@@ -87,14 +87,18 @@
 {\LARGE\bfseries\sffamily}{}{0pt}{\medskip\thesection\ \ \ \ \ }
 \titleformat{\subsection}[display]
 {\Large\bfseries\sffamily}{}{0pt}{\medskip\thesubsection\ \ \ \ \ }
+\titleformat{\subsubsection}[display]
+{\large\bfseries\sffamily}{}{0pt}{}
 
-\part{Transmission Control Protocol internals}
+\part{Security in Networking Protocols}
 
-\chapter{TCP Basis}
+\chapter{Transmission Control Protocol internals}
 
-\section{Recap}
+\section{TCP Basis}
 
-TCP is a procotol that has the following remarkable properties,
+\subsection{Recap}
+
+TCP is a protocol that has the following remarkable properties,
 
 \begin{enumerate}
 	\item it is \emph{connection-oriented}: before transmitting data, a
@@ -132,7 +136,7 @@ Ultimately, TCP allows creating connections between application processes,
 offering multiple services to the upper layers. Connections are possible thanks
 to the four above characteristics of the TCP layer.
 
-\subsection{Sockets}
+\subsubsection{Sockets}
 
 The TCP makes use of \emph{sockets} abstraction as a way of serving data to the
 above application layer. The logical structure is the following one: there are
@@ -206,7 +210,7 @@ send(s2,msg2,...);
 Details of the above code largely depend on the platform on which the server is
 operating.
 
-\section{TCP Implementation}
+\subsection{TCP Implementation}
 
 TCP layer is built \emph{on top} of the IP layer. Since there are many differences
 between TCP and IP, set aside their abstraction layer, TCP should be properly
@@ -271,7 +275,7 @@ required, typically many more than the number of \texttt{send()} commands
 invoked by the application (at least, an number of them equal to the
 \texttt{send()} invocation should be sent).
 
-\subsection{The connection state}
+\subsubsection{The connection state}
 
 TCP takes care of creating \emph{connections} between processes. There would be
 no actual TCP data exchange without an established connection. Connections do
@@ -324,7 +328,7 @@ one packet along the full path, \emph{in order to prevent fragmentation}. In
 fact, by transmitting larger segments one could end up with fragmented
 segments, with no real advantage and many disadvantages.
 
-\subsection{IP and TCP header structure}
+\subsubsection{IP and TCP header structure}
 
 \begin{figure}[h]
     \centering
@@ -475,9 +479,9 @@ structure,
     \item[Options, variable 0–320 bit, in units of 32 bit] Various options.
 \end{description}
 
-\section{TCP Architecture}
+\subsection{TCP Architecture}
 
-\subsection{TCP bears an unpredictable and unrepeatable nature}
+\subsubsection{TCP bears an unpredictable and unrepeatable nature}
 
 TCP carries many different implementations, depending mostly on OS of choice.
 Several variants of its components have been written, with many of them largely
@@ -571,7 +575,7 @@ As we will see in following chapters, the first factor is handled by the
 \textbf{Flow Control} algorithm, while the second one is kept under control by
 the \textbf{Congestion Control} system.
 
-\subsection{How an application asks for data to be transmitted}
+\subsubsection{How an application asks for data to be transmitted}
 
 The system call \texttt{send()} processes the data transmission through the
 network. The \texttt{send} function passes a memory buffer contained in
@@ -609,7 +613,7 @@ wrong and be much more complex due to packet loss and retransmissions. Recall
 that for all these reasons, the exact number is neither predictable nor
 repeatable.
 
-\subsection{Retrieving data from TCP}
+\subsubsection{Retrieving data from TCP}
 
 Data retrieval occurs with another system call, \texttt{receive()}. System call
 \texttt{receive()} is quite similar to the \texttt{send()} call: both
@@ -665,7 +669,7 @@ Now with an example: let a buffer have length equal to $800$ bytes. Suppose
 \end{enumerate}
 
 
-\section{Sequence numbers}
+\subsection{Sequence numbers}
 
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
 in different order from which they were sent). To overcome this huge
@@ -764,7 +768,7 @@ Therefore, the sequence numbers can only go from $0$ to $2^{32} - 1$, so there
 may be \emph{wrap-arounds} in an overflow-like fashion. TCP should internally
 handle these comparisons in a proper manner.
 
-\section{Handling duplicates and loss}
+\subsection{Handling duplicates and loss}
 
 IP is an unreliable protocol. This means that \emph{packets can be loss}.
 Necessary mechanisms are two,
@@ -837,7 +841,7 @@ with no chance of keeping track of actually and successfully delivered
 information.
 
 
-\section{Delayed Acknowledgement}
+\subsection{Delayed Acknowledgement}
 
 \emph{Delayed Acknowledgement} is a notorious TCP algorithm. Its core idea is
 not to answer immediately with an acknowledgement, but to await some arbitrary
@@ -879,7 +883,7 @@ even though there is little to no data received. In fact, a delay time $T$
 assured to save sending some segments, a feature that historically was of a
 crucial importance.
 
-\section{Retransmissions}
+\subsection{Retransmissions}
 
 The connection state includes three more actors, related to
 \emph{retransmission}:
@@ -965,7 +969,7 @@ one OS to another. Linux and Window start from same value, macOS use a
 different value, and so on.
 
 
-\section{Multiple default gateways}
+\subsection{Multiple default gateways}
 
 More default gateways could be added to a single node. Reasons to add more than
 one default gateway all boil down to \emph{failure avoidance}. To know whether a
@@ -998,7 +1002,7 @@ the new gateway.
     \label{fig:timeSequence}
 \end{figure}
 
-\section{Selective Acknowledgements}
+\subsection{Selective Acknowledgements}
 
 Suppose that 4 segments are sent, and the second one has been lost: in this
 case, the receiver got all segments except the second one, but it has
@@ -1037,7 +1041,7 @@ the sender for only missing segments are to be sent.
 To optimize out-of-order gaps, \textbf{Fast retransmit} algorithm should be
 adopted (not part of this course).
 
-\section{Operating System TCP interrupts and the real TCP execution flow}
+\subsection{Operating System TCP interrupts and the real TCP execution flow}
 
 Upon packet arrival, a \emph{system interrupt} is sent. 
 
@@ -1068,7 +1072,7 @@ operating system's load, the other's end capabilities, packet loss,
 send\----receive invocations), there is \textbf{no} single correct way for TCP
 protocol to exchange a given amount of data with another party.
 
-\chapter{Flow and Congestion Control}
+\section{Flow and Congestion Control}
 
 To behave optimally, TCP needs to establish the correct amount of data that
 should be exchanged in an interval of time.
@@ -1125,7 +1129,7 @@ full of data, a number of in-flight bytes equal to the minumum of both
 quantities should be sent, otherwise just send \texttt{snd.User - snd.Ack}
 bytes (those still to send).
 
-\section{Flow control}
+\subsection{Flow control}
 
 Buffers cannot increase indefinitely: boundaries must be set in order to assure
 system stability. In Linux kernel, buffer sizes are set upon compilation and are
@@ -1192,7 +1196,7 @@ the acknowledgement's time to arrive at the original sender's side.}
 \clearpage
 
 
-\section{Performance estimation}
+\subsection{Performance estimation}
 
 From flow control, let's determine the maximum T-IN-TCP (input throughput) that can be obtained.
 TCP is injecting some throughput into the network, and the amount of it is
@@ -1250,7 +1254,7 @@ be \emph{even greater} than maximum network speed, in that case many segments
 would be loss, resulting in a sub-optimal efficiency\footnote{This is solved by
 Congestion control mechanism.}.
 
-\subsection{Establishing size of RX-buffer}
+\subsubsection{Establishing size of RX-buffer}
 
 Size of RX-buffer\marginpar{\small\textsf{Receiver's Buffer Size}} should have the following characteristic: the size should be
 \emph{a multiple of MSS} \--- this is done to avoid leaving unused space at the
@@ -1275,7 +1279,7 @@ pretend it is full and ignore last portion of buffer.
 \end{table}
 \bigskip
 
-\section{Sustainable throughput}
+\subsection{Sustainable throughput}
 
 A sustainable throughput is indeed \textbf{not infinite}. After a certain injected
 throughput \texttt{T\_MAX}, the network bottlenecks and starts losing segments, exhibiting a
@@ -1315,7 +1319,7 @@ can be filled up, resulting in packet discarding. Such discarded packets will
 need a retransmission, leading in even lower performance. New injected segments
 and packets will increase the time for which the queue is dissolved.
 
-\section{Congestion control}
+\subsection{Congestion control}
 
 \textbf{Congestion Control} algorithm takes into account the quality of the
 network, allowing the sender to adapt to it instead of making it collapse.
@@ -1332,7 +1336,7 @@ it depends on nominal throughput of networks and routers, and on
 Basically, the competition in the network is \emph{unpredictable} and
 \emph{time-varying}, allowing no fixed\--value algorithm to work.
 
-\subsection{Actual algorithm}
+\subsubsection{Actual algorithm}
 
 Congestion control algorithm has some important components,
 \begin{enumerate}
@@ -1425,7 +1429,7 @@ linear growth.
 
 
 
-\subsection{Congestion control and maximum throughput of the network}
+\subsubsection{Congestion control and maximum throughput of the network}
 
 What can happen on start?
 
@@ -1477,7 +1481,7 @@ The only way to adapt to this is to adopt an algorithm using a heuristic
 behavior, that tries to adapt to the network as well as avoiding congestion the
 most.
 
-\subsection{Fast retransmit in a nutshell}
+\subsubsection{Fast retransmit in a nutshell}
 
 Suppose $K$ segements are transmitted in a burst, and a single segment among
 them appears to be lost. Resetting the congestion window to its minimum value
@@ -1495,7 +1499,7 @@ missing segment, and decrease the window \emph{but not} to its minimum value
 (that is, the maximum value between 2MSS and half of the current in-flight
 bytes).
 
-\subsection{Avoiding collapse of the network and the concept of fairness}
+\subsubsection{Avoiding collapse of the network and the concept of fairness}
 
 The congestion control slows down the network in order to assure both
 \emph{collapse avoidance} and \emph{fairness}.
@@ -1531,7 +1535,7 @@ that if anyone tries to push as much traffic as possible in the network, no one
 could be able to use the network, not even the same people that are pushing all
 that massive traffic).
 
-\subsection{Estimating the average throughput}
+\subsubsection{Estimating the average throughput}
 
 Some assumptions should be made in order to compute average throughput, given Congestion Control algorithm is running properly:
 \begin{itemize}
@@ -1563,7 +1567,7 @@ Slow start in exponential fashion makes this calculation quite more complex,
 but we will genuinely assume a linear growth in all our calculations, to make
 them simpler.
 
-\subsection{Idle connections}
+\subsubsection{Idle connections}
 
 Another important scenario that has not been disclosed yet is about \emph{not
 transmitting data after many RTTs}, the case of \emph{idle connections}. The
@@ -1577,7 +1581,7 @@ timeout. Basically, by resetting the connection state regarding previously
 achieved speed, the approach tries to be very pessimistic and conservative, in
 order to avoid any kind of congestion in the network.
 
-\section{Interaction between flow control and congestion control}
+\subsection{Interaction between flow control and congestion control}
 
 The interaction between the two TCP control systems is not straightforward.
 After connection opening, the bound imposed by congestion control is
@@ -1617,7 +1621,7 @@ is unknown and varies overtime, therefore it is impossible to reach such an
 ideal scenario.
 
 
-\subsection{Congestion control variants}
+\subsubsection{Congestion control variants}
 
 Many variants of Congestion control have been developed. In particolar, there
 are many families for different use-cases:
@@ -1671,7 +1675,7 @@ of transferred data when adopting the standard TCP protocol.}\label{tab:warmUp}
 \end{table}
 \bigskip
 
-\subsection{Estimating the data exchange time}
+\subsubsection{Estimating the data exchange time}
 
 Let \texttt{T\_MAX} be known and let $M$ the flow control window size be known
 as well; $B$ bytes should be sent. To estimate the time of the entire data
@@ -1695,7 +1699,7 @@ understand whether the steady state lies in congestion control or in flow
 control, one has to confront the throughputs so that only in the case of
 $T\_MAX < T\_FC$ the steady state occurs under congestion control.
 
-\section{Reliability of TCP}
+\subsection{Reliability of TCP}
 
 TCP is a \textbf{reliable} protocol. The reliability in TCP only means that
 exchanged data are received, in order, and with no duplicates.
@@ -1769,9 +1773,9 @@ multiple times, and lead to catastrofic errors and wrong operations. Only read
 operations can be handled this way effectively.
 
 
-\chapter{Opening a TCP connection}
+\section{Opening a TCP connection}
 
-\section{Sequence numbers initialization}
+\subsection{Sequence numbers initialization}
 
 Opening a TCP connection involves the decision of the \textbf{starting sequence
 numbers}, whose value is not necessarily set to $0$.
@@ -1818,7 +1822,7 @@ lifetime} exist, after which segments cannot exist.
  possibly reach the other endpoint.
 
 
-\subsection{The three-way handshake protocol}
+\subsubsection{The three-way handshake protocol}
 
 The sequence numbers are generated by the \textbf{ISN-generator} (initial
 sequence number generator), a $32$-bit counter increased every $4\mu s$, even
@@ -1900,7 +1904,7 @@ In case the \texttt{RST} packet is legit (that is, when it carries the sequence 
 the machine expects), then \textbf{close} the connection and \textbf{ignore}
 \texttt{rcv-segment}.
 
-\section{Interface between 3-way handshake and application layer}
+\subsection{Interface between 3-way handshake and application layer}
 
 To open a connection, application layer just requests TCP to open a connection.
 The TCP layer will handle the connection opening with the appropriate system
@@ -1956,10 +1960,9 @@ demonstrate its legitimacy. However, a new protocol is almost impossible to
 design, since existing network architectures cannot simply be replaced.
 
 
+\chapter{Threat model}
 
-\part{Threat model}
-
-\chapter{Understanding threat model}
+\section{Understanding threat model}
 
 TCP offers \textbf{no authentication mechanism}. It means that if, for example, the
 address has been maliciously altered in DNS, a connection can be opened to the
@@ -2099,7 +2102,7 @@ at how simple is for an attacker to achieve a certain specific attack. The next
 step is to determine the best defenses \emph{given} a threat model.
 
 
-\section{The network attacker threat model}
+\subsection{The network attacker threat model}
 
 The \emph{network attacker} threat model is implicitly assumed in this book. A
 network attacker can only operate in the network, by communicating, observing
@@ -2160,20 +2163,111 @@ Examples of possible attacks a network attacker is capable of are listed below,
 \end{itemize}
 
 
-\chapter{Attacking TCP connections}
+\section{Attacking TCP connections}
 
 A legitimate threat model for a TCP connection is the network attacker threat
 model. A network attacker can observe, communicate and alter traffic by acting
 as man in the middle in all communications between two endpoints.
+
+The first model of the network attacker that strives to control a TCP connection
+is the \textbf{on--path attacker}. The on--path attacker is able to read
+integrally the communication between the two endpoints, and can act as man in
+the middle.
 
 The objective of the first kind of attack we will encounter is the \emph{client
 impersonation} in a TCP connection between a client and a server. The server
 will see the IP of the client at the other end of the communication, whilst
 packets are actually sent and received by the attacker.
 
-There are three possible ways to perform such an attack: MARK slide 3
+There are three possible ways to perform such an attack:
+\begin{enumerate}
+    \item \textbf{Opening a connection} and impersonating the client's IP
+        address;
+    \item \textbf{Injecting some data} in an already opened connection;
+    \item \textbf{Closing a connection} already running.
+\end{enumerate}
 
-\part{Attacks}
+In the second method, the attacker only injects \emph{part} of the
+communication, and represents a less pessimistic approach, in which the attack
+does not manipulate the communication and can only inject data. The third
+method is the more optimistic one, with the attacker only capable of closing an
+existing connection in order to perform some kind of denial of service.
+
+All three attacks are trivially feasible, with an attacker able to act as man
+in the middle. In the first case, the attacker is able to intercept an opening
+connection, and starts handshake with the server, opening a connection.
+
+An on--path network attacker is able to intercept all segments. In particular,
+such attacker is interested in obtaining sequence numbers, so that it can
+successfully replicate the connection state, inject data, and manipulate
+correctly the connection by means of forged segments with correct sequence
+number.
+
+Data injection by an attacker cannot happen at an arbitrarily high rate.
+Attacker must forge correctly numbered segments, so that both the client and
+the server could not notice the manipulation. This in the past was a tremendous
+issue, since there were big problems with remote shells from clients
+authenticated by IP -- today it poses no longer a problem, since authentication
+occurs almost always by encrypted protocols such as \emph{SSH (Secure Shell)}.
+Injecting data is easier at TCP level, with carefully crafted headers and
+proper payload; backwards, data injection at application layer is much harder,
+since an attacker must know application protocols and expected data at time
+$t$. This, however, is feasible: the \emph{National Security Agency} has done
+it many times in the past, in a highly targeted way, with web browsers driven
+to web servers that inject malware, by means of injecting HTTP redirect in HTTP
+responses.
+
+Attacker can also close a running connection. All he has to do is to send a
+single \texttt{RST} segment with correct sequence number to be accepted by the
+server, and the closing procedure will start. Closing a connection is really
+feasible: a sequence number can be easily inferred by looking at the incoming
+sequence numbers, and to increase the likelihood of picking the correct
+sequence number, \emph{many} forged segments are sent with sequence numbers
+that are likely to be the correct ones.
+
+The second kind of TCP attacker is the \textbf{off--path attacker}. An
+off--path attacker is less powerful than the on--path attacker, since it is not
+in the path and thus cannot read the correct sequence numbers.
+
+An off--path attacker is \textbf{not} able either to open a connection or to
+inject data. However, despite the deep limitations in what he can do, he is
+still able to \emph{communicate} to each endpoint and this suffices to be able
+to close a connection and perform other kinds of Denial of Service attacks.
+
+The attacker's objective is to determine the client information regarding \emph{sequence number} and \emph{port number} at time $t_x$: the two informations suffice to close a connection easily. The procedure is as follows:
+\begin{enumerate}
+    \item to begin with, the \emph{correct sequence number} should be estimated by
+        means of stochastic techniques;
+    \item the \emph{client's port number} is determined as well, by means of
+        stochastic techniques or by looking at the default numbers;
+    \item for each pair of \emph{possible candidates}, send a \texttt{RST} segment to
+        the server.
+\end{enumerate}
+
+To determine a possible candidate, the idea is to first get the initial
+sequence number, then estimate the amount of data exchanged by the TCP
+connection, so that by adding the estimated amount one could obtain the initial
+sequence number and choose the candidate in the most promising range. The
+initial number is obtained by a fraudulent connection opening with the client,
+so that the initial sequence number can be obtained; if the \emph{slope} of the
+initial sequence number generator is known at the time interval $t$ (that is,
+if one knows \texttt{ISN@C(t)} and how \texttt{ISN@C} behaves he can estimate
+\texttt{ISN@C(topen)}), the attacker can make a guess on the \emph{starting}
+sequence number the client employed. After that, estimation is based on the
+application protocol and the total number of bytes sent can be guessed. A
+\emph{range of likelihood} for sequence number is determined, and finally as
+many segments as possible are sent to the server, hoping for the best.
+
+The power of this method lies in the sheer computational power of the attacker.
+If the attacker is able to produce a huge number of sequence number and port
+number candidates to forge enough \texttt{RST} segments in a sufficiently tight
+time interval, the server could end up accepting the fraudulent close request,
+determining the closing of the connection. This results in a powerful method
+for Denial of Service, for any kind of existing TCP connection.
+
+MARK slide 15
+
+\part{Cyberattacks}
 
 \section{Attacking an organization}
 
@@ -2207,6 +2301,7 @@ the encoded response.
 A link had been established between the
 attacker and the device.
 
+MARK
 \chapter{Categorizing the attacks}
 
 \section{Target categories}
@@ -2437,7 +2532,7 @@ The most rational behavior for a defender is to just ``cross the fingers'' and
 hope the APT attack will never come. A strong focus on opportunistic category
 of attacks should instead be enforced.
 
-\chapter{Botnets}
+\section{Botnets}
 
 A \textbf{bot} is a device with a \emph{stealthy} and
 \emph{remotely--controlled} malware running on it. A very large set of bots is
@@ -2455,6 +2550,174 @@ bots. Devices can involve single individual devices (smartphones, home routers,
 PCs) or within an organization (PCs, workstations, printers, routers). Some of
 the largest botnets nowadays are solely composed of home routers.
 
-Botnets usually exist for \emph{money} reasons.
+Infection of internet--facing devices may occur \emph{quickly}, \emph{easily}
+and in an \emph{automated} way. The \emph{IoT devices} are a significant
+component of today's botnets, due to the easiness of compromising them.
+Vulnerable devices can be remotely exploited by means of an entirely automated
+technique. For instance, criminal group behind \emph{Mirai} (2016) had
+performed attacks on SSH ports of random IP addresses with a dictionary of 62
+credentials. This was sufficient to double the number of bots every 76 hours,
+with a peak of 600000 bots! The botnet was made of home routers, webcams, DVR
+displays, and similar devices.
+
+The issue with unsecure devices is relevant when costs and incentives are
+analyzed:
+\begin{itemize}
+    \item the owner of an infected IoT device does not have enough knowledge
+        and skill to understand that the device has been infected, and he is
+        almost certainly unable to remove the malware. IoT owners has little to
+        no incentive in fixing the device, which is probably working regardless
+        of the malware;
+    \item IoT manufacturers, as well, have little to no incentive to fix
+        vulnerabilities. Gain margins are very tight, developing secure
+        software is very costly and patch development is even more costly.
+\end{itemize}
+
+
+\subsection{Making money with botnets}
+
+Botnets usually exist for \emph{money} reasons. In ordet to obtain money, one
+could employ various techniques, for instance stolend and used credentials and
+banking credentials, stolen and sold long term cookies, devices infected by the
+so called \emph{Remote Access Trojans}, who falls under the category of
+remotely controllable malware. Therefore, making money out of a botnet is
+rather cheap, easy and manageable. A huge amount of attacks involve, for
+instance, large video and entertainment brands -- in fact, access to verified
+accounts is rather wanted in the black market; this is done by credentials
+stuffing. Credentials stuffing tentatives are increasingly growing. 
+
+A botnet could be used to \textbf{test credentials} of a data leak. For instance,
+bots can be configured to try to login with some credentials, in order to sell
+working ones to a higher price in the black market.
+
+A bot master could also \textbf{rent} his botnet. Each bot is equipped with a
+\emph{downloader}: the bot renter can install whatever software he prefers to
+apply his own set of attacks and mischievous behavior. The unitary cost of a
+single bot is \emph{tens of cents}, with thousands of them that can sum up to a
+hundred of bucks (the lesson here is that botnet are very, very affordable).
+
+Another kind of way to make money is to adopt the \textbf{clickfraud}. Let a
+published of a website enroll some advertising, from an Ad Network of choice.
+Advertisers pay the Ad Network to show advertisement on some websites. Overall,
+the money will end up in the publisher's website for each click on
+advertisements. The publisher website is controlled and managed by the
+attacker. Bots are then instructed to go to the attacker's website, and to
+click on the advertisements, in order to increase the ad--click counter for the
+attacker, thus providing him fraudulent money. Ad networks should be able to
+detect whether a bot or a human is clicking on an ad; this is, however, very
+difficult and even harder for small advertisement networks.
+
+From the economic point of view, the owner of a bot does not experience a
+significant loss or increased energy consumption. However, the advertiser
+suffers a lot of financial loss. The Ad Network does not suffer from anything
+relevant (it gets paid anyway), just a small reputation loss. This asymmetry in
+costs makes repelling this kind of fraudulent activity near to impossible.
+
+Each rented bot is paid with a few clicks -- 100 bots will roughly cost 10\$,
+while a single click will generate from 0.1\$ to 1\$. If a bot is instructed to
+click 10 times a day, a single day should suffice to repay that bot. This means
+that there is a huge potential for gain, with 100000\$ dollars \emph{a day}
+with a botnet of 10000 bots, no taxes involved.
+
+A botnet involved in clickfraud was called \emph{ZeroAccess} (2014). According
+to the estimates, ZeroAccess likely generated a million of fraudulent clicks
+per day -- which results in, approximately, 100000\$ per day. ZeroAccess was
+partly dismantled by a Microsoft and Europol takedown, by taking down Command
+\& Control structure. With \emph{hours}, there had been a new clickfraud
+modules, by updating the botnet with a new Command \& Control. For no reason,
+the day after the botnet decided to stop the activity. Three months after, the
+botnet resumed the activity.
+
+Another way of making money is by \textbf{running services} on a botnet. For
+instance, services involve Denial of Service and spam sending. For instance,
+\emph{Mirai} botnet was able to lend 100000 bots, every hour, with 10 minutes
+interval, for 2 weeks at only 7500\$. Mirai was made of digital cameras and DVR
+players.
+
+\subsection{The Command \& Control infrastructure for botnets}
+
+In the case of botnets, a Command \& Control architecture is necessary to
+control thousands of bots. A simplifying assumption is that each bot contacts
+bot master directly. Each bots will contact the bot master, and he will give
+back instructions. A key problem, however, is \emph{how to locate} the bot
+master, since bot master's location could be obfuscated.
+
+From the defender's point of view, a system administrator can analyze and
+possibly block some network traffic at the organization's boundary. With a lot
+of effort, the organization could be able to detect and identify some C\&C
+traffic, with increasing difficulty as the attacker's skill are higher.
+
+A very skilled and resourceful defender could \emph{reverse engineer} C\&C and
+bot code. It is then important to share findings with the defender community --
+this is extremely importante in practice, and constitutes what it is said to be
+the \emph{Threat intelligence}, not part of this course. For instance, if FBI
+manages to understand that a pattern of traffic is related to a specific
+botnet, the FBI could share its knowledge with enterprises such as Microsoft,
+Apple, Symantec, and so on.
+
+From the attacker's point of view, loss of \emph{some} bots is tolerable; for
+instance, bots that happen to be blocked, detected, or replaced with
+not--infected devices. However, it is not acceptable to lose the \emph{entire}
+botnet. For this reason, Command \& Control traffic should be bullet--proof,
+secure, and authenticated, since defenders might attempt a botnet takeover (or
+other attackers, of course). The guarantees for the C\&C protocol are those of
+\emph{authentication}, \emph{integrity} and \emph{secrecy}.
+
+Historically, there has been an evolution in the techniques and the resources
+necessary to fighting botnets.
+
+In \textbf{Generation 0}, each bot contacted the master at a \emph{predefined
+\texttt{IP-BO} address}. IP address was hardwired in the code; as long as
+defenders detects the nature of \texttt{IP-BO}, for the attacker it was game
+over: every organization could simply blacklist \texttt{IP-BO}.
+
+The \textbf{Generation 1} used a technique called \emph{IP fast--flux}. Each
+bot contacted a \emph{predefined \texttt{N-BO} name}. The attacker
+\emph{frequently modifies} the IP address by changing the DNS record
+\texttt{N-BO A IP-X}, so blocking by IP address was no longer possible. As long
+as a defender detects the nature of \texttt{N-BO}, every organization could
+still blacklist \texttt{N-BO}. Moreover, legal actions against Registrar that
+manages \texttt{N-BO} could dismantle the botnet completely -- hence,
+\emph{questionable Registrars} are adopted by attackers.
+
+In \textbf{Generation 2}, bots contained a \textbf{predefined algorithm}, that
+generated a \emph{different name \texttt{N(day)} everyday}. This meant that
+everyday bots contact a different name -- rules blocking names and IP addresses
+no longer worked, with firewalls that should have been updated everyday. On any
+different day, a new Registrar might be involved.
+
+With a lot of effort, defenders might \emph{reverse engineer the bot code}.
+However, this is very hard -- just realizing which names are generated by a bot
+at the boundary of an organization is astonishingly hard. After the domain
+chain generated by the algorithm has been discovered, defenders could purchase
+a domain that will be generated in the future, taking control of the botnet.
+
+The attacker could detect that some DGA domains are no longer free: defenders
+are acting. In order to keep control of the botnet, he will \emph{develop a new
+DGA} and distribute it with a software update to the bots.
+
+\textbf{DGA Improved} is a technology invented in 2011. The DGA generates
+\emph{tens of thousands} different names everyday; each bot will contact all
+those names, and if the attacker possesses a single domain name the bots will
+be commanded by it. As long a single domain responds, it's ok with
+authentication.
+
+Of course, even if a defender understands how this algorithms works, it is
+economically unsustainable to prevent the attacker adopting \emph{a single}
+of those domain.
+
+Today, many different servers are involved, organized at multiple levels in
+multiple groups. Mirai possessed $484$ different servers with $33$ independent
+clusters that were observed. Moreover, bots can have a so--called
+\emph{peer--to--peer structure}, with all bots act as peers; just sending a
+command to a single bot will result in command propagation through the entire
+botnet.
+
+Only very high profile and equipped defender organization can filter or
+dismantle botnets, with a process that usually involves lot of time, efforts,
+and collaboration, usually on side channels (for instance, payment of domains).
+Due to the incredible costs involved, defense is feasible \emph{only} againt
+the most important threats.
+
 
 \end{document}
