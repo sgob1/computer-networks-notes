@@ -19,7 +19,7 @@
 \usepackage{makecell}
 \usepackage{setspace}
 \usepackage{parskip}
-\usepackage[a4paper, inner=4.0cm, outer=5.0cm]{geometry}
+\usepackage[a4paper, inner=4.0cm, outer=5.2cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
 \definecolor{greengray}{rgb}{0.517,0.761,0.404}
@@ -2269,6 +2269,8 @@ MARK slide 15
 
 \part{Cyberattacks}
 
+\chapter{Attackers and their \emph{modus operandi}}
+
 \section{Attacking an organization}
 
 \subsection{Lateral movement}
@@ -2532,6 +2534,8 @@ The most rational behavior for a defender is to just ``cross the fingers'' and
 hope the APT attack will never come. A strong focus on opportunistic category
 of attacks should instead be enforced.
 
+\chapter{Attack tools}
+
 \section{Botnets}
 
 A \textbf{bot} is a device with a \emph{stealthy} and
@@ -2718,6 +2722,291 @@ dismantle botnets, with a process that usually involves lot of time, efforts,
 and collaboration, usually on side channels (for instance, payment of domains).
 Due to the incredible costs involved, defense is feasible \emph{only} againt
 the most important threats.
+
+A system administrator at an organization should forget about the possibility
+of discovering or dismantling botnes, since these operations could only be done
+by very--specialized organization. Bots should instead be detected and isolated.
+In most cases, an organization has some sort of \emph{big firewall} at the
+boundary, which is able to inspect the application traffic as well as the IP
+and TCP level. Firewall rules should be updated everyday by purchasing a
+license. In order to be able to do so, however, the organization should
+subscribe and join the threat intelligence.
+
+\section{Vulnerabilities}
+
+\textbf{Vulnerabilities} are \emph{mistakes} in software, that can be used by
+an attacker to take advantage and control over a system.
+
+Vulnerabilities can affect most if not all systems, and are especially
+dangerous for network--connected devices.
+
+Generally speaking, \textbf{bugs} are errors or flaws that cause the software
+to both produce an \emph{incorrect} result, or to behave in \emph{unintended
+ways}. Differently, vulnerabilities are a \emph{subset of bugs}; in fact, they
+are bugs that allow violation of some \textbf{security property}.
+
+\subsection{Exploits}
+
+An \textbf{exploit} is a tool for exploiting a vulnerability; that is,
+something capable of driving the vulnerable software to its execution path that
+it yields the mistake, unintended results, to violate some security property.
+An exploit can either be a piece of code, a chunk of data, or a sequence of
+commands.
+
+Usually exploits should be carefully crafted. For instance, an exploit could be
+a Word document, whose content is crafted in a peculiar way so that it exploits
+a mistake present in the software. The user is simply required to open the
+document to be infected. Sometimes, the file opening has no visible effect --
+in this case, the gravity of the vulnerability is even higher.
+
+When a vulnerability is discovered, the immediate reaction should be to
+\emph{release a patch} to fix it. Patches are downloaded by the user or the
+user's software automatically, so that the addressed exploit technique will no
+longer work.
+
+In the case of the Word document, a specific exploit involved inserting an URL
+in a document, whose content was a VBSCRIPT script. Word automatically
+downloaded the code and run it -- attacker could simply insert any code and the
+end result was to download and run a malware in the user's machine. HTML document
+containing the script should have been saved with \texttt{.rtf} extension, and
+be served by the remote web server with \texttt{Content-Type: application/hta}.
+
+The next step is to create a deceiving Word file (whose appearance is
+legitimate), containing a Word Object with link to the malicious URL. Finally,
+modify Word file with a binary editor, and insert a string
+\texttt{objupdate\textbackslash} into a specific portion of the document.
+
+In the end, an exploit is \emph{an input not handled correctly} by the
+vulnerable software. A vulnerability is first discovered, and \emph{then} an
+exploit should be prepared. Both steps are difficult, and they often are a
+\emph{full--time job}. Security researchers first find vulnerabilities, and
+then usually build a so--called \textbf{Proof of Concept (PoC)}.
+
+Since writing exploits is very difficult, not all vulnerabilities are
+exploited. For some of them, it could be even almost impossible to write an
+exploit, so from the point of view of the cost--effectiveness an attacker may
+be discouraged to exploit such a harsh vulnerability.
+
+\subsection{Exploit injection}
+
+To be useful, an exploit should be \textbf{injected} in a vulnerable system.
+Exploit injection is the third step after vulnerability discovery and exploit
+creation, and it may have varying levels of difficulty.
+
+Exploit injection occurs with many possible ways; there are two different ways
+to categorize injection techniques, the \textbf{user action required} category,
+and the \textbf{no user action required} category.
+
+Examples for the first category are \emph{sending
+a malicious file}, \emph{sending a malicious link} that should be opened
+with a specific, vulnerable software, \emph{putting a file in a USB pen} and
+so on.
+
+All the above injections involved the user clicking or performing a specific
+action (which is more often triggered by deceipt); however, the second category
+of injection occurs \textbf{remotely} with no user action required. Those are
+the vulnerabilities in remote servers that handle specific commands or
+messages. The category is called the \textbf{Remote Code Execution}. The
+gravity of RCE increases as much as there is no need for authentication, if the
+injection happens easily or not, and if it allows information disclosure only
+or privilege escalation.
+
+Another way to categorize an injection is the \textbf{distance} in which it can
+be used. \textbf{Local} injections are all that can be done \emph{only} by a
+program \emph{already} running on the victim device. Differently,
+\textbf{remote} exploit injections can be done \emph{remotely}.
+
+A very dangerous category of vulnerabilities are the so--called
+\textbf{Wormable vulnerabilities}, that is a vulnerability with these
+properties:
+\begin{itemize}
+    \item remote code execution;
+    \item unauthenticated attacker;
+    \item no user action required.
+\end{itemize}
+and an exploit for this vulnerability can \emph{propagate itself
+automatically}. A possible, simple exploit could be to attempt to connect to
+\emph{all} IP addresses and inject automatically a copy of itself on every
+vulnerable IP address found. Experience shows that within a few minutes all
+vulnerable systems worldwide reachable from patient zero will be infected. To
+prevent massive infection, tight firewall rules and NAT are important.
+
+\subsubsection{The Security---Usability trade--off regarding exploits}
+
+No input whatsoever assures maximal security;  however, this will not
+guarantee any productivity. On the other hand, minimizing security means
+accepting every possible input; that said, an attacker has the largest possible
+set of attacks at his disposal. Productivity is the maximum one, provided you
+are not hit by an attack.
+
+Avery input is a potential threat, and it might be an exploit. The risk level
+should be decided by reasonning on the strictly necessary inputs, and by
+removing the unnecessary ones. The set of possible inputs \emph{should be
+minimized}.
+
+\subsection{Managing the exposure to internetwork of Internet of Things and Industrial Control Systems devices}
+
+Some categories of devices that are increasingly connected to the network are:
+\begin{itemize}
+    \item Industrial Control Systems;
+    \item Electricity meters;
+    \item Insuline pumps;
+    \item sex toys;
+    \item foam mattresses;
+    \item webcams;
+    \item thermostats;
+    \item washing machines and dishwashers;
+    \item and so on.
+\end{itemize}
+
+The usual reasoning on those devices is that \emph{as long as an authentication
+password is required and correctly managed, the device is protected}. The
+threat model that this reasoning implicitly defines is that the attacker can
+only communicate with the device, this is however not realistic. 
+
+An attacker
+can more than often execute arbitrary commands on the device (due to a
+vulnerability). For instance, \texttt{shellshock} familty of \texttt{bash}
+vulnerabilities affected vulnerable Linux instances in late 2014 with a crafted
+command (\texttt{User-Agent: () \{:;\}; command}), with no authentication
+required. 
+
+Attackers can also use correct credentials by vulnerabilities that expose them.
+Some malformed requests, for instance, could make the device respond with their
+configuration information, including credentials.
+
+The correct reasoning is that attacks will fail \textbf{only} if the device has
+no vulnerability. A vulnerable device may be exploited by anyone that:
+\begin{itemize}
+    \item is \emph{aware} of the vulnerability;
+    \item is \emph{able} to exploit it;
+    \item is \emph{motivated enough} to spend resources on the attack.
+\end{itemize}
+
+\begin{quote}
+\emph{``Just because a device can connect to a network does not mean that it has to be
+connected or that that network has to be the Internet. If a connection is
+really required, differentiate between IoT devices that need to be connected to
+the Internet and those that do not.''}
+\end{quote}
+
+Thus, the best practices regarding IoT devices are to \textbf{minimize network
+exposure} for all control system devices and or systems, ensuring that they are
+not accessible from the internet, and to locate control system networks and
+remote devices \textbf{behind firewalls}, isolating them from the business
+networks. When remote access is required, \textbf{use only secure methods} such
+as VPNs; however, recognize that VPNs may have vulnerabilities and should be
+updated to the most current version available. VPNs are also as secure as the
+connected device -- if a device runs a malware, the game is over.
+
+Isolation and the concealing of those devices is the bare minimum security
+practice nowadays.
+
+
+\subsection{Other vulnerability definitions}
+
+More generally, a vulnerability is not only a software problem, and does not
+involve only the possibility of running exploits and the initial access to the
+software by an attacker.
+
+Vulnerabilities might exist in other forms. For instance, that is the case when
+\emph{user and root accounts have hardcoded passwords} that cannot be disabled,
+and that they are the same for all devices in the world; the same goes for same
+hardcoded RSA-keys in all devices.
+
+Secrets embedded in devices are clearly vulnerabilities that are not captured
+by the original definition, since they are more a design flaw than a mistake in
+software coding. A good definition is the following one,
+
+\begin{quote}
+    \emph{a \textbf{vulnerability} is a flaw or a weakness in a system's
+    design, implementation or operation and management that could be exploited
+to violate the system's \textbf{security policy}.}
+\end{quote}
+
+This definition involves \emph{software mistakes}, \emph{hardcoded secrets}
+such as keys or passwords, \emph{over--privilege by default}, and so on.
+
+As general rules,
+\begin{itemize}
+    \item never ever design systems that embed the \emph{same secret in all
+        their instances};
+    \item never ever design systems that embed a secret that \emph{cannot be
+        modified}.
+    \item never ever embed hardcoded passwords, keys or tokens on code.
+\end{itemize}
+
+\subsection{Assessing risks}
+
+The risk of a given vulnerability depends on \emph{several} factors; the
+\textbf{impact} of the vulnerability (does it allow only to disclose
+informations? Or it allows privilege escalation and code execution?), the \textbf{difficulty of exploitation} (whether or not an exploit is hard or easy to craft) and \textbf{difficulty of injection} (local or remote? Needs user intervention?).
+
+Taking in account all these factors is difficult. A simpler way for assessing
+risk is to assign a \textbf{score} that quantifies the risk of a vulnerability.
+Those possible metrics are called \textbf{vulnerability metrics}, several
+standards for attemptint to quantify all the aforementioned features by means
+of a single number, the score. 
+
+The most widely used standard is the \emph{CVSS (Common Vulnerabilities Scoring
+System)}, and it takes $22$ categorical features as input and assigns certain
+features in a slightly subjective way (for instance, easiness of exploitation
+is a subjective feature that is assigned differently than remote versus local).
+The output is a discretized score in range $1$ to $10$:
+\begin{itemize}
+    \item \emph{None}, 0.0;
+    \item \emph{Low}, from 0.1 to 3.9;
+    \item \emph{Medium}, from 4.0 to 6.9;
+    \item \emph{High}, from 7.0 to 8.9;
+    \item \emph{Critical} from 9.0 to 10.0.
+\end{itemize}
+
+It is useful to remember that score is not an intrinsic property of a
+vulnerability, but just one of the \emph{many, different ways} of distilling many
+features into a single number. Every vulnerability must be analyzed based on
+the specific environment, and the score is just one of the possible factors to
+consider. Low--risk vulnerabilities in systems that are vital to an
+organization can be more dangerous than high--risk vulnerabilities affecting
+systems that are not important and almost unreachable.
+
+\subsection{The most secure software}
+
+\bigskip
+\begin{center}
+\emph{``Which software is more secure?''}
+\end{center}
+\bigskip
+
+Unfortunately, there is no way to quantify how secure a software is.
+
+Let's take the \emph{number of known vulnerabilities}. Do they depend on the
+software or on how many people are looking for them? Are these people all
+technically skilled? Do they spend a lot of effort in doing this kind of
+activity? These features can hardly be taken in account.
+
+Suppose now to know the number of known vulnerabilities, the number of patched
+ones, the number of \emph{zero days} vulnerabilities and the time required to
+patch, averaged. Is it possible to combine them? How so?
+
+First, let's question whether the estimate at a certain time of the zero days
+is reliable. Some zero days may not be already discovered, some others may be
+even actively exploited. Hence, the zero days estimate is even less correct
+when making predictions in the future.
+
+Moreover, the number of known vulnerabilities at a certain time is \textbf{not}
+a good predictor of the number of vulnerabilities that will be discovered in
+the future, nor of the number of zero days existing currently and in the
+future.
+
+More reasons come from the exploits assessment. Some software may have many
+vulnerabilities that are hard to exploit, and some other software may possess
+very few vulnerabilities, but very easy to exploit.
+
+That said, there is a unique way to determine whether a software is more or
+less secure. A \textbf{key indicator} of the security of a software is
+\emph{how the vendor \textbf{reacts} to a vulnerability}, a factor much more
+important than the vulnerability. A good vendor acknowledges the vulnerability,
+releases a patch as soon as possible, and possesses a bug bounty program.
 
 
 \end{document}
