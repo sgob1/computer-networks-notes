@@ -84,9 +84,9 @@
 \titleformat{\chapter}[display]
 {\Huge\bfseries\sffamily}{}{0pt}{Chapter \thechapter\\\bigskip}
 \titleformat{\section}[display]
-{\LARGE\bfseries\sffamily}{}{0pt}{\medskip\thesection\ \ \ \ \ }
+{\LARGE\bfseries\sffamily}{}{0pt}{\thesection\ \ \ \ \ }
 \titleformat{\subsection}[display]
-{\Large\bfseries\sffamily}{}{0pt}{\medskip\thesubsection\ \ \ \ \ }
+{\Large\bfseries\sffamily}{}{0pt}{\thesubsection\ \ \ \ \ }
 \titleformat{\subsubsection}[display]
 {\large\bfseries\sffamily}{}{0pt}{}
 
@@ -2265,7 +2265,55 @@ time interval, the server could end up accepting the fraudulent close request,
 determining the closing of the connection. This results in a powerful method
 for Denial of Service, for any kind of existing TCP connection.
 
-MARK slide 15
+Historically, in 1985 people started realizing what \emph{could} be done
+against TCP initial sequence numbers; there were no proof of concepts, however.
+The first real attacks were performed in 1995, and pushed the widespread
+adoption of pseudo--random number generators that should be addressed by the
+TCP algorithm in order to determine its initial sequence number. Basically,
+that made apparently impossible for an attacker to determine the correct
+sequence numbers. That said, in 2001 attackers were still able to determine it
+by means of \emph{statistical techniques}, so people realized that the widely
+adopted algorithm were suffering from vulnerabilities and design failures. The
+number of attempts for succeeding was much smaller than the amount that was
+believed to be necessary for the attack to work; clever bruteforce was
+feasible. In 2001, a new algorithm was built in order to make the initial
+sequence number choice unpredictable. Unironically, in 2004 attackers were
+already able to produce efficient Denial of Service attack, since the required
+number of attempts was sufficiently small to be feasible.
+
+The lesson learned is that even if \emph{today} realistic threat models assume
+that a certain attack is not possible, \emph{after some years} someone realizes
+that the assumption is wrong; this is due to the fact that resources, knowledge
+and techniques vary over time.
+
+The same fate struck the WPA2 protocol; designed in 2004, a serious weakness
+uncovered in 2017 allowed an attacker to read, inject and manipulate data in
+the encrypted protocol. Since the weakness was in the standard itself, any
+correct implementation of WPA2 was likely affected.
+
+In 2014, off--path data injection became possible as well. On HTTP, it is now
+possible to insert \emph{scripts} and \emph{HTML segments} in a communication,
+just by sending packets to an endpoint.
+
+\section{The Man--On--The--Side attack}
+
+A \textbf{Man--On--The--Side} attack is an attack in which an ``observer''
+network attacker attempts to hijack the web browser of the target to a website
+controlled by the attacker, with the goal of injectinv exploits on the victim's
+browser.
+
+To do so, an attacker first intercepts the HTTP request, and \emph{immediately
+sends back} an HTTP redirect, with the sequence number expected by the victim's
+browser. The latter performs the redirection to the attacker's controlled
+website, with an HTML document forcing the download of many exploits.
+
+The legitimate response from the server will arrive later, thus appearing
+\emph{duplicate} and it will be discarded by the victim's browser.
+
+This kind of attack is very powerful if performed by intelligence agencies,
+usually with the help of Internet Service Providers.
+
+Man on the side attacks are fully prevented by HTTPS protocol.
 
 \part{Cyberattacks}
 
@@ -2962,18 +3010,17 @@ The output is a discretized score in range $1$ to $10$:
 \end{itemize}
 
 It is useful to remember that score is not an intrinsic property of a
-vulnerability, but just one of the \emph{many, different ways} of distilling many
-features into a single number. Every vulnerability must be analyzed based on
-the specific environment, and the score is just one of the possible factors to
-consider. Low--risk vulnerabilities in systems that are vital to an
+vulnerability, but just one of the \emph{many, different ways} of distilling
+many features into a single number. Every vulnerability must be analyzed based
+on the specific environment, and the score is just one of the possible factors
+to consider. Low--risk vulnerabilities in systems that are vital to an
 organization can be more dangerous than high--risk vulnerabilities affecting
 systems that are not important and almost unreachable.
-
 \subsection{The most secure software}
 
 \bigskip
 \begin{center}
-\emph{``Which software is more secure?''}
+\emph{``Which software is the most secure?''}
 \end{center}
 \bigskip
 
@@ -3007,6 +3054,124 @@ less secure. A \textbf{key indicator} of the security of a software is
 \emph{how the vendor \textbf{reacts} to a vulnerability}, a factor much more
 important than the vulnerability. A good vendor acknowledges the vulnerability,
 releases a patch as soon as possible, and possesses a bug bounty program.
+
+Another characteristic of a good vendor is the \emph{uniformity} of updates and
+support time for devices.
+
+
+\subsection{The vulnerability lifecycle}
+
+The \textbf{vulnerability lifecycle} is the entire period of time between
+\emph{discovery} of a vulnerability and its \emph{fix} on software across the
+world.
+
+The \textbf{ideal} case of vulnerability lifecycle starts with a
+\emph{discovery} event by a security researcher, in which a \emph{private
+disclosure} to the software vendor immediately follows. The software vendor
+will then work its best to provide a \emph{patch}; the patch is released
+together with a \emph{public disclosure} of the vulnerability. After some time,
+the patch is adopted: the \emph{patch application} occurs, and the
+vulnerability lifecycle ends with that.
+
+In this model, the maximal risk starts at public disclosure, where
+\emph{everyone} knows that a specific vulnerability exists. The problem with
+this is that \emph{before} applying a patch the instance \textbf{is
+vulnerable}: the risk is that an attacker starts attempting to explot the
+vulnerability before people starts applying patches (for instance, the
+\texttt{log4j} fiasco). Applying patches should be \emph{quick}.
+
+\subsection{A bump into reality}
+
+The ideal case does not always match reality, though. One of the previous steps
+might not occur:
+\begin{enumerate}
+    \item \textbf{researches} \emph{may not notify} the software vendor -- they
+        could rather sell their information to criminal organizations (or be
+        part of them\dots), looking for a greater amount of money. There is a
+        huge \emph{illegal} market of software vulnerabilities, especially when
+        the vendor is reluctant to act. \emph{Zero day vulnerabilities} are
+        those known to one or more organizations, while not known to the
+        software vendor. Zero day vulnerabilities possess high value until
+        discovered and fixed. There are even legal zero day buyers--sellers
+        (\emph{Zerodium}). Zero days are very frequent, with 207 estimated from
+        2004 to 2016, 50\% unknown and with average life expectancy of
+        approximately 7 years (only 25\% survive less than a year and a half).
+        As of 5 April 2022, \emph{Google Project Zero} estimates are of 211
+        zero days on the wild. Zero days are used very infrequently -- before
+        using a zero day exploits, the attacker tries with other techniques.
+        Zero days are highly effective, but they cost very much, and they could
+        be discovered by defenders at each usage. Minimizing the risk of zero
+        day discovery is crucial for intelligence agencies. Moreover, the same
+        organization that owns a zero day will be vulnerable to that specific
+        vulnerability as well;
+    \item \textbf{software vendor} \emph{may not develop} a patch -- they could
+        bot be interested; Also, \emph{patch development is costly}. It may
+        also be very difficult, and in most cases there is \emph{little to no
+        contractual obligation} for patch development. Depending on the
+        specific vulnerability, fixing a vulnerability might be rather
+        expensive, difficult, and time--consuming. Further, a software could be
+        in its \emph{end of life} cycle, under which no support is provided
+        (therefore, all copies of that software will be vulnerable
+        \emph{forever}).
+    \item \textbf{public disclosure} may occur \emph{without an available patch}
+        -- someone leaks the information for some reason. Another issue with
+        software vendors is that they could \emph{downplay relevance} and do
+        not act. Keeping a vulnerability secret won't work, as the only
+        advantage is that the researcher will not lose time and won't fear
+        legal actions. The public pressure on vendors is the only thing that
+        can work, so the only way is to \emph{disclose the vulnerability},
+        along with a proof of concept exploit for maximal public pressure. The
+        most ethical approach dictates that, before disclosing, a
+        \emph{reasonable deadline} should be given to the software vendor for
+        acting -- that is called \emph{Responsible Disclosure};
+    \item \textbf{system administrators} \emph{might not apply the provided
+        patch} -- they could be lazy or unskilled. Moreover, applying a patch
+        \emph{takes time}, requires usually \emph{service downtime} (think of
+        Linux kernel patches) and \emph{compatibility problems}. Indeed, a
+        system administrator may not have enough time to upgrade; or he may be
+        even \emph{unaware} of specific vulnerability, unaware of the
+        importance of patching or even not aware of which systems should be
+        managed. For these reasons, this system administrators are the weakest
+        ring of the vulnerability lifecycle chain.
+\end{enumerate}
+
+The population of experts is incentivized in discovery vulnerabilities, keep
+them hidden and diffuse knowledge only in restricted circles. Users will not
+even know about the vulnerability that has been actively exploited.
+
+The general takeaway of this reasoning is that vulnerabilities \emph{affect
+every kind of software}. For this reason, vulnerability patching is
+\textbf{crucial}. In many cases, though, the most important defense mechanism
+doesn't exist or cannot be applied.
+
+\subsubsection{Asset management}
+
+An \textbf{asset management} is an accurate description of systems that are
+connected to the network. The description involves software, versions, known
+vulnerabilities, and whether devices are exposed to the internet or not.
+
+The asset management is a \emph{basic} requirement; often not fulfilled
+adequately, especially since it's much harder than it seems. As a maturity test
+for an organization, ask a CTO to provide the asset management -- accurate
+answer should come in less than 30 minutes.
+
+\subsection{Other important issues}
+
+Since there are many vulnerabilities cannot be patched, what could we do? The
+answer depends on our role in an organization.
+
+Moreover, who pays the cost of a security incident? Is the vendor liable for a
+vulnerability in its product? Is a developer obliged to develop patches, and
+for how long?
+
+
+\begin{itemize}
+    \item \textbf{Non--IT Engineers} that include software in their products
+        should consider himself a software developer, and the related company
+        as a software company, thus managing software security accordingly;
+    \item \textbf{IT Administrators}
+\end{itemize}
+
 
 
 \end{document}
