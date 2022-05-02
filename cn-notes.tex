@@ -3164,14 +3164,186 @@ Moreover, who pays the cost of a security incident? Is the vendor liable for a
 vulnerability in its product? Is a developer obliged to develop patches, and
 for how long?
 
+Some good practices, depending on who you are, can be summarized as follows:
 
 \begin{itemize}
     \item \textbf{Non--IT Engineers} that include software in their products
         should consider himself a software developer, and the related company
         as a software company, thus managing software security accordingly;
-    \item \textbf{IT Administrators}
+    \item \textbf{IT Administrators} should check their devices for known
+        vulnerabilities. In particular, there exist tools -- for instance,
+        \emph{Nessus} -- which are capable of discovering and assessing
+        vulnerabilities, along with an asset management. Every organization
+        will find a lot of vulnerabilities in its software and services: a
+        proper \emph{structured process} for managing vulnerabilities is
+        required, since patching all or even most of them is simply a not
+        realistic approach. Some vulnerabilities might be ignored, while others
+        could be fixed or marked as ``reconsider'';
 \end{itemize}
 
+
+\subsection{Reasons why vulnerabilities exist}
+
+Vulnerabilities arise from various, fundamental, problems in software and in
+security. In particular, the following reasons are intrinsic to software only,
+but \emph{not} intrinsic to other kinds of technologies:
+\begin{itemize}
+    \item in software, more security implies \emph{more costs}. Each added cost
+        has no impact on usability and it is rarely perceivable by users
+        (improved security may even result in decreased usability!);
+    \item software market does not \emph{incentivize security}. Adequate
+        incentives might improve the scenario, although the fundamental
+        problems will remain. There will be a framework change sooner or later
+        in the regulations;
+    \item there is little to no liability involved when an incident occurs.
+\end{itemize}
+
+Test should be run before releasing a product. In order to release an
+\emph{engineering artifact}, among the ``set of all possible inputs'', the
+\emph{test set} is a small set of points in the region of all possible inputs.
+For each input belonging to the test set, the engineer's duty is to verify that
+the outcome is correct. Now, let's consider an input that \emph{does not
+belong} to the test set.
+
+The difference between any non--software system and any software system is that
+\emph{for non--software systems it is very unlikely that the behavior of the
+system will be different from the test set}, provided the test set is chosen
+properly. This means that totally unexpected and undesired behavior is unlikely
+to happen. On contrary, \emph{software is }\textbf{not continuous}, \emph{the behavior
+could be radically different from inputs belonging to test set}. A successful
+test for an input can tell nothing about the system's response to a similar,
+but distinct, input.
+
+Software also possess a lot of the so--called \textbf{internal state}.
+Injecting an input at different instants will produce different outcomes, since
+the output depends on many \emph{past} inputs. In practive, one may consider a
+test set that is extremely small when compared to the huge subset of all the
+possible input sequences, given their dependencies on past inputs as well.
+
+The practical consequence is that every software artifact is release with an
+unknown number of \emph{bugs}, inputs that provoke some undesired behavior, and
+whose behavior might include the violation of security properties: a bug can be
+a vulnerability.
+
+The possible, practical solutions to this issue are both analyzing how the
+system will be used, and including in test set as many \emph{realistic input
+sequences} as possible. Basically, one tries hard to understand how the system
+will be used.
+
+The other fundamental problem is related to cybersecurity.
+
+Testing a software requirement is rather easy: it is sufficient to check that
+the software has some properties. Testing the requirement means tries executing
+the task -- if the task is performed successfully the software is ready, else
+refactor or redesign. This kind of requirements of what the software
+\textbf{can} do is said to be a \emph{positive requirement}.
+
+In security, this doesn't work. The requirement is usually that ``a certain
+action \textbf{cannot} be done'', a \emph{negative requirement}. Testing such
+requirement means identifying \textbf{all} the possible ways for attempting an
+unauthorized action, and check them all. This is radically more difficult,
+since a security developer should check all possible ways for executing such
+action, and test them all. Testing against negative requirements is very
+difficult; moreover, it is impossible to really identify all the possible ways.
+
+Normal users inject inputs that are related to the \emph{expected usage}.
+Adversaries do not behave nicely: they actively search for inputs that
+\emph{violate} security guarantees. They do so by looking for inputs that are
+both \emph{totally unexpected} and \emph{wrong}, usually with the help of
+automated tools.
+
+An \textbf{hostile} environment is an environment in which inputs may be
+extreme and perhaps uncommon -- in software, an \textbf{adversarial}
+environment is an enviroment even more dangerous in which inputs that are
+actively selected to provoke undesired behavior; ``the worst possible input at
+the worst possible time''. Basically, software is subjected to \emph{actively}
+attempts to exploiting vulnerabilities.
+
+In a nutshell:
+\begin{itemize}
+    \item non--IT engineers must cope with \textbf{hostile} environments;
+    \item IT engineers must cope with \textbf{adversarial} environments.
+\end{itemize}
+
+\subsubsection{Problems left in testing software}
+
+A software artifact must face inputs that are both \emph{not in the test set}
+and \emph{actively searched} by adversaries. Since security in software is a
+negative requirement, making sure that the artifact does not exhibit undesired
+behavior is extremely hard. Basically, there is \emph{no proof} that a software
+artifact will not behave unproperly, since software is not continuous, testing
+is very costly and any piece of software is drowning in an adversarial
+environment.
+
+What a software developer that is involved in security can do is to aim for
+some \textbf{degree of confidence}, also called \textbf{assurance}. Basically,
+the software should behave according to positive and negative requirements, up
+to a certain degree of confidence. Many complementary techniques allow to
+achieve a certain assurance, for instance development process (for instance,
+two teams working at a same project), programming languages and methodology,
+testing methodology, operating system technology and so on.
+
+As a matter of fact, assurance is \emph{not a binary notion} (not a proof of
+whatsoever) and \emph{cannot be quantified or measured}. To put it brutally,
+\emph{software is a cross--the--fingers technology}.
+
+\section{Malware}
+
+\textbf{Malware} is a software that \emph{deliberately} fulfills the
+\emph{harmful} intent of an attacker. Usually, malware acts in a
+\emph{stealthy} way, unless it is designed to manifest its presence, for
+instance in the case of \emph{ransomware}.
+
+Malwares are typically classified in multiple classes, depending on the
+classification adopted (trojan, bootloader, rootkit, and so on).
+
+Malwares might be installed during any phase:
+\begin{enumerate}
+    \item manufacturing;
+    \item installation;
+    \item configuration;
+    \item use, with both physical and non--physical access means.
+\end{enumerate}
+
+The most intuitive way is during use of the software, and by means of remote
+access. Depending on the specific context, though, the defender shall consider
+one or more phases.
+
+Regarding remote malware installation (with physical access is more trivial),
+MITRA attack framework has three phases that correspond to malware
+installation: \emph{initial access}, \emph{execution} and \emph{persistence}.
+Basically, there are many ways to execute malware, but the most important ones
+are by means of \textbf{software vulnerabilities} and \textbf{user execution};
+the latter is when an adversary may rely upon specific actions by a user, that
+it is subjected to \textbf{social engineering} to get them execute malicious
+code by performing an action.
+
+Social engineering is a very common technique: rather simple, cheap and has a
+high probability of success. Since social engineering is so common, effective
+and widely adopted, defense from malware cannot be completely technical.
+Technology should limit opportunities and impact of vulnerabilities, but in the
+end of the day \emph{users need to be aware and educated} to prevent social
+engineering manipulations.
+
+\subsection{Antivirus software}
+
+\textbf{Antivirus} software has a role in detecting and preventing
+\emph{exploit injection} and \emph{execution of malicious code}, and is usually
+adopted in Windows environments.
+
+Antivirus attempts to detect and prevent exploit injection. An antivirus might
+be able to prevent exploits in the lapse of time between public disclosure of a
+vulnerability and its patching through a software update. Even though a
+vulnerability will never be patched, an antivirus in principle may be able to
+protect the system forever. Antiviruses can only detect what is \emph{already
+known} by the antivirus, by means of signature detection. Some products possess
+\emph{anomaly detection}, for software and behaviors that could potentially
+harm the system. This system, though, suffers from a lot of false positives,
+experts analysis is needed and it is almost never used for antivirus. Anomaly
+detection must also refer to already known attack patterns.
+
+However, \textbf{polymorphic malwares} do exist, and they make antivirus
+more useless due to impossibility of comparing signatures.
 
 
 \end{document}
