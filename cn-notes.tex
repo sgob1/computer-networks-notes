@@ -2315,6 +2315,365 @@ usually with the help of Internet Service Providers.
 
 Man on the side attacks are fully prevented by HTTPS protocol.
 
+\chapter{Network Address (Port) Translation}
+
+In networking, some IP addresses are \emph{reserved}. Among all the possible
+addresses, there are 4 ranges that cannot be assigned to any ``public'' entity:
+\begin{enumerate}
+    \item the \texttt{10.0.0.0/8}, $2^{24}$ addresses in total;
+    \item the \texttt{172.16.0.0/12}, $2^{20}$ addresses in total; 
+    \item the \texttt{192.168.0.0/16}, $2^{16}$ addresses in total; 
+    \item the \texttt{224.0.0.0/4}, $2^{28}$ addresses, reserved for
+        \emph{multicast}.
+\end{enumerate}
+
+Addresses belonging to the first 3 ranges are said to be \textbf{private} IP
+addresses, in contrast to the \textbf{public} IP addresses. The first addresses
+belong to the internal network of a single organization, while the second
+addresses must be purchased from an ISP, or publicly purchased from some
+governative organization, and they cannot be assigned autonomously. The number
+of devices is much greater than the number of available public IP addresses.
+Private network numbers are then necessary in order to manage the network of
+organization. A private IP address is unique only in the boundaries of a single
+organization.
+
+
+As a general networking rule, every frontier router must discard incoming or
+outgoing packets with private IP addresses. This means that each and any device
+possessing a private IP address cannot communicate directly with any IP address
+outside an organization, and it has IP connectivity only with nodes internal to
+the organization. Since nowadays it is very important to be able to communicate
+externally (many applications do require direct internet access), a different
+communication mechanism for devices with private IP addresses should exists.
+
+To achieve the goal, there are two different technologies with similar
+functionalities, but different implementation. The first is the \textbf{NAT},
+Network Address Translation. The network address translation is no longer used.
+The second one is called \textbf{NAPT}, Network Address Port Translation, and
+it is usually shortened with \emph{NAT}. NAPT is what's used today on gateway
+routers.
+
+\section{How NAT works}
+
+The basic idea of \textbf{NAT} is to \emph{modify the header of a packet} so
+that the private addresses are replaced with a public address, and the port is
+changed accordingly. Suppose a device with private IP address
+\texttt{192.168.0.1} is trying to connect to \texttt{4.26.18.144}, a public IP
+address, on port 777. The packet will travel to the default gateway, our NAT
+device. The NAT will then inspect the packet, look for address and port
+information in header, and \emph{modify them} so that the source IP address now
+is the public IP address of the router (let's say, \texttt{80.68.17.190}), and
+the port number is changed with an on--the--fly generated port number that is
+currently available (suppose 18923 instead of 777). Basically, a NAT devices
+alters IP address and port information of a TCP and UDP packet and maps them
+into the public address of the router \emph{plus} a port number which
+corresponds to the device that is requesting the connection. NAT module will
+also modify the \emph{header checksum}, reconstructing it in order to match the
+new packet that has been built (otherwise, all modified packets would be
+discarded within the next hop).
+
+All a NAT module should do is to remember for some time that the device packet
+has been mapped to a specific public IP address (all devices will be mapped to
+the same one) and port number. Each time a packet from the inside travels
+through a NAT, a new device----port number mapping is produced and stored in a
+table, the \textbf{NAT Mapping Table}. The mapping table stores all the
+mappings across time. After a time interval, a mapping is discarded.
+
+Upon new connection from inside to outside, NAT will look at the mapping for
+translating \texttt{IP-I, port-I} to \texttt{port-E}. If there is no existing
+entry, choose unused \texttt{port-E} and allocate the entry in the mapping
+table. After that, modify all TCP/IP headers according to the table.
+
+When a packet from the outside comes to the NAT module's external interface,
+NAT device will inspect both the packet header and its own mapping table: if a
+correct mapping exist, packets with the correct public IP address as recipient
+will be delivered to the correct recipient \emph{inside} the organization;
+which device, it depends on the mapping between the port number and the
+internal device. Basically, incoming data are translated back again by means of
+the \emph{same} association in mapping table. Such translation at both sides
+will result in packets correctly delivered to their destinations.
+
+A very important aspect of the NAT translation is the way that a NAT module
+\emph{protects the network}. In fact, \textbf{any} packet, request or access
+from the outside for which an existing association does not exist, \textbf{will
+be discarded}. This is a crucial facet of a paramount importance: one of the
+most important defense mechanisms is to avoid access from the outside; by using
+a NAT module, one is able to immediately obtain network insulation from the
+outside, for free. For this reason, NAT is said to be \emph{``a native
+firewall''}. All of this does not require change or configuration on internal
+nodes, they only need to set up a proper gateway -- address translation happens
+to be \textbf{transparent} to the clients.
+
+NAT modules can be configured with \textbf{immutable entries} as well.
+Immutable entries are entries that should be configured first, so that they
+never expire and they are chosen accordingly. Immutable entries make sense when
+one has to run an internal server that should be accessible from outside; it is
+not uncommon to generate immutable entries so that, for instance,
+\texttt{IP-I1, 80} is bounded to port \texttt{80} as well as \texttt{IP-I1,
+443} is bounded to port \texttt{443}. Usually one wants to choose and dedicate
+known port numbers so that their services work.
+
+The number of external connected clients is irrelevant. The NAT module, in
+fact, only maintains the state of the \emph{internal} nodes, and not about the
+external endpoints; this means that as many nodes as one wants can be connected
+inside a single NAT device.
+
+The drawbacks of this approach are that no more than \emph{one} internal server
+for any given protocol (on the standard port) is allowed, otherwise there would
+be collisions in the mapping table, that are multiple devices mapped to a same
+external port number.
+
+\subsection{Entry releases in NAT}
+
+Since port numbers are limited in number (16 bits only, from which one has to
+ignore known port numbers) and precious, NAT discards old and unnecessary
+entries in the table. To do so, it observes TCP segments that \textbf{close
+connections}, in particular looking for \texttt{FIN} flags. Upon observing the last segment, an entry could be released. 
+
+Moreover, old entries are discarded as well:
+\begin{itemize}
+    \item if an entry is \textbf{unused} during time interval $t_{u}$, the
+        entry is removed -- TCP connections will crash as a result (and UDP
+        connections may not work as well);
+    \item if an entry is still in use, but allocated \textbf{timer} $t_{a}$
+        \textbf{expired}, the entry is removed. The TCP connection will likely
+        crash as well as the case before. Most NAT modules also implement this
+        feature.
+\end{itemize}
+
+\section{Multiple NAT modules on the path}
+
+Multple NAT modules on a single path are the norm. What usually happens is that two devices of two distinct organizations want to communicate -- at each organization's boundary lies a NAT module. 
+
+The mechanics are completely similar to the previous ones. What happens is that
+\emph{each NAT module hides internal IP address from the other's end},
+performing transparent translation as nothing occurred.
+
+Let organization 1 have a client that wants to connect to organization 2's
+server. Organization 2 has correctly set up an immutable entry for its own network
+service, so that it is accessible from outside. Now, consider a packet from the
+client to the server and its response. The following table summarizes the
+exchange:
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{r|llll}
+        & \textbf{\makecell{src IP}} & \textbf{\makecell{src port}} & \textbf{\makecell{dst IP}} & \textbf{\makecell{dst port}} \\
+        \\
+    \hline
+    \\
+    \textbf{\makecell{Inside \\ Org 1}} & \texttt{IP-I1} & \texttt{port-I1} & \texttt{IP-E2} & \texttt{port-E2} \\
+    \\
+    \textbf{\makecell{Internet}} & \texttt{IP-E1} & \texttt{port-E1} & \texttt{IP-E2} & \texttt{port-E2} \\
+    \\
+    \textbf{\makecell{Inside \\ Org 2}} & \texttt{IP-E1} & \texttt{port-E1} & \texttt{IP-I2} & \texttt{port-I2} \\
+    \\
+    \hline
+    \\
+    \textbf{\makecell{Inside \\ Org 2}} & \texttt{IP-I2} & \texttt{port-I2} & \texttt{IP-E1} & \texttt{port-E1} \\
+    \\
+    \textbf{\makecell{Internet}} & \texttt{IP-E2} & \texttt{port-E2} & \texttt{IP-E1} & \texttt{port-E1} \\
+    \\
+    \textbf{\makecell{Inside \\ Org 1}} & \texttt{IP-E2} & \texttt{port-E2} & \texttt{IP-I1} & \texttt{port-I1}
+    \\
+\end{tabular}
+\caption{Message exchange between a client and a server in the case of multiple
+NAT modules on the path.}\label{tab:multipleNATModules}
+\end{table}
+\bigskip
+
+\section{Multilevel NAT}
+
+NAT modules can be structured in a \textbf{multileveled} way. In particular,
+external IP addresses \textbf{need not to be public}, and might be private
+addresses as well. This means that one can set up a NAT module that translates
+between private IP addresses in a same organization, provided a further NAT
+module exists and translates the private IP address into a public one.
+
+More generally what a NAT does is translating \emph{internal} IP addresses into
+\emph{external} IP addresses; numerical values do not matter. As a matter of
+fact, packets could find further NAT modules on the path that translates its
+addresses multiple times, from private to private ones, private to public ones,
+and public to private ones, before arriving at destination. It usually happens
+that an ISP owns some public addresses, but only gives you access to the
+internet through some NAT modules. Basically, the home router's external IP
+address is usually a private IP address, and the device is visible from the
+real IP address only through a series of NAT modules. The same goes for
+\textbf{hotspots} on smartphones; since the device has a private address, there
+is a further NAT that allows the device to access the internet.
+
+Most networks are behind many multilevel NAT architectures before even reaching
+the internet. In order to expose a server by configuring NAT modules only,
+\textbf{all} NAT modules should be within the same organization and be
+configured properly. Since most of the path is usually out of the
+organization's control, it is practically unfeasible to expose a server to the
+outside. What should be done is buying a \textbf{public} and \textbf{static} IP
+address, so that the server will be accessible regardless.
+
+\subsection{NAT and protocols without port number}
+
+There are tons of protocols that are port number agnostic. For instance, the \textbf{ICMP} protocol does not adopt ports. Since there are no specified port numbers, a NAT module could not be able to handle such packets.
+
+In reality, a NAT modules handles ad hoc all ICMP packets, by creating a
+\emph{temporary association} that it is not based on port numbers (suppose a
+\texttt{ping} message exits the network -- the NAT module creates a temporary
+association so that the response could be delivered to the requesting client). 
+
+If the client requesting a \texttt{ping} is outside the network, the NAT module
+will respond to ICMP request autonomously.
+
+\subsection{NAT--unfriendly protocols}
+
+Some protocols are said to be \textbf{NAT--unfriendly}. NAT--unfriendly
+protocols are those for which \emph{server addresses are specified in
+application data}. For all those protocols, if there is a NAT module along the
+path, they may not work properly.
+
+For instance, consider \textbf{FTP} protocol. FTP uses two ports, port 20 for
+communication and port 21 for actual data transfer. Suppose now a client uses
+command port to communicate that one wants to use a \emph{different} port than
+21 for data transfer -- the server responds, let's say, with port 10000. Now,
+the NAT module that actually transforms the packets \textbf{will be unaware}
+and simply keep checking for packets at port 20 -- even worse, port 10000 may
+already be in use! Thus, FTP protocol is said to be NAT-unfriendly due to the
+incompatibility between how port numbers are exchanged and how NAT actually
+works.
+
+Despite this drawbacks, today's NAT modules are able to analyze and inspect
+application payload, so that port exchanges in FTP will be predictable and
+assigned properly, by understanding the case in which there is a change of data
+port from 20 to another one.
+
+Another NAT-unfriendly protocol is the \textbf{HTTP} protocol. Embedded and
+hardcoded urls in HTML documents may ask for non standard ports -- in that
+case, NAT module should be configured for accepting traffic to that port, from
+the outside (while there are no issues for an internal client). Even though it
+is unfriendly in practice, HTTP protocol is considered to be a NAT-friendly
+protocol.
+
+\chapter{Virtual Private Networks}
+
+A \textbf{Virtual Private Network} is a technology that uses the concept of the
+\textbf{tunnel} to provide connectivity between two endpoints, be them public
+or private IP addresses. A tunnel is a \emph{virtual} network.
+
+Suppose a VPN connects the two gateways of two organizations: \textbf{all IP
+traffic} between the two organizations is \emph{routed on the tunnel}.
+Basically, it happens that from the \emph{logical} point of view the two
+organizations are connected by a virtual network. Each device at the tunnel end
+will be equipped with two network interfaces; each network interface has its
+own IP address, with its subnet mask and its default gateway. On a VPN, the
+default gateways are the other end's IP address, so that the packets going
+outside will always reach the other organization.
+
+Tunnel does not provide routing: organizations are expected to set it up
+appropriately. Suppose a client of the first organization sends a packet
+somewhere. If the destination IP address lies in the network address ranges of
+the second organization, then the routing should be configured so that the
+packet will travel through the tunnel to reach the other organizations;
+otherwise, the packet should be delivered through the internetwork. The same
+goes viceversa.
+
+The tunnel offers a functionality of packet \textbf{encapsulation}. Packet
+encapsulation means that the original packet is enclosed within the
+\emph{frame} of the virtual network. What happens is that the packet,
+travelling on the tunnel, is first encapsulated into a proper frame, in which
+it travels through the tunnel. After the packet has reached the other end of
+the tunnel, the packet will be extracted by remobing the frame capsule and it
+will be treated as if it were never part of a virtual tunnel.
+
+A tunnel may be established between \textbf{any} pair of nodes, be them
+\emph{at the border of the organization} or be them \emph{internal nodes}. The
+traffic actually router on the tunnel will depend on the routing tables
+specified by the two endpoints. Since the virtual network will ``bypass'' NAT
+modules, integration between remote internetworks that have private IP
+addresses will be possible even without using traditional address translation.
+
+The tunnel is an \textbf{abstraction}, only valid from a logical point of view.
+In particular, the tunnel functionality is provided by a regular TCP or UDP
+connection between two endpoints, through the internet. This means that the
+frame is encapsulated in an external packet -- a packet that could actually
+travel through the internetwork.
+
+VPNs might have many implementations. One of them is by means of a
+\textbf{Point--to--Point Protocol} tunnel. The original packet that goes
+through the tunnel will be first encapsulated within the PPP frame of the
+virtual network, and then delivered through the tunnel, by means of
+encapsulation in a legit packet. The packet is then delivered via the internet,
+inspected by the endpoint, extracted, read the frame, and removed the
+encapsulation to extract the final payload, the packet that belongs to another
+IP address inside the organization.
+
+Basically, what happens is that if a packet should be sent to a network number
+that must be routed on the tunnel, it must first be encapsulated in a PPP
+frame, then the frame will be put inside an IP packet with the destination IP
+address and the packet will be finally sent over the internetwork.
+
+Let \texttt{IP-X} and \texttt{IP-Y} be the two gateways of Organization X and
+Organization Y. The two organizations have formed a VPN tunnel between their
+two gateways. Suppose a \texttt{IP-s} client belonging to Organization X wants
+to send a packet to the \texttt{IP-d} client in Organization Y. First, routing
+should be set up so that the packet to \texttt{IP-d} should not be sent through
+the internet, but to the tunnel. Second, the packet \texttt{IP-s, IP-d} will be
+encapsulated into a PPP frame to be delivered in the tunnel. Third, the tunnel
+does not exist in reality: this means that the actual tunnel is provided by a
+communication between the two gateways of the two organizations. For this
+reason, the gateway \texttt{IP-X} will manage to send the packet and thus the
+PPP frame will be encapsulated inside an \texttt{IP-X, IP-Y} packet, that will
+travel through the internet.
+
+Another way to produce a tunnel is by means of a \textbf{TCP tunnel}. The TCP
+tunnel encapsulates all packets by means of a TCP header, having port numbers
+specified. The payload of the IP packet \texttt{IP-X, IP-Y} is a TCP segment.
+Yet another way is the \textbf{UDP tunnel} way, in which the payload of the IP
+packet that travels through the internet is now a UDP packet.
+
+Irrespective of implementation, an IP packet of the form \texttt{IP-X, IP-Y}
+will have as payload the tunnel protocol, whose content depend on the adopted
+tunnel protocol.
+
+\section{Security guarantees of Virtual Private Networks}
+
+Traffic inside a VPN has some important security guarantees, so that it is
+practically a good means of achieving a secure communication between two
+endpoints. In practice, IP traffic in virtual network has \emph{secrecy},
+\emph{integrity} and \emph{mutual authentication} properties; for this reason
+the traffic is \textbf{isolated} even though the tunnel is implemented on a
+\emph{shared} medium.
+
+VPN also offer protection against \textbf{replay attacks}. For all the above
+reasons a VPN guarantees much more security from a network attacker, all of
+this by \textbf{reducing the attack surface} a lot:
+\begin{enumerate}
+    \item due to \textbf{secrecy}, an attacker cannot tell what's in the
+        traffic, since there is no way for him to inspect the data;
+    \item due to \textbf{integrity}, there is no hope for an attacker to
+        manipulate the data inside the tunnel;
+    \item due to \textbf{mutual authentication}, there is little to no way for
+        an attacker to impersonate one of the endpoints;
+    \item for all the above, the \textbf{replay protection} is guaranteed.
+\end{enumerate}
+
+An attacker can only detect the existence of VPN traffic, possibly performing
+some DoS attacks (only if MITM).
+
+MARK slide 35
+
+
+
+\section{Three use cases for a VPN}
+\subsection{Scenario I -- connecting remote organizations}
+
+The first useful scenario for a VPN is \textbf{to connect remote organizations
+with internet connectivity}. In this first scenario, two VPN endpoints are
+configured by the two organizations so that they created a virtual tunnel
+between them. The IP traffic of all clients across the two organization will
+never travel on the internet without being first encapsulated in the tunnel.
+The VPN connects all traffic between two organizations, without logically
+passing through the internet.
+
+
+
 \part{Cyberattacks}
 
 \chapter{Attackers and their \emph{modus operandi}}
