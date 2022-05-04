@@ -223,9 +223,9 @@ a TCP segment can never be greater than the MTU, because a TCP segment is
 carried \emph{inside} an IP packet.
 
 In TCP, communication happens to be \textbf{bidirectional}, with a pattern that
-depends on the application protocol. The send\----receive patterns heavily depends
-on the application itself \-- browser-related send\----receive sequences are
-very different from, let's say, an e-mail client send\----receive sequence.
+depends on the application protocol. The send\---receive patterns heavily depends
+on the application itself \-- browser-related send\---receive sequences are
+very different from, let's say, an e-mail client send\---receive sequence.
 There is no guarantee that two different application protocols will exchange a
 similar amount and kind of TCP messages, let alone the very same ones.
 
@@ -939,7 +939,7 @@ Exact\marginpar{\small\textsf{Choosing RTO}} timings of retransmissions are hard
 blind if it does not receive any ACK: should it send again in-flight segments,
 or should it wait a little bit more? In practice, how long should the timer be
 set? Basically, a rule of thumb is that it should be ``slightly larger'' than
-Round\----Trip Time. In order to do so, since RTT largely varies depending on
+Round\---Trip Time. In order to do so, since RTT largely varies depending on
 connections, time, and many other conditions, RTO is \textbf{dinamically updated}
 by algorithms such as \emph{Jacobson algorithm}.
 
@@ -1069,7 +1069,7 @@ time, only a single acknowledgement will be sent back to the sender.
 Since there are \emph{many} different sources of randomness, let alone things
 that are completely out of TCP's control (just think of connection's quality,
 operating system's load, the other's end capabilities, packet loss,
-send\----receive invocations), there is \textbf{no} single correct way for TCP
+send\---receive invocations), there is \textbf{no} single correct way for TCP
 protocol to exchange a given amount of data with another party.
 
 \section{Flow and Congestion Control}
@@ -1239,7 +1239,7 @@ have been made:
 In every case, a greater RX-buffer will result in higher throughput, since
 there is a proportionality between throughput and buffer size. Viceversa,
 greater RTT will result in less throughput \--- LANs will have greater
-throughput than WANs since they possess a lesser Round\----Trip Time. However,
+throughput than WANs since they possess a lesser Round\---Trip Time. However,
 in this formula the \emph{quality} of the network is not taken in account:
 segments can be loss, especially when too many of them are injected through the
 internet. For this reason, this much-optimistic model cannot be applied in
@@ -2375,7 +2375,7 @@ discarded within the next hop).
 All a NAT module should do is to remember for some time that the device packet
 has been mapped to a specific public IP address (all devices will be mapped to
 the same one) and port number. Each time a packet from the inside travels
-through a NAT, a new device----port number mapping is produced and stored in a
+through a NAT, a new device---port number mapping is produced and stored in a
 table, the \textbf{NAT Mapping Table}. The mapping table stores all the
 mappings across time. After a time interval, a mapping is discarded.
 
@@ -2622,6 +2622,11 @@ reason, the gateway \texttt{IP-X} will manage to send the packet and thus the
 PPP frame will be encapsulated inside an \texttt{IP-X, IP-Y} packet, that will
 travel through the internet.
 
+\begin{verbatim}
+IP-X, IP-Y | PPP Frame header | IP-S, IP-D | payload
+\end{verbatim}
+
+
 Another way to produce a tunnel is by means of a \textbf{TCP tunnel}. The TCP
 tunnel encapsulates all packets by means of a TCP header, having port numbers
 specified. The payload of the IP packet \texttt{IP-X, IP-Y} is a TCP segment.
@@ -2655,9 +2660,14 @@ this by \textbf{reducing the attack surface} a lot:
 \end{enumerate}
 
 An attacker can only detect the existence of VPN traffic, possibly performing
-some DoS attacks (only if MITM).
-
-MARK slide 35
+some DoS attacks (only if MITM). A network attacker can conceptually be in any
+network -- in practice, however, it is much simpler to sniff and manipulate
+traffic \textbf{when closer} to the organization boundaries. In other words, an
+attacker will try to shorten the distance between himself and the organization
+to attack. When closer, focusing on traffic of interest becomes easier. Bigger
+risks are posed on \textbf{open} Wi--Fi networks and personal Wi--Fi in
+\textbf{promiscuous} environments (for instance, at a restaurant, at the
+airport, at the school.
 
 
 
@@ -2671,6 +2681,268 @@ between them. The IP traffic of all clients across the two organization will
 never travel on the internet without being first encapsulated in the tunnel.
 The VPN connects all traffic between two organizations, without logically
 passing through the internet.
+
+A \emph{specific} case of this first scenario is when a \emph{remote worker}
+connects to the organization's intranetwork by means of the VPN tunnel. In this
+case, all the traffic is encrypted in transit and an attacker cannot possibly
+read, manipulate and communicate data. All the IP traffic with organization is
+on VPN; a remote worker connects to the organization, and then all its internet
+traffic is filtered by the organization's proxy.
+
+Basically, this scenario boils down to \textbf{securing} integration between
+\textbf{remote locations} that have \textbf{internet} connectivity. All devices
+are under the same administrative domain.
+
+\subsection{Scenario II -- using a VPN provider services}
+
+The second, useful, scenario is the one in which personal devices are connected
+to a VPN that is \textbf{managed by a VPN provider}. A VPN provider
+\emph{sells} a VPN service to users, so that they can connect to any of the
+servers in the subscription. What happens is that \emph{all} the internet
+connectivity of the device is routed inside the VPN tunnel, to the VPN
+provider's servers: the traffic generated by the device will resemble a traffic
+that \textbf{originated by the VPN provider's IP address}. Some degrees of
+anonimity are guaranteed by the vary fact that \textbf{many} users are
+connected to the same server, and \textbf{all} appear as if they were a single
+one.
+
+A network attacker can no longer intercept traffic between the device and the
+VPN provider; still, traffic is not more safe when the packets come out of the
+tunnel. The VPN provider, in fact, highly reduces the set of the possible
+attacks (the \emph{attack surface}).
+
+A VPN provider usually offers multiple locations for its VPN servers. This is
+done for many reasons: for instance, a user may want to choose a server close
+to his location; another one might be interested in unlocking content which is
+not available in their own country; another one could simply want to switch to
+a far away location in order to obfuscate its traffic even more.
+
+A paramount remark is that the VPN provider acts as a \textbf{MITM for all
+traffic}. Choosing a VPN provider means that it must be trustworthy -- let
+alone the fact that they represent a highly--valuable target for high--skill
+criminal groups, intelligence agencies, and many other potential group that
+could \textbf{target} a VPN provider specifically.
+
+This second scenario represents the use case in which one wants to
+\textbf{secure} an internet connection \textbf{irrespectively} of the
+\textbf{physical location}, also hiding its traffic (possible anonymization
+benefits) behind the IP address of the VPN provider of choice.
+
+Possible ways to employ a commercial VPN services exist depending on the
+provided software. There could be either \textbf{full--device} or
+\textbf{per--app} VPNs, which in turn may be \textbf{OS--integrated} or
+\textbf{installed as third--party clients} (for instance, \emph{OpenVPN} is
+both a third--party software, on Windows, or integrated with OS, on Linux). VPN
+activation can either be triggered---automatic or manual.
+
+\subsection{Scenario III -- accessing risky devices}
+
+Real organizations possess many devices that both play a \emph{crucial} role
+for the organization and \emph{cannot be replaced} for costs and time reasons.
+Those devices use old application protocols with \emph{weak} or \emph{unsecure}
+defenses, with \emph{several critical vulnerabilities}, not patched for the
+same above reasons (or, possible end-of-life software, or vendor not willing to
+patch, or, or\dots).
+
+The network attacker threat model \textbf{is just a model}: what happens in
+reality is that an attacker \textbf{might realistically be in internal
+networks}. Usually a (former) network attacker has acquired access to at least
+one of the devices, due to one of the following reasons:
+\begin{enumerate}
+    \item \emph{too many networks} and \emph{too many networking devices} to
+        properly defend;
+    \item difficulty or impossibility to prevent \emph{physical access};
+    \item some user can have compromised his \emph{credentials};
+    \item the \emph{bring your own device} (BYOD) policy.
+\end{enumerate}
+
+The threat model must be upgraded, including the new scenario in which a
+network attacker has managed to get access to an intranet.
+
+For this reason, one of the most systematic and powerful defenses is to
+\textbf{restructure networks and routing} so that the set of \textbf{risky
+devices} can \textbf{only} be accessed through a VPN. This is a remarkable
+defense mechanism, since there is no need to modify risky devices while the
+guaranteed protection is much higher (they are no longer exposed to the
+network).
+
+This mechanism is only usable \emph{within} organizations. Also remember that
+this is as secure as the VPN credentials are -- if an attacker manages to steal
+the VPN credentials, the game is over.
+
+\section{OpenVPN}
+
+Among all possible implementations, we will consider \textbf{OpenVPN}. 
+
+The scenario is as follows:
+\begin{itemize}
+    \item \emph{one} remote client (although OpenVPN supports multiple clients
+        at once);
+    \item an OpenVPN server that is running;
+    \item both endpoints are configured properly.
+\end{itemize}
+
+OpenVPN is an \emph{open source} application program, composed of a
+\emph{server} and of a \emph{client}, that creates and uses \emph{UDP tunnels}
+for TLS payload (thus, carrying encrypted payloads), with the option of
+enabling TCP tunnels.
+
+What happens is that an \texttt{IP-CV} (on real address \texttt{IP-C}) wants to
+send a packet to \texttt{IP-D} inside the organization. What happens is that
+the packet \texttt{IP-CV, IP-D} is routed inside the tunnel as an
+\emph{encrypted payload}. The packet traveling in the tunnel has the form
+
+\begin{verbatim}
+IP-C, IP-S | UDP-H | OPENVPN HEADER | TLS(IP-CV, IP-D | payload)
+\end{verbatim}
+
+and sent into the tunnel. Basically, a UDP packet carries a OpenVPN header,
+whose payload is the TLS encrypted version of the encapsulated original packet.
+The UDP packet is sent through the internet via an ordinary packet
+\texttt{IP-C, IP-S}, so that it can reach the VPN server. The latter will
+inspect the packet and open it, freeing the payload inside the organization's
+network.
+
+Although the OpenVPN protocol has not been specified in any request for
+comments, it is very used and reliable; it can manage multiple independent
+tunnels, and TLS is implemented with \emph{OpenSSL} library.
+
+An important remark is that application layer, TCP layer and IP layer
+\textbf{need not to know anything} about the VPN; the only difference will be
+that the application layer communicates through \texttt{IP-CV} (virtual)
+instead of \texttt{IP-C}.
+
+\subsection{VPN establishment}
+
+In order to establish a connection with a running OpenVPN server, four steps
+are necessary:
+\begin{enumerate}
+    \item first, one has to obtain the IP address \texttt{IP-S} of the server.
+        In order to do that, the client \emph{must already know} the server's
+        address;
+    \item then, a TCP connection to \texttt{IP-S} should be opened;
+    \item \emph{user authentication} takes place: for instance, password on
+        HTTPS might be a possibility;
+    \item an \textbf{UDP} tunnel must be created:
+\begin{enumerate}
+    \item obtain \texttt{IP-CV}, subnet mask, and \texttt{IP-GW-V} (both
+        virtual private addresses);
+    \item obtain IP routing table configuration (which of the network numbers
+        shall be routed in the tunnel);
+    \item configure local applications (for instance, which applications should
+        use \texttt{IP-CV}, some of them or all of them?).
+\end{enumerate}
+\end{enumerate}
+
+Establishing a VPN connection means the tunnel is then ready to work. A remote
+worker connecting to an internal server (\texttt{www.x.com} at IP
+\texttt{IP-WS}) will do that through the VPN. To find \texttt{IP-WS} a DNS
+query to the organization's \texttt{IP-NS} should be performed in the tunnel:
+
+\begin{verbatim}
+IP-CV, IP-S | UDP-H | OpenVPN-H | TLS("www.x.com A ?")
+\end{verbatim}
+
+Routers, however, should be configured so that the response to the above
+request is routed to the tunnels as intended.
+
+All an attacker can understand is that \emph{``client \texttt{IP-C} is using
+OpenVPN with \texttt{IP-S}''}.
+
+The very same approach can be used to understand what happens on a OpenVPN
+tunnel in the scenario II (with a VPN provider). All the traffic is routed
+through the VPN, and can only reach the client back by means of the very same
+tunnel. After having left the tunnel, the packet sees its encapsulation removed
+and it passes through a configured NAT module which translates the packet with
+the correct addresses:
+\begin{verbatim}
+IP-CV, IP-X | port-s, port-d | payload
+IP-R, IP-X | port-sE, port-d
+\end{verbatim}
+
+The NAT module is mandatory to distinguish between the various clients. In
+fact, it is impossible either for a private address to travel on the internet
+or for a VPN to distinguish between the various clients without a NAT.
+
+The very same path will be traveled back by all the packets going to the
+client: through the NAT, then to the OpenVPN server, then into the tunnel and
+finally to the client. Again, all an attacker can understand is that
+\emph{``client \texttt{IP-C} is using OpenVPN with \texttt{IP-S}''}.
+
+The last question is \emph{does OpenVPN work across NAT}?
+
+In order to answer that, simply remind that the OpenVPN is based on UDP or TCP,
+therefore \textbf{it works just like any other protocol}: NAT modules will
+modify the ``external capsule'', leaving the encrypted payload intact. For this
+reason, no matter how many NAT modules -- if the path client---server is
+practicable, the VPN will work.
+
+Client---side, there is no need to configure NAT modules, while on server side
+static port mapping is required for functioning. The default port numbers,
+identical on both sides, are \texttt{UDP/1194-1194}. Various differences arise
+from other configurations; for instance, different port numbers could be set,
+TCP might be used. Another configuration is the TCP + random client + 443
+server + no OpenVPN header, which actually \emph{looks like HTTPS traffic}.
+This is a kind of configuration that takes shape of allowed traffic, and is
+particularly useful in all scenarios in which a firewall might be blocking
+OpenVPN traffic.
+
+\section{Other implementations}
+
+Other VPN implementations are \textbf{L2TP} and \textbf{PPTP} which are,
+respectively, based on \textbf{IPsec tunnel} and \textbf{PPP tunnel}
+technology. The latter, developed by Microsoft, should never ever be used,
+since it is considered unsafe.
+
+L2TP implementations exist both as application programs and natively supported
+be operating system. The basic idea of \emph{IPsec} is that the IP packet in
+payload is \emph{directly contained} in another, encrypted, IP packet -- this
+way, IPsec is in a way ``leaner'' than OpenVPN, which in turn requires a TCP or
+UDP packet to travel to destination.
+
+The key practical problems of IPsec--based VPNs is that it should be configured
+properly both in the client and in the organization's server and machines
+(especially in NAT and in firewall).
+
+Within the tunnel, there are strong security guarantees such as in all examples
+above -- the attacker only knows the IP addresses of tunnel endpoints, the VPN
+protocol, and possibly the \emph{volume} of the traffic (this last knowledge is
+only enforceable by almost--omniscent adversaries, such as intelligence
+agencies, big CDN providers and some powerful organizations). An attacker does
+not know the content of the encrypted payload (the packet that lies inside),
+and can only DoS, if on--path.
+
+\subsection{Some practical risks}
+
+VPNs are indeed a powerful and systematic way to defend against \emph{network
+attackers}. Some risks do exist, though. For instance, \textbf{before tunnel
+establishment} there may be no strong security guarantee. A network attacker,
+when connecting from an unsafe location, might be able to intercept the traffic
+and act as MITM. An attacker that manages to attack the DNS interaction could
+be able to impersonate the VPN server, steal credentials and read and
+manipulate all traffic.
+
+The real defense against the above issue is to perform \textbf{certificate
+pinning} (that is, installing the VPN server's certificate \emph{on the
+client}), hardcode the IP address of the VPN server directly in VPN client, and
+\textbf{Strict Transport Security}.
+
+Another practical risks involve \textbf{phishing} attacks, in which an attacker
+sends fraudulent links to fraudulent VPN services. In those cases, the user
+should remain vigilant and not fall prey of those baits.
+
+Also, VPN software might suffer from \textbf{vulnerabilities}. Vulnerabilities
+in VPN software are a real, practical problem that can be used by an attacker
+to surpass the VPN protections. VPN software can be vulnerable on the server
+side too, with attackers capable of executing exploits, neutralizing VPN
+security guarantees and entering the organization. In this case, the defensive
+tools itself allowed access to an attacker.
+
+\chapter{Web Security}
+\chapter{Passwords}
+\chapter{Multi--Factor Authentication}
+\chapter{Authentication}
+\chapter{Identity and Access Management}
 
 
 
