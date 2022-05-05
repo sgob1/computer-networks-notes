@@ -3941,7 +3941,7 @@ access. Depending on the specific context, though, the defender shall consider
 one or more phases.
 
 Regarding remote malware installation (with physical access is more trivial),
-MITRA attack framework has three phases that correspond to malware
+MITRE attack framework has three phases that correspond to malware
 installation: \emph{initial access}, \emph{execution} and \emph{persistence}.
 Basically, there are many ways to execute malware, but the most important ones
 are by means of \textbf{software vulnerabilities} and \textbf{user execution};
@@ -3974,7 +3974,149 @@ experts analysis is needed and it is almost never used for antivirus. Anomaly
 detection must also refer to already known attack patterns.
 
 However, \textbf{polymorphic malwares} do exist, and they make antivirus
-more useless due to impossibility of comparing signatures.
+a lot more useless due to impossibility of comparing signatures.
 
+
+Antivirus software works by detecting \emph{expoint injections}. What happens is that a vulnerability $v$ is first discovered; 
+\begin{enumerate}
+    \item figure out how $v$ works;
+    \item develop detection rules for \textbf{all} the possible
+        exploits\footnote{This is crucial -- there may be \emph{many} different
+        exploits for a single vulnerability, each one having possibly a very
+    distinct behavior. This is not easy, especially in exploits carried by
+let's say Word documents (an antivirus should be able to detect a very general
+and broad range of all possible documents that can carry the exploit).} of $v$;
+repeat as necessary overtime; 
+    \item integrate the new collected signatures in the antivirus;
+    \item release the new signature set;
+    \item antivirus are ready to be updated (\textbf{signature download}).
+\end{enumerate}
+
+The signature development and download phases are very delicate -- they
+\emph{take time}, and they leave the antivirus unable to protect the device to
+new threats. This means that as soon as a new vulnerability is discovered, a
+\emph{time delay} is required before the antivirus starts protecting against
+the very same one. 
+
+\emph{WannaCry} was able to propagate very quickly in 30 minutes only: a too
+thin time interval for any antivirus to possibly react.
+
+Further problems for antiviruses: signatures for \emph{zero--day} attacks do
+not exist, since they cannot possibly be detected (otherwise, they wouldn't be
+\emph{zero--day}s). Moreover, signatures cannot be developed for \textbf{all}
+vulnerabilities: there are just too many of them, and antivirus vendor must
+prioritize the most common and dangerous ones. Even another issue is that the
+signature must detect exploits, not vulnerabilities. Still, given any
+exploit, an attacker might be able to obtain \emph{nearly--infinite} other
+exploits that \textbf{look different} but are \textbf{funcionally equivalent}.
+Since writing accurate signatures is rather hard, criminals may achieve
+antivirus evasion this way.
+
+This all boils down to three factos:
+\begin{enumerate}
+    \item signature development \emph{takes time};
+    \item anomalies provoke too many false positives to employ \emph{anomaly
+        detection};
+    \item signatures cannot be developed for \emph{all the possible attacks};
+    \item attackers can \emph{``morph''} their malware to evade antivirus
+        detection, without limits in morphing capabilities.
+\end{enumerate}
+
+Antiviruses hardly protect from the attacks of \emph{today}, but they protect
+from the attacks of \emph{yesterday}. Moreover, they prevent only the most
+frequent and most dangerous attacks.
+
+\subsubsection{VirusTotal Web Service}
+
+\emph{VirusTotal} web service aggregates many antivirus products and online
+scan engines to check for viruses, or to verify against any false positives.
+The service is free and can be used without purchasing a license.
+
+\subsection{Supply Chain Compromise}
+
+Malware can also be installed during \emph{manufacturing}, \emph{installation}
+and \emph{configuration} phases. This represents a \emph{huge} problem; no
+longer a theoretical possibility, it will become more and more relevant.
+
+One of the techniques of MITRE attack framework Initial Access phase is the
+\textbf{Supply Chain Compromise} techniques: adversaries might be able to
+manipulate \emph{products} or \emph{product delivery mechanisms} prior to
+receipt by the final people. This means that an attacker is able to
+\emph{introduce a malware directly in the supply chain}, without people
+possibly know. That can be done by manipulation notebooks, firmware, software
+and so on.
+
+This represent a strong technique to \emph{target specific important people}.
+Installing malware before a device, a software, or a system arrives to the
+targeted individual can be done by \emph{updates manipulation},
+\emph{preinstallation on device} or by altering \emph{distribution channels}.
+From a defender's point of view, this is a true nightmare, since \emph{no one
+can be trusted anymore}.
+
+\textbf{SolarWinds} software for network security monitoring has been
+compromised in late 2020 -- adopted by over 18000 large and security--conscious
+organizations, the compromised software has seen \emph{malicious updates}
+installed and distributed. Many more examples are available on the web (and on
+the last pack of slides).
+
+Supply chain attacks are marvellous for an attacker that wants money, since
+\emph{a single attack can result in many, many organizations infected}, all the
+organizations that use the compromised software or device. The average open
+source project depends on 180 libraries on average -- there are 180 different
+points in which a malware could be inserted.
+
+Basically, supply chain compromise may take place in \textbf{any} of the
+following ways,
+\begin{itemize}
+    \item manipulation of \emph{developer tools};
+    \item manipulation of \emph{developer environment};
+    \item manipulation of \emph{source code repositories};
+    \item manipulation of source code in \emph{open--source dependencies};
+    \item manipulation of \emph{software updates and distribution mechanisms};
+    \item compromised or infected \emph{system images} (for instance, USB
+        devices);
+    \item replacement of legitimate software with malicious modified versions;
+    \item sales of \emph{couterfeit products} to legitimate distributors;
+    \item \emph{shipment interdiction} (remember NSA tampering with routers
+        shipped to foreign customers);
+    \item and so on.
+\end{itemize}
+
+From the defender's point of view, this represent a real nightmare, since even
+the \textbf{perimeter} of defense is unknown! Questions arise whether hardware
+and software vendors and manufacturers might be compromised -- moreover,
+internal applications could still be compromised (who built our
+website? on which platform does it run? with which libraries?) as well as
+software development tools and libraries in use.
+
+\bigskip
+
+\begin{center}
+\emph{What can be possibly done in practice?}
+\end{center}
+
+\bigskip
+
+The only defense is like any other malware -- scan downloads for malicious
+signatures, test software before production deployment for any suspicious
+activity, perform physical inspection of hardware to look for potential
+tampering.
+
+An interesting approach is the \textbf{zero--trust} approach. The idea is that
+whenever you buy a machine, the machine should authenticate itself, with
+integrity checks on hardware--level, operating system--level and
+software--level.
+
+Today's best practice regarding supply chain compromises is not really a
+defense -- it is something related to understanding \emph{who your providers
+are}, and \emph{decide who you put your trust on}.
+
+Another important approach is \emph{reproducible builds}. Reproducible builds
+use verification of distributed sources and binaries through has check or other
+integrity checking means. The state--of--the--art is the authentication and
+integrity of compiler, compiler options, libraries involved, source code and so
+on.
+
+\chapter{Some important case studies}
 
 \end{document}
