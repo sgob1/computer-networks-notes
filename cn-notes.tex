@@ -4117,6 +4117,52 @@ integrity checking means. The state--of--the--art is the authentication and
 integrity of compiler, compiler options, libraries involved, source code and so
 on.
 
-\chapter{Some important case studies}
+\chapter{Some important case studies and related considerations}
 
+\begin{itemize}
+    \item Vulnerabilities affect most software in everyday usage -- for this
+        very reason, Microsoft releases a patch every month fixing hundreds of
+        bugs and vulnerabilities.
+    \item Remotely controlling a malware on a ICS---SCADA devices with
+        custom--made tools had been performed by APT actors, by developing
+        tools to \emph{scan for} and \emph{compromise} affected devices.
+        Several vulnerabilities could be exploited by remotely--controlled
+        (with custom protocol) infected devices. Those Schneider and Omron
+        devices were exploited or compromised by \emph{bruteforcing
+        credentials}, online password guessing + dictionary + (very few)
+        defaults. Installed malware could open a remote virtual console, so
+        that basically arbitrary code could be executed. Objective were focused
+        on \emph{disruption}, \emph{sabotage} and similar.
+    \item To solve above issues, \emph{suggested mitigations} \textbf{didn't
+        include patching}: ICS devices often do not have patches. There are 14
+        items in the list -- most of them really hard to perform (a nightmare
+        for security workers). One of the listed items is to change passwords
+        into \emph{device--unique strong ones}.
+    \item Other important security mitigations: enforce \emph{principle of
+        the least privilege}; \emph{isolate ICS---SCADA devices from the
+        network} and use \emph{strong perimeter controls}; \emph{limit
+        ICS---SCADA connectivity} to what's necessary only; ensure applications
+        are \emph{only installed when necessary} for operation; \emph{update
+        operating system}; use \emph{multi--factor authentication}; use
+        \emph{strong passwords}, ensure \emph{antivirus} and security software
+        is \emph{up to date}.
+    \item Computer attacks no longer affect only data -- they also affect
+        \emph{physical world} and \emph{public safety}.
+    \item The key way to understand how an organization works is to
+        \textbf{focus on the incentive structure} of your environment.
+    \item One should invest \emph{a lot} in \textbf{detection} and
+        \textbf{monitoring}, instead of \emph{prevention}.
+    \item Install \emph{independent}, cyber--physical \emph{safety} systems.
+        These are systems that physically prevent dangerous conditions from
+        occurring if the control system is compromised by a threat actor.
+    \item In \emph{SolarWinds} fiasco, only \textbf{FireEye} society was able
+        to detect the attack.
+    \item Microsoft President told that \emph{not even in intelligence
+        agencies, federals employed basic cyber hygiene and security best
+        practices}. Basic countermeasures are considered strong enough to make
+        sure that attacks have limited success (as it would have happened in
+        case of \emph{SolarWinds}).
+    \item \textbf{asset management} is crucial for correct \textbf{patching} of
+        all systems.
+\end{itemize}
 \end{document}
