@@ -3026,7 +3026,7 @@ keep the connection.
 A network attacker could only observe, steal non--secure cookies and perform a
 denial of service attack. However, it can also \textbf{perform other kinds of
 attack} that will, basically, \emph{circumvent} all the infallible HTTPS
-bells and whistles.
+bells n\textquotesingle\  whistles.
 
 In fact, two kinds of well--crafted attacks can occur:
 \begin{enumerate}
@@ -3048,7 +3048,270 @@ content is a copy of the correct one. The user is unable to spot differences of
 that malicious copy, never realizing that the domain is different (unless
 tech--savy).
 
-MARK slide 37
+\section{Redirecting a HTTP connection}
+
+Most HTTPS websites can also be reached with HTTP. This isn't a worrying fact
+per se; what happens is that usually a \emph{redirection} occurs, and the
+browser is gently redirected to the HTTPS version of the page.
+
+In the cases where a redirection has not been implemented yet, an attacker will
+be able to see, control and manipulate a connection. Suppose that happens on
+\texttt{esse3.\-units.it}; two kinds of attack can occur this way:
+\begin{itemize}
+    \item in the first scenario, an attacker registers a \textbf{similar} URL,
+        such as \texttt{esse3\--units.it}, obtains a legitimate certificate for
+        that domain, and hijacks the existing HTTP connection so that the
+        browser won't redirect to the legit domain, but to the attacker
+        controlled domain. In this case the browser will display a valid HTTPS
+        connection, but with another domain -- the attacker will act as MITM,
+        in the sense that it will ``copy'' the content of the legit website;
+    \item in the second scenario, an attacker doesn't register a new URL, but
+        simply hijacks the connection, acting as MITM. What happens here is
+        that the browser redirects to an attacker controlled domain \emph{in
+        HTTP} and the attacker acts as MITM by copying the content of the
+        original website. This also includes \textbf{SSLStrip} attacks, a form
+        of ``downgrade'' attack in which the SSL version is downgraded in order
+        to remove some security measures.
+\end{itemize}
+
+These attacks possess very huge potential impact. An attacker will be able to
+\emph{record everything}, \emph{manipulate everything}, and \emph{modify
+requests and responses}. The attack is very cheap: only a \emph{proxy} with
+some plugins or coding, plus the ability to forward requests to real website
+are all that's needed to perform this attack.
+
+A general lesson on security is that even though the website implements HTTPS,
+a \textbf{victim with a risky internet connection} and a \textbf{victim that
+does not verify the URL bar} is damned -- attackers will focus on the
+\emph{weakest} point in security.
+
+What to do to defend to redirection attacks, then?
+Removing the support for port $80$ is not enough -- a user is simply required
+to \emph{follow} a HTTP URL: the connection will happen despite the real server
+would never have accepted it. 
+
+The first solution is to \emph{always look at the landing URL}; a solution
+which isn't always fine, it's hard to apply systematically and it's hard to be
+applied by everyone too.
+
+The second solution, a technical one, is to enable the option \emph{HTTPS by
+default} in the browser. If in the past it connected to a website with HTTPS,
+the browser will remember this and automatically connect with HTTPS even though
+the user follows a HTTP URL.
+
+The third solution is to enable the HTTP header \textbf{Strict Transport
+Security}.
+
+Strict Transport Security (HSTS) is a \emph{policy} adopted by a server and a
+browser, and exchanged via the HTTP header in which a \emph{\texttt{max-age} of
+HSTS Policy} is specified, with a maximum period of $1$ year. The HSTS Policy
+states that whenever a new HTTP or HTTPS connection should be established to the
+web service, \textbf{it must be done on HTTPS}.
+
+Whenever a new connection is performed, the policy is refreshed and the time
+interval starts again from zero.
+
+Another important policy is the \textbf{Content Security Policy}. The CSP's
+\texttt{upgrade\--insecure\--requests} instructs a user agent to treat all of a
+site's insecure URLs, served over HTTP, as though they have been replaced with
+secure versions, served over HTTPS. The policy is valid only \emph{for links in
+the page transported by that response}, and \emph{only for that specific
+response} -- it has no persistent effect overtime. Differently to HSTS, it
+doesn't last overtime and it happens only when a page is transported by that
+response (it depends on the referrer). HSTS works even across different
+websites.
+
+With HSTS the \emph{vulnerability window} is \textbf{dramatically reduces} -- a
+browser is vulnerable only if it has never contacted the server or if the
+policy had expired before any new contact with the server. A proper value of
+\texttt{max-age} should then be properly set.
+
+A final remark is the \textbf{HSTS Preloading} practice. Some modern browsers
+are \textbf{preloaded} with a list of common--HSTS policies. Those websites are
+virtually immune to SSLStrip -- however, this is not scalable.
+
+\subsection{How to become a MITM for HTTP and HTTPS connections}
+
+There are many ready to use tools to become MITM. The tools implement some
+attacks that are capable of forcing a victim to connect to an
+attacker--controlled IP address, on port $80$.
+
+The first method is by means of \textbf{DNS Spoofing}. DNS Spoofing is a
+particular kind of attack in which an attacker spoofs a DNS-Response,
+substituting the legit IP address with an attacker--controlled one; for
+instance, the DNS request \texttt{name a ?} can be spoofed to \texttt{name A
+IP-A}, so that the victim will connect to that IP address. To be able to spoof
+you should observe the UDP traffic on port $53$, and \emph{respond before
+the name server}. The attack is easy, since the protocol is UDP and not TCP --
+however, client port number and query ID should be copied as well, while the
+checksum should be changed accordingly.
+
+A method for performing DNS Spoofing is the \textbf{Evil Twin} method, in which
+an attacker impersonates a Wireless Access Point with the \emph{same name} as
+the target WiFi network. The Evil Twin will also provide DHCP and DNS servers
+-- the victim connects over the strongest (in signal) WiFi network, and obtains
+the IP configuration from the attacker: the DNS server will now be \emph{the
+one on the Evil Twin}. Hence, DNS Spoofing can happen. Evil Twins work only
+against victims that do not have a proper WiFi configuration. The ``proper''
+WiFi configuration means that the network should authenticate to the client as
+well, by means of a shared secret.
+
+A second method for DNS Spoofing is the \textbf{DHCP-offer-IPv6} attack method
+on Windows machines. Windows machines allow an external entity to send a DNS
+configuration to it; since Windows privileges IPv6 over IPv4, the new
+configuration will be accepted.
+
+A third method for DNS Spoofing is the \textbf{DNS cache poisoning}. DNS cache
+poisoning is the act of entering false information into a DNS cache, so that
+DNS queries return an incorrect response and users are directed to the wrong
+websites. A DNS resolver will save responses to IP address queries for a
+certain amount of time. In this way, the resolver can respond to future queries
+much more quickly, without needing to communicate with the many servers
+involved in the typical DNS resolution process. DNS resolvers save responses in
+their cache for as long as the designated time to live (TTL) associated with
+that IP address allows them to.
+DNS cache poisoning is performed by sending to a DNS resolver two requests:
+\begin{enumerate}
+    \item the first one, a request for a certain target domain name;
+    \item the second one, the (fake) response for the target domain.
+\end{enumerate}
+Instead of using TCP, which requires both communicating parties to perform a
+`handshake' to initiate communication and verify the identity of the devices,
+DNS requests and responses use UDP, or the User Datagram Protocol. With UDP,
+there is no guarantee that a connection is open, that the recipient is ready to
+receive, or that the sender is who they say they are. UDP is vulnerable to
+forging for this reason – an attacker can send a message via UDP and pretend
+it's a response from a legitimate server by forging the header data.
+
+If a DNS resolver receives a forged response, it accepts and caches the data
+uncritically because there is no way to verify if the information is accurate
+and comes from a legitimate source. DNS was created in the early days of the
+Internet, when the only parties connected to it were universities and research
+centers. There was no reason to expect that anyone would try to spread fake DNS
+information.
+
+Despite these major points of vulnerability in the DNS caching process, DNS
+poisoning attacks are not easy. Because the DNS resolver does actually query
+the authoritative nameserver, attackers have only a few milliseconds to send
+the fake reply before the real reply from the authoritative nameserver arrives.
+
+There are also many, many other ways to achieve the condition of MITM (corrupt
+sys--admins, vulnerability in networking hardware, Intellicence Agencies,
+misconfigurations, and so on\dots). Moreover, it could suffice to be MITM only
+for \emph{certain} messages in order to perform an attack. When reasoning on
+security protocols, an attacker should be assumed to possess unlimited storage
+capabilities, unlimited process capabilities and be able to observe, modify and
+drop any message at any time.
+
+\subsection{Handling HTTP -- a server's point of view}
+
+Servers must choose among various behaviors for a key practical problem:
+\emph{how to respond to HTTP requests?}
+
+The first approach is to respond with HTTP content as well -- this is
+\emph{wrong}, because if a content can be served over HTTPS, it should be
+served over that. The second approach is to respond with a \emph{redirection}
+to HTTPS. This is the most pragmatic and practical approach; not really secure
+as the communication could still be intercepted. A HSTS policy could be served
+as well. The third -- and most secure -- approach is to \emph{not respond} (and
+do not even listen).
+
+The second approach is the most practical one, and almost the most secure one
+-- HSTS makes the client vulnerable to \textbf{only} the first request.
+Subsequent requests -- provided the user didn't change browser, clean the HSTS
+policies along with browsing data, and visited the website again in a year --
+will be protected by HTTPS. Despite that, HSTS is used by only $23.5\%$ of all
+the websites; a clear \textbf{misalignment of incentives} since all the costs
+are on the server, but the risks are on the client.
+
+\subsubsection{Further effects and HSTS attacks}
+
+An attacker could intercept a HTTP request, and voluntarily respond with
+inserted HSTS policies to cause a denial of service. Secondarily, an attacker
+could intercept any HTTP request and removing the HSTS policy.
+
+\section{Upgrading your website to HTTPS}
+
+Suppose you have a large and complex website served over HTTP and you want to
+migrate to HTTPS. In theory it is simple: just replace any absolute URL having
+\texttt{http} string with \texttt{https} string, and configure the web server
+so that every HTTP request is redirected to HTTPS.
+
+In practice, this is very hard and complex. Big web services are usually a
+\emph{collection} of different websites, produced and maintained by different
+actors, teams, usually with different needs and objectives. What looks easy is
+rather an obnoxious task of replacing all URLs and configuring the service
+properly.
+
+Moreover, what about content produced by JavaScript code?
+
+The most useful pratical solution consists in two steps:
+\begin{enumerate}
+    \item configure the web server for HTTPS redirection;
+    \item enable HTTP Strict Transport Security.
+\end{enumerate}
+
+It won't matter if some pages are still reachable from HTTP links -- the
+browser will issue only HTTPS requests. There is no need then to inspect and
+modify any content, with just an initial vulnerability window.
+
+A potential problem still persists. If any resource cannot be served over
+HTTPS, it will \textbf{never be fetched by any browser}. It is really hard then
+to assure that the HTTPS redirection won't affect the working of many important
+pages -- a long testing phase is required.
+
+A curious way to solve this is to enable for a certain amount of time the
+\textbf{Content Security Policy Report Only} Policy. In header,
+\texttt{Content\--Security\--Policy\--Report\--Only: URL\--pattern
+URL\--contact} will be delivered to a browser. The policy stats that should a
+browser encounter a site not compliant with the \texttt{URL-pattern} (for
+instance, not working on HTTPS) still fetch that URL, but send a note at
+\texttt{URL-Contact}. The \texttt{URL-contact} is a web server prepared to
+receive HTTP requests carrying JSON data, while \texttt{URL-pattern} could be
+\texttt{https}.
+
+This way, a service could start logging CSPRO notes to build a map of the
+HTTPS broken webpages. This way, the website configuration could be fixed.
+
+\section{The Chain of Trust}
+
+A \textbf{certificate} is a text with a proper format in which an \emph{issuer}
+Certification Authority states that a \emph{subject} domain has a public key
+\texttt{KPUB}, along with details such as hash algorithm of digital signature,
+valid from, valid through, parameters, alternate name and so on.
+
+The key concept behind certificates is the concept of \textbf{certificate
+chain}. A certificate chain is the tree relationship between a certificate and
+another, in the case where the first one is adopted to issue the second one.
+The \emph{root certificate} is a certificate that it is
+\emph{self--signed}\footnote{Remember: anyone can generate a self--signed certificate
+for \textbf{any} subject.} by a Certification Authority, an entity who has been
+assigned the task of issuing certificates, and is at the root of the dependency
+tree of certificates. A root certificate is assumed to be true by the web
+browsers by means of a trusted certificates list, that it is said to be the
+\emph{TrustSet}.
+
+Suppose a Certification Authority \texttt{CA1} issues a certificate for
+\texttt{Server\--Name}. The following table shows the situation,
+\begin{table}[ht]
+\centering
+\begin{tabular}{ccccc}
+    \textbf{Name} & \textbf{KPUB} & \textbf{Subject} & \textbf{Issuer} & \textbf{Signature} \\
+    \hline
+    \texttt{CERT-1} & \texttt{KCA1} & \texttt{CA1} & \texttt{CA1} & Self--signed \\
+    \texttt{CERT-2} & \texttt{KS} & \texttt{Server-Name} & \texttt{CA1} & Verified by \texttt{CA1}
+\end{tabular}
+\caption{First example of small certificate chain. The \emph{root} certificate
+    is \texttt{CERT-1}, while \texttt{CERT-2} has been derived from and
+    verified by the first one.}\label{tab:certificateChain1}
+\end{table}
+\bigskip
+
+The above certificate chain is then \texttt{CERT-1, CERT-2}, with the
+\texttt{CERT-1} that is said to be a \textbf{trust anchor} for the certificate
+\texttt{CERT-2}.
+
+MARK slide 98
 
 
 
