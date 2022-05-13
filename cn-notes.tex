@@ -3311,12 +3311,328 @@ The above certificate chain is then \texttt{CERT-1, CERT-2}, with the
 \texttt{CERT-1} that is said to be a \textbf{trust anchor} for the certificate
 \texttt{CERT-2}.
 
-MARK slide 98
+Real website almost always are based on certificate chains composed of more
+than $2$ certificates. Usually, everything but the trust anchor is transmitted
+over the internet.
 
+Two kinds of certificates exist -- the first one we already encountered is the
+\textbf{normal certificate}. Normal certificates describe the associations
+between a subject (usually a domain) and their public key, and offer no
+guarantees about assertions by the subject. The second one is the
+\textbf{delegation certificate}, which grants powerful rights such as the fact
+that now the subject \emph{can act as a Certification Authority}. This means
+that everyone possessing a delegation certificate will be trusted as a
+Certification Authority by browsers and all devices trusting the entire chain
+trust.
 
+Possessors of delegation certificates are also able to create new delegation
+certificates as well -- potentially in an endless chain. As a rule, any
+certificate must be signed by delegation certificates. An example of chain of
+trust could be the following one,
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccccc}
+    \textbf{Name} & \textbf{KPUB} & \textbf{Subject} & \textbf{Issuer} & \textbf{Signature} & \textbf{Type} \\
+    \hline
+    \texttt{1} & \texttt{KCA} & \texttt{DigiCert} & \texttt{DigiCert} & Self--signed  & Delegation \\
+    \texttt{2} & \texttt{KT} & \texttt{TERENA SSL CA3} & \texttt{DigiCert} & Signed by \texttt{DigiCert} & Delegation \\
+    \texttt{3} & \texttt{KU} & \texttt{www2.units.it} & \texttt{TERENA} & Signed by \texttt{TERENA} & Normal
+\end{tabular}
+\caption{A certificate chain. All certificates must be signed by a delegation
+certificate, except the first one, the \emph{trust anchor}, which is
+self--signed.}\label{tab:certificateChain1}
+\end{table}
+\bigskip
+
+\section{Rogue Certificates}
+
+A scary category of attacks can be performed the moment an attacker collects a
+\textbf{rogue certificate}. Rogue certificates are delegation certificates
+which are not issued to a legitimate Certification Authority, but to the
+attacker's organization. Attackers have been able to deceipt the certification
+authority, allowing to bypass the normal checks and get (or steal) a delegation
+certificate.
+
+If an attacker managed to obtain a rogue certificate, then \emph{complete copy
+and full manipulation, along with correct HTTPS link to exact URL} will be
+possible. This is because by issuing rogue normal certificates signed with a
+rogue delegation certificate the browser will trust them, even for malicious or
+attacker\---controlled domains. Moreover, this issue does not involve just
+browsers, but can affect applications, mobile and IoT devices, and so on.
+
+The attack works by sending a \emph{different} chain, but considered trusted by
+the victim. The browser will not suspect anything, and the user too (in order
+to spot this, a user should be aware of the correct chain of trust by
+inspecting the certificate and remembering the correct chain). A MITM attacker
+can now interact with the user by means of a \emph{perfect} copy on correct
+HTTPS URL -- thus, he can observe and modify all the traffic.
+
+In recent years, due to structural flaws in the HTTPS certificate system,
+certificates and issuing CAs have proven vulnerable to compromise and
+manipulation. Attacker operates on the Certification Authority, by exploiting
+\emph{procedural errors} or by means of \emph{cyber attacks} on it. Moreover,
+an Intelligence Agency can require a delegation certificate from a CA on some
+countries.
+
+An attacker could also operate \emph{on victim}, by means of injecting a rogue
+certificate \texttt{CA-R} either in KeySet or in TrustSet. After that, a MITM
+attack can be easily performed, as the attacker is only required to generate an
+on--the--fly keypair and certificate \texttt{C} for a target website, and serve
+it to the victim. The victim will consider it trusted -- since \texttt{C} has
+been generated with \texttt{CA-R}.
+
+Operating on victim is easier for two reasons,
+\begin{enumerate}
+    \item the website need not to be selected in advance, as an attacker can
+        generate \texttt{C} for any web service;
+    \item the victim will be less powerful than a Certification Authority;
+\end{enumerate}
+despite that, a successfull attack to a CA has its own advantage, for even
+though a website should be selected in advance, attacks on \textbf{any} client
+with that installed trust set can be performed.
+
+A third category of entities that can act as MITM as if they possess a
+delegation certificates are \textbf{companies that possess some SSL
+Interception Proxies} with the capabilities of delegation certificates.
+Companies producing such Interception Proxies own delegation certificates, so
+all their proxies can use them to incercept HTTPS traffic for certain websites.
+
+\subsection{The Certificate Transparency}
+
+With \textbf{Certificate Transparency} we mean the fact that \emph{Logging
+Authorities} maintain public logs of certificates issued by the major CAs.
+Every CA must log certificates in at least 2 public logs -- every subject
+should periodically monitor those logs.
+
+If an attacker manages to obtain a certificate for a certain domain\---subject,
+then the subject has the opportunity to know it, since everything is recorded
+in public logs.
+
+Certificate Transparency only allows detection, it doesn't act as a prevention
+tool (damage is likely already done) and addresses only ``real'' Certification
+Authorities -- a MITM that generates certificates on--the--fly won't be
+detected this way.
+
+Moreover, \emph{certificate revocation} is complex and takes time; subjects
+have additional tasks to monitor frequently those logs, although a third
+(trusted?) party could be delegated to do such task. And finally, \emph{log
+integrity} should be guaranteed somehow.
+
+\bigskip
+\begin{center}
+    \emph{``A defense mechanism need not to be \textbf{perfect} -- its necessary
+    property is that its usage will cost \textbf{more to the attacker} than to
+the defender.''}
+\end{center}
+\bigskip
+
+\subsection{Mechanisms to prevent Rogue Certificates}
+
+The first technique to actually prevent rogue certificates attacks is the
+\textbf{certificate pinning}. Certificate pinning is the practice to
+\emph{pre--install} the \emph{full} chain of trust directly in the client's
+software. The client will also be instructed to \textbf{not trust} any other
+chain for a specific service name. Ultimately, any MITM with a different chain
+that is valid at the client will not be able to impersonate the service name.
+
+The major conceptual change is that certificate should be transmitted over an
+\emph{additional, trusted channel}. The certificate pinning is impractical for
+browsers (except \emph{Google Chrome} with pinning for \emph{Google} services),
+but very powerful for \emph{PC and smartphone applications}, as they only need
+to interact with a specific subset of domains.
+
+All certificate should \emph{expire} after a certain date, as prudent
+engineering practices enforce. Expired certificates are said to be
+\textbf{revoked}. Suppose certifiate pinning has been employed for
+a specific application, and the service has been switching to a newer
+certificate (the older one had been expired); how can clients be managed?
+
+An idea would be to make sure that \textbf{all} copies of clients are updated
+before the expire date -- those not updated will remain disconnected.
+Basically, the last certificate is transmitted over HTTPS by means of the old
+certificate.
+
+Moreover, suppose the private key of a certificate has been compromised: a
+subject should be prepared for changing the keypair together with the
+certificate \emph{at any moment}. A naiive solution would be to use the same
+update mechanism (with the main certificate) to deliver a new one to clients --
+but this is a mistake, since attackers have compromised the keypair. What has
+to be done is to deliver updates through a \emph{different} keypair and
+certificate, with software update authentication made with different keypairs.
+Software updates should be \emph{digitally signed} with a public key that was
+meant to be used \emph{for updates only}. As the main certificate revocation
+occurs, a new software update delivering the new certificate should be handed
+over by means of this secondary, update, channel. Usually, this channel is
+performed by a \textbf{software update organization} (Microsoft, Google, Apple,
+Linux distributions) that is able to manage this crucial channel. The client
+software should know the public key of the update channel in order to fetch
+updates, and must accept only if signed with such key (by means of certificate
+pinning).
+
+Problems don't end up here, as the software update organization should be able to handle two more issues,
+\begin{enumerate}
+    \item how can the software update organization authenticate the update request
+        from a certain subject?
+    \item how can the software update organization revoke its update public key
+        safely?
+\end{enumerate}
+
+Basically, certificate pinning is a very powerful weapon against rogue
+certificates, although it has its own drawbacks. For instance, a subject should
+implement it carefully in order to not leave clients permanently disconnected,
+and prepare for certificate revocation at any moment before expiration.
+Revocation should also be handled by means of a different -- also powered by
+certificate pinning -- software update channel.
+
+\section{Brief summary of HTTPS attacks}
+
+Attacks can be summarized into two, main, categories: 
+\begin{itemize}
+    \item the first one being a \textbf{user following an \texttt{HTTP} link},
+        with a MITM attacker providing a complete copy of the real site, either
+        with an inserted \emph{HTTP link} or with an inserted HTTPS with
+        \emph{slightly different URL}. This category of attacks can be
+        mitigated by either \emph{verifying landing URL}, or \emph{enabling
+        HTTPS by default}, or \emph{enabling Strict\--Transport\--Security
+        (HSTS)};
+    \item the second one being the \textbf{MITM with Rogue Certificates}, with
+        an attacker having managed to either \emph{obtain a delegation
+        certificate} or to \emph{inject a rogue certificate in the KeySet or
+        TrustSet of the victim}, with the user that will see \emph{HTTPS link with
+        exact URL}. These attacks are detected by means of \emph{Certificate
+        Transparency} and are mitigated by \emph{Certificate Pinning} and the
+        building of a proper software update mechanism.
+\end{itemize}
+
+The aforementioned techniques work less with a network attacker that can only
+observe and communicate (man\--on\--the\--side), as it can only inject fake
+responses for redirection in place of providing an exact copy of the web
+service with malicious modifications. As the HTTPS provides security guarantees
+against a network attacker that is not able to perform attacks on organizations
+or clients, \textbf{HTTPS should be adopted widely, as soon as possible}. The
+key attack point, now and in the future, will be that between organizations and
+browsers. Moreover, there could be \emph{vulnerabilities} in TLS protocol, TLS
+implementation or Web Server HTTPS implementation.
 
 
 \chapter{Passwords}
+
+\textbf{Passwords} are used both in clients and in servers for authentication.
+In principle, they should be stored somewhere. In practice, they all reside in
+the so\--called \textbf{Authentication Databases} (\texttt{AuthDB}s).
+Authentication Databases are present in both clients and servers, and collect
+all informations regarding logins (usernames, passwords) on a machine.
+Authentication Databases can also manage credentials across the entire
+organization, as happens with the Active Directory domain controller for
+Windows machines.
+
+The core concept of \emph{authentication} is that each registered user must
+prove to the machine that \emph{he knows a certain secret} -- for instance, a
+password. Typically, such proof knowledge can be either transferred locally
+(everything happens on the same machine) or remotely (through the network or
+the internetwork), either in the same or in different organizations. Location
+of the AuthDB depends on the application; be it a web site, a file server, a
+mail server, a printer, an API server and so on. AuthDBs located on servers
+typically store credentials for more than one user. Since an AuthDB contains
+sensitive information, a very concrete risk is that \emph{it is stolen by an
+attacker}; an event that occurs very frequently. A stolen AuthDB has the
+potential to give up to the attackers the credentials of all the included
+users.
+
+A best practice for avoiding this scenario is to \textbf{store non\--reversible
+functions} of the password \texttt{pwd}, and not \texttt{pwd} in plain text.
+Authentication for a user works by first letting him send \texttt{user, pwd},
+and then computing \texttt{F(pwd)} and checking the presence of \texttt{user,
+F(pwd)} in the AuthDB. Since only the user knows the password, the secret is
+safe against the stealing of credentials from the AuthDB.
+
+Any attacker that wants to collect real secrets for the users is now forced to
+apply \texttt{F()} to a \emph{list of candidates passwords} and see if any of
+the results matches any entry in the stolen AuthDB. This practice is called
+\textbf{offline guessing}.
+
+The non\--reversible function largely depends on operating systems: for
+instance, on Windows it is collected in a \texttt{SAM} file, while on Linux
+secrets are collected on \texttt{/etc/shadow/} file. Android uses analogous
+mechanisms as well. When served over the network (usually by means of an
+authentication protocol over TCP), it depends on the server implementation. Not
+infrequently, passwords are stored ``in the clear'', in plain text (what a
+shame!) as many servers have their default settings to store cleartext
+passwords. Across organizations, users would like to use the same credentials
+everywhere; hence, keeping all AuthDB synchronized is close to impossible. For
+this reason, the \textbf{Single Sign\--On} technique is adopted, as we will see
+in a later moment.
+
+\section{Password Attacks}
+
+Password attacks pose a huge threat to organizations, so that password\--based
+authentication is no longer enough, and \textbf{two\--factor authentication}
+should be used in its place.
+
+Passwords can have a huge \emph{value}, that it can be:
+\begin{itemize}
+    \item \emph{direct}, let's think of banking or e\--mail services;
+    \item they might allow \emph{credential stuffing}, with many users using
+        the same password across many services -- this amplifies the value of a
+        credential;
+    \item they might let \emph{organization multistep attacks}, with the
+        so\--called ``lateral movement phase'' and spear phishing;
+    \item they might be \emph{sold on the black market};
+    \item and so on.
+\end{itemize}
+
+Password attacks are usually \textbf{not targeted} -- password of any user
+across an organization is enough: they are dangerous threats that could affect
+virtually anyone!
+
+The thread model involves many steps further than the classic network attacker
+threat model. In particulare, to steal passwords an attacker is now able (and
+required) to:
+\begin{itemize}
+    \item install \emph{malware} on devices;
+    \item perform \emph{phishing} attacks or campaings;
+    \item perform \emph{spear phishing} attacks;
+    \item achieve \emph{physical proximity} so that a password could be
+        collected (Insider threat model);
+    \item of course, \emph{steal the AuthDB} of an organization;
+    \item and if the authentication protocol has no
+        security\--integrity\--confidentiality guarantees, a network attacker
+        that can observe is all what's needed to obtain the credentials.
+\end{itemize}
+
+Let's focus on the threat posed by \emph{stealing an organization's AuthDB}. An
+attacker has now free and unlimited access to the AuthDB, but he should be able
+to determine passwords from applying \texttt{F()} to \emph{a set of candidate
+passwords} and perform a search in the database. No limit on speed (except
+hardware) and number of attempts should be considered. This is said to be
+\textbf{offline guessing}.
+
+Differently, a network attacker that is able to communicate will be also able
+to perform \textbf{online guessing}, an attack that is carried out against a
+``dumb'' server with no detection capabilities. The online guessin attack
+consists in trying to use each password in a candidate set \emph{against the
+real server}, hoping to find the correct one. There is a \emph{tight limit} on
+speed and number of attempts. These attacks still succeed, because some
+passwords are \textbf{very} weak, or are left to their -- publicly known --
+defaults. Online guessing is ``equivalent'' to the offline guessing, only
+against the users involved.
+
+An important remark is on \textbf{password strenght}. Password strenght becomes
+relevant \textbf{only} if the attacker is performing guessing attacks (offline
+or online guessing); otherwise, with malware, phishing and Insiders the
+password choice becomes irrelevant as long as it is stolen with other means
+other than guessing.
+
+Basically, a harder password is only \emph{harder to guess}, not \emph{harder
+to steal}.
+
+MARK slide 22
+
+\subsection{How guessing attacks are performed}
+
+
+
 \chapter{Multi--Factor Authentication}
 \chapter{Authentication}
 \chapter{Identity and Access Management}
