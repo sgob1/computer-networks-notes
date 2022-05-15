@@ -2191,7 +2191,7 @@ In the second method, the attacker only injects \emph{part} of the
 communication, and represents a less pessimistic approach, in which the attack
 does not manipulate the communication and can only inject data. The third
 method is the more optimistic one, with the attacker only capable of closing an
-existing connection in order to perform some kind of denial of service.
+existing connection in order to perform some kind of Denial of Service.
 
 All three attacks are trivially feasible, with an attacker able to act as man
 in the middle. In the first case, the attacker is able to intercept an opening
@@ -3024,7 +3024,7 @@ keep the connection.
 \section{Possible attacks despite HTTPS}
 
 A network attacker could only observe, steal non--secure cookies and perform a
-denial of service attack. However, it can also \textbf{perform other kinds of
+Denial of Service attack. However, it can also \textbf{perform other kinds of
 attack} that will, basically, \emph{circumvent} all the infallible HTTPS
 bells n\textquotesingle\  whistles.
 
@@ -3227,7 +3227,7 @@ are on the server, but the risks are on the client.
 \subsubsection{Further effects and HSTS attacks}
 
 An attacker could intercept a HTTP request, and voluntarily respond with
-inserted HSTS policies to cause a denial of service. Secondarily, an attacker
+inserted HSTS policies to cause a Denial of Service. Secondarily, an attacker
 could intercept any HTTP request and removing the HSTS policy.
 
 \section{Upgrading your website to HTTPS}
@@ -3627,9 +3627,204 @@ other than guessing.
 Basically, a harder password is only \emph{harder to guess}, not \emph{harder
 to steal}.
 
-MARK slide 22
 
 \subsection{How guessing attacks are performed}
+
+\subsubsection{Offline guessings}
+\emph{Offline guessing} attacks involve two steps:
+\begin{enumerate}
+    \item the first, a number of \textbf{likely passwords} are attempted. This
+        step is performed with the help of \emph{dictionaries} of common
+        passwords, predictable patterns, passwords from previous breaches,
+        default passwords and word lists and the so\--called \emph{mangling
+        rules}, the set of common ``likely alterations'' of words in passwords
+        (append or prepend a special character, replace o with 0, and so on);
+    \item the second, \textbf{all permutations} of symbols belonging to a
+        certain alphabet (for instance, English alphabet with the addition of
+        commonly used non\--word characters), up to a \emph{certain length}.
+        Basically, a \emph{systematic exploration on string space} is
+        performed.
+\end{enumerate}
+
+The last step is \emph{very less likely} to yield correct passwords (exhaustive
+search of solutions), therefore is \emph{much more expensive} and less
+cost\--efficient for an attacker to perform. Hence, \textbf{an attacker is a
+lot more likely to stick with the first step only}, never executing the second
+step; or executing it with a low length (for instance, strings of 6 or 7
+chars).
+
+As a rule of thumb, a password is more important not to be in any dictionary or
+past breach than ``complex'', since the first attempts will likely be performed
+on breached or commonly\--used passwords.
+
+Mangling rules play little to no role on making a password stronger. Automatic
+tools can produce very quickly a huge range of mangling rules for any common
+password, making mangling attempts useless.
+
+AuthDB stealing is one of the most important risks across organizations and
+across users. Authentication databases records \texttt{< username, C >} are
+implemented with 4 ``general'' approaches, from worst to best:
+\begin{enumerate}
+    \item \emph{in clear} -- the worst of the worst, consists in storing the
+        password in plain text along with the username. An attacker would
+        immediately obtain passwords for all users;
+    \item \emph{encrypted} -- a little better, but still useless. Storing
+        \texttt{< user. Ek(pwd) >} is uneffective the moment \texttt{Ek} is
+        compromised (usually along with an attack). Both the previous storing
+        mechanisms are not to be used at all;
+    \item \emph{hashed} -- the bare minimum requirement, passwords are stored
+        after having hashed them by a unidirectional function. The server
+        should not know the password, and only store \texttt{< user, H(pwd) >}.
+        When server receives \texttt{pwd}, it immediately computes
+        \texttt{F(pwd)} and checks against the database entry;
+    \item \emph{hashed and salted} -- the best way to store credentials, it
+        involves the previous step \emph{plus} the addition of a ``salt'' to
+        decrease the likelihood of an attacker to possess a pre\--computed
+        table of hashes to speed up password guessing. By altering the
+        credentials in an unpredictable way, salting renders table attacks with
+        pre\--computed tables unfeasible, as the memory required for computing
+        every possible combination of salts on passwords would be too much.
+        Such attacks are called \textbf{lookup table attacks}.
+\end{enumerate}
+
+An attacker cannot directly obtain \texttt{x} from \texttt{H(x)}. Attacker can
+only perform offline guessing with a candidate password set, with
+aforementioned techniques. Offline guessing attacks are generally performed
+with specific \emph{cracking tools}, possibly with \emph{cracking hardware}.
+
+The method generally works as follows:
+\begin{itemize}
+    \item for each candidate password, compute the hash;
+    \item for each user and password record in the Authentication Database,
+        check if the computed hash matches any hash present in the table.
+\end{itemize}
+
+Since the overall process is very costly, an attacker will rarely try to find
+all permutations in symbol set, and will rather focus on the likely passwords.
+If an attacker wanted to excute an exhausting search on symbol set, \emph{any 8
+characters password will be easily broken in a few days}. Passwords should
+\emph{at least} be 10 chars long. Every 8 chars password can be bruteforced in
+a single day as of 2019.
+
+\subsubsection{Hash function requirements}
+
+A \emph{hash function} has basically three requirements:
+\begin{itemize}
+    \item \texttt{H(x)} \textbf{must not provide any information} on
+        \texttt{x};
+    \item \texttt{H(x)} is of \textbf{constant length} (for instance, 128, 256
+        bit);
+    \item \texttt{H(x)} is \textbf{computationally heavy}.
+\end{itemize}
+
+Ultimately, it should be only crackable by bruteforce attacks, and they should
+be hard to perform.
+
+The state of the art regarding hash functions are \textbf{PBKDF2} and
+\textbf{bcrypt}, and they have computational weight parameters that are proper
+quantities (iterations for PBKDF2, rounds for bcrypt). \emph{NTLM}, a very weak
+hash function used in Windows is millions of times weaker than the above two.
+
+Hash function algorithms, and cryptographic algorithms in general are
+\emph{public} for scrutiny by cryptography experts. Generally, the rule is
+\emph{``do not roll your own crypto''}.
+
+\subsubsection{Lookup table attacks}
+
+Lookup table attacks are offline guessing attacks in which \emph{the dictionary
+is known in advance}. Basically, hashes are pre\--computed so that a
+\emph{simple search} can be performed, and are valid for any AuthDB that uses
+the corresponding hash function. Lookup tables require a lot of storage, but
+are available on the internet in cracking tools.
+
+The protection against lookup tables is \textbf{salting}. Salting consists in
+picking the input of the hash function -- that is the password -- and adding a
+\emph{random number or symbol} to it, at any position. The new ``password''
+will then be the password itself \emph{plus} the salt, and its corresponding
+hash will be stored in the AuthDB. A given password at different users is
+associated with different random numbers. Basically, the lookup table
+\textbf{cannot} be pre\--computed anymore, since the random numbers would make
+the task practically unfeasible. Salts are stored in AuthDB as well.
+
+All the server is required to do is to first retrieve the salt from the AuthDB
+corresponding to a user, then concatenate the password with the salt and
+computing the hash function. A further check is performed to confirm the match.
+An attacker, instead, cannot compute in advance a lookup table, since it is
+unfeasible.
+
+Moreover, salting prevents \emph{password frequency analysis}. Password
+frequency analysis is a technique that involves an attacker looking for
+frequent passwords by simply looking at the AuthDB -- many users have the same
+passwords, probably in a dictionary. With salting, hashes are unpredictable,
+thus frequency analysis of passwords is not possible anymore.
+
+On Windows, the non\--reversible function produces hashes that are not salted, with a
+lightweight hash function fast to compute. Even worse, Windows authentication
+protocols require the knowledge of \texttt{H(pwd)} (a knowledge that it is
+sufficient to have to impersonate a user -- the hash is even stored in the
+machine's memory; basically, if AuthDB is stolen, no guessing is required to
+impersonate anyone).
+
+On Android or Linux the non\--reversible function makes use of salts, and it is
+very heavyweight. The file in which it is stored is the \texttt{/etc/shadow}.
+
+A very general and powerful approach in security is the \textbf{defense in
+depth} approach. It consists in multiple, \textbf{independent} layers of
+defense, which should result in a \emph{higher increased cost for the attack
+than for the defender}.
+
+
+\subsubsection{Online guessing}
+Now let's talk of \emph{online guessing} attacks. Online guessing attacks are
+different, since a very low number of attempts can be performed --- either
+because the network introduces some lag, an invalicable limit, or because there
+could be a chance to be detected by the organization to which the attack is
+performed.
+
+Online guessing attacks are usually executed by means of \emph{botnets} when
+outside organization, or by a set of clients or machines when inside an
+organization. Usually, online guessing attacks are not cheap -- for this
+reason, an online guessing attack will focus on common passwords, predictable
+patterns, default passwords and passwords from previous breaches \textbf{only}.
+If an access has not been found, then the most rational behavior would be to
+change service or webapp.
+
+The first technique is the \textbf{credential stuffing}. For each username, try
+a few thousand passwords -- basically, for every user multiple passwords are
+tried in a row. Since this can easily be detected by a defender (its log will
+contain thousands of failed login attempts on single users), another technique
+is preferred: the \textbf{credential spraying}. Credential spraying is
+different in the sense that the two for loops are now reversed: for each
+password, try it on many usernames. Defender's log will now present a
+less\--obvious pattern of login attempts. Typically, there are up to 50
+passowrds sprayed across usernames, resulting in up to 20000 attempts per hour
+(2019 data -- around $0.5\%$ of all accounts get compromised each month, with
+nearly all hacked accounts on \emph{legacy protocols}).
+
+As a general remark, the realistic threat model for organizations is to
+\textbf{assume breach} inside the organization, with possibily many credentials
+that have been compromised.
+
+Against online guessing the most important defense is \emph{detection};
+relatively simple with stuffing, more complex with spraying; depends on
+guessing rate and traffic usually occurring across an organization.
+
+The possible action against online guessing attacks are the following ones:
+\begin{enumerate}
+    \item \emph{automatic username lockout} -- a wrong practice, since it will
+        then be trivial to perform a Denial of Service attack on a target;
+    \item \emph{blacklist IP addresses} involved in guessing attacks -- a weak
+        action, since it's easily circumvented, with a lot of potential false
+        positives and users damage more than attackers;
+    \item \emph{alert toward targeted usernames} -- only feasible for stuffing;
+    \item enforcing \textbf{time throttling} depending on failed attempts, with
+        a threshold\---based system having a progressive increase of response
+        delay -- a really effective technique that prevents most of guessing
+        attacks. Despite being really useful, this mechanism is rarely
+        implemented for servers.
+\end{enumerate}
+
+
 
 
 
