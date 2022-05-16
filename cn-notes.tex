@@ -3824,11 +3824,116 @@ The possible action against online guessing attacks are the following ones:
         implemented for servers.
 \end{enumerate}
 
+\subsubsection{Network attackers and password guessing}
 
+A network attacker observing traffic in a network is completely equivalent to
+an offline guesser, against the observed users with hashed and salted
+credentials. This means that one should assume a network attacker to be able to
+perform \emph{offline guessing attacks} against observed targets, by analyzing
+and collecting observed traffic.
 
+Let an Authentication Protocol traffic travel over an encrypted channel
+(examples of this are BASIC/FORM over HTTPS, SMTP/POP over TLS, MSCHAPv2 over
+TLS, and so on); guessing should not be feasible due to encryption -- however,
+it might still be able to guess a easy\--enough credentials, since modern
+cracking tools handle most authentication protocols. The possible number of
+hash per second depends on hardware, with GPU clusters and with weak hash
+functions such as NTLM we are in the order of millions guesses per second.
 
+\subsection{How to choose a password}
+
+The key objective when choosing a password is that \textbf{it must resist
+guessing attacks}. The first and most important requirement for any password is
+\textbf{not to be in any dictionary} -- not a common or predictable pattern,
+not a word, not a mangled common word. Second, \textbf{passwords should be
+unique for each service} -- an extremely important remark, since a compromised
+credential could lead to compromising even more services. The password,
+ultimately, \textbf{must be sufficiently long and complex}.
+
+To put it briefly, a password should be \textbf{at least 14 characters long},
+with special symbols that matter not particularly. This last requirement is the
+icing in the cake, since all attacks will use dictionaries and only some of
+them also perform an exhaustive search on permutations space. Moreover,
+passwords used on multiple services pose a serious threat to security for
+aforementioned reasons.
+
+A practical and very effective way to generate passwords is to
+\emph{concatenate two or three uncorrelated long words, possibly in different
+languages}, an easy\--to\--remember technique which makes computations too high
+in cost to be sustained.
+
+The best practice is still the use of a \textbf{password manager}, which is
+able to generate, store and apply credentials directly on devices.
+
+Additional requirements such as \emph{change password} or similar are even
+harmful, since forcing password expiry carries no real benefit, while the user
+is pushed to cheat on the password generation mechanism by choosing weaker
+passwords. Also \emph{complexity requirements} do not bring any benefit against
+guessing attacks, only placing extra burden to uers, many of whom will seek for
+predictable patterns that are easy for them to manage and to remember. The only
+requirement should be in password length.
+
+\subsubsection{The ``Security Vs Usability Trade\--Off''}
+
+Generally speaking, the security will bring down usability, and viceversa, in
+an unavoidable trade\--off. Pushing users against the security side will
+\textbf{inevitably} affect usability. When forced ``to the ropes'' to maintain
+very high security levels, users will find out ways to manage their security
+(in this case, their passwords) so that the usability increases and reaches
+acceptable levels for them -- de facto, loweing the security. A good
+sweet\--spot should be achieved by the security manager, by producing security
+policies that take the user behavior into account.
+
+That said, system administrators \textbf{can} carry the security burden, and
+thus they \textbf{must} change their passwords frequently.
 
 \chapter{Multi--Factor Authentication}
+
+\textbf{Multi\--Factor Authentication} is an \emph{additional identity proof}
+that should be given alongside with the main credentials, username and
+password. Multi\--Factor Authentication is indeed very effective against
+realistic threat models -- enabling 2FA is a very high priority defensive
+investment, because it literally saves you from credentials stealing and
+\emph{significantly increases the cost for attackers}. MFA is optional for
+common web services, mandatory for banking services.
+
+The scenario is the one in which a user \emph{authenticates} with username and
+password to a service by means of an authentication protocol, either in the
+same or across different organizations. Basically, if the authentication
+mechanism involves \textbf{a second factor}, even if an attacker knows both
+username and passwords he will not be able to access the user profile; the
+attacker will be neutralized ``almost completely'' (attacks on 2FA cost too
+much to be sustainable, unless directly targeted user);
+
+The second factor could either be a \emph{smartphone}, with (in increasing
+order of security) an OPT SMS, an OTP authenticator app, push notifications, or
+a \emph{security key} having USB, NFC or Bluetooth capabilities. The most
+secure option is the security key one, but all 2FA methods are generally
+enormously more secure than password alone.
+
+Also \emph{smartcards} and \emph{security tokens} (generators of
+one\--time\--passwords) are available, which are similar to a security key, but
+less flexible.
+
+All \emph{roaming authenticators} will connect to the device which is
+connecting to a service -- the roaming authenticator then will also connect
+with the remove service by itself, with a complex protocol. All protocols are
+standard protocols.
+
+\section{2FA in practice}
+
+Two\--Factor Authentication might be enabled by linking the second factor to
+the service during an authenticated session, a process that generally is
+necessary \emph{once}. The 2FA\--login should be performed this way: the user
+browser or device authenticates with the server, and the latter asks for a
+\emph{challenge} -- a knowledge or a token that can only be retrieved by the
+second factor. The second factor \emph{confirms} the browser login, either on
+the same channel or on different ones (that's the case of smartphone\--2FA).
+
+Second factor is \emph{not always} required: some services are able to identify
+a previously logged\--in browser and skip the second factor requirement, as the
+browser is considered a \emph{trusted device} by the service.
+
 \chapter{Authentication}
 \chapter{Identity and Access Management}
 
