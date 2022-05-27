@@ -3069,9 +3069,9 @@ be able to see, control and manipulate a connection. Suppose that happens on
         simply hijacks the connection, acting as MITM. What happens here is
         that the browser redirects to an attacker controlled domain \emph{in
         HTTP} and the attacker acts as MITM by copying the content of the
-        original website. This also includes \textbf{SSLStrip} attacks, a form
-        of ``downgrade'' attack in which the SSL version is downgraded in order
-        to remove some security measures.
+        original website. These are said to be \textbf{SSLStrip} attacks, a form
+        of ``downgrade'' attack in which the SSL version is downgraded (or SSL
+        is removed) in order to prevent some security measures and act as MITM.
 \end{itemize}
 
 These attacks possess very huge potential impact. An attacker will be able to
@@ -4143,7 +4143,7 @@ intra\--organization settings.
 
 
 The unsolved threat models are the \emph{attacker that owns a valid certificate
-for a service} and the \emph{attacjer that has malware on the Browser's
+for a service} and the \emph{attacker that has malware on the Browser's
 device}.
 
 \subsection{Push notifications}
@@ -4256,6 +4256,231 @@ security against usability in the security\---usability trade\--off!
 another, either in the same or in different organizations. Credentials are
 stored in AuthDBs, and the sets of users and passwords are completely
 independent of each other.
+
+Usually, authentication is performed following an \emph{authentication
+protocol} over an \emph{encrypted channel}. Some examples of this are the
+\emph{BASIC\---FORM over HTTPS}, \emph{SMTP\---POP over TLS} and \emph{MSCHAPv2
+over TLS}. Many protocols do exist -- involving file servers, printers, and
+many other machines.
+
+Authentication provides some \emph{guarantees} to a certain entity, from
+another entity. For instance, in \textbf{client authentication} the server does
+not provide any proof of its identity; what happens, instead, is that the
+client provides a proof of its identity by means of a protocol, that could be
+POP, BASIC\---FORM, FTP and for \emph{Active Directory} the Windows
+\textbf{NTLM} protocol. On contrary, in \textbf{server authentication} the
+server itself should authenticate to the client (that's the case of TLS and web
+services).
+
+A powerful form of authentication is the \textbf{mutual authentication},
+adopted by \emph{Kerberos}, in which both client and server possess the means
+to authenticate to each other.
+
+Authentication can occur in three different aspects:
+\begin{enumerate}
+    \item by means of something you \emph{know} (a password, a private key);
+    \item by means of somethin you \emph{have} (a smartphone SIM, ATM card,
+        smartcard);
+    \item by means of something you \emph{are} (fingerprint, face).
+\end{enumerate}
+
+The first will be considered in this chapter (although the entirety of all the
+three above had been inspected in the previous chapter -- since the
+two\--factor authentication involves all of the above three, with the latter
+only used for local authentication).
+
+The threat model of the authentication is a Network Attacker that can observe,
+communicate and act as a MITM. Its attack objective is to obtain guessing
+material from the execution of an authentication protocol, and then performing
+offline guessing with cracking tool afterwards, on captured material. The
+overall difficulty is equivalent to an \emph{hashed and salted} database
+cracking. The end goal is the \textbf{impersonation} of one of the two parties
+in \textbf{one execution} of authentication protocol.
+
+\section{NTLM}
+
+The \textbf{NTLMv2} (\textbf{NT LAN Manager v2}) protocol is a Windows
+Challenge\---Response authentication protocol used on networks that include
+systems running the Windows operating system, and on stand\--alone systems; it
+considered largely insecure, and should be replaced with \emph{Kerberos}
+protocol instances.
+
+The NTLM server contains an \emph{AuthDB} possessing the credentials of any
+user, in the form of \texttt{username, H(pwd-user)}. Each application protocol
+for Windows networks is integrated with NTLM in \emph{very\--specific ways};
+usually, information at the beginning of a (usually TCP) connection is related
+to the NTLM protocol, but no further rules can be generally inferred without be
+more specific.
+
+The NTLM works as in Figure~\ref{fig:ntlm1}, and is composed of the following
+messages:
+\begin{enumerate}
+    \item negotiation;
+    \item server challenge;
+    \item challenge response, client challenge, username.
+\end{enumerate}
+
+The above chain of messages can be found in almost every protocol in which NTLM
+is included.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/ntlm1.png}
+    \caption{The NTLM scheme. A login is first \emph{negotiated} by sending
+    username, after which the server sends a \textbf{server challenge}
+\texttt{CHS}. Another challenge, the \textbf{client challenge} \texttt{CHC} is
+determined and concatenated to the \texttt{CHS} to form a string. The string is
+then transformed by a MAC() algorithm by means of the key determined with the
+hash of the user's password. MAC\--digest along with username and \texttt{CHC}
+are sent back to the server, that is able to check the integrity of the
+original message by using the MAC again with the string and with the hash of
+the password (present in the AuthDB). The \textbf{only} security control is in
+this last phase, where the two strings are checked to be equal.}
+    \label{fig:ntlm1}
+\end{figure}
+
+A first remark of this NTLM protocol is that \textbf{the server does not prove
+its knowledge of the \texttt{H(pwd-user)}} -- in practice, the client
+authentication is completely \emph{unilateral} as the server can actually be
+impersonated by anyone.
+
+With the established threat model, an attacker can only execute guessing
+attacks, as the string \texttt{X} cannot be replayed in future executions
+(\texttt{CHS} changes at every execution). The \texttt{H(pwd-user)} is
+\textbf{unknown} to the attacker, that only knows the MAC result (\texttt{X}),
+\texttt{CHC} and \texttt{CHS}. Equivalently to salted database, an attacker
+cannot compute anything in advance -- this means that he must employ a cracking
+tool and perform an exaurient search in the password space (or, more cleverly,
+adopt a candidate password set as seen in previous chapters).
+
+Unluckily, the encryption algorithm used in NTLM is very \emph{fast} to
+compute, all while capturing an NTLM execution is very easy. The consequences
+are that guessing attacks are actually possible, and basically
+\emph{unavoidable} in Windows environments. The number of realistic guesses is
+very high. Windows password have a huge value for attacks, as most
+organizations implement \textbf{Single Sign On (SSO)}. Thus, possessing strong
+passwordsshould be a priority in large organizations.
+
+However, on NTLM that is almost \emph{useless}: the client only
+\textbf{demonstrates the knowledge of the hash, that is \texttt{H(pwd-user)}}.
+Basically, \textbf{knowledge of the hash of a password suffices to impersonate
+the user}, a weakness that renders NTLM very dangerous to use. Basically,
+\emph{hash knowledge is enough} to impersonate an user, no matter how strong
+the password is: offline guessing can be done with the goal of obtaining
+\texttt{H(pwd-user)} rather than \texttt{pwd-user} itself. Moreover, softwares
+capable of extracting the hashes from a Windows machine exist: when a client is
+compromised, the user can immediately be impersonated on the network.
+
+The hash of the password is nowadays computed by a function that is called
+\textbf{NetNTLM Hash}: the computation hardness of the function is a lot better
+than standard NTLM, however still very weak when compared to blowfish or bcrypt
+(53.9k times weaker).
+
+\subsection{NTLM and security guarantees: authentication in practice}
+
+NTLM does not provide \textbf{any security guarantee after authentication}.
+Differently from HTTPS (which provides secrecy, integrity and server
+authentication), there are no guarantees after a client authenticated to a
+server. The drawback of this is that the communication occurs without
+encryption or any security guarantee that might be expected from an
+authentication protocol (that is, no shared secret key \texttt{K} is
+established). Of course, a network attacker can inject application data in open
+connections, alter the traffic, and observe everything -- something that cannot
+occur in the cases of an authentication procedure that guarantees something
+more. Weak protocols in this sense are HTTP BASIC or FORM, POP, and
+\textbf{NTLM}. Strong protocols are HTTPS, Personal or Enterprise Wi\--Fi, any
+protocol over SSH (secure shell).
+
+MITM attacks are trivial against NTLM. A MITM attacker can simply watch and
+collect all material, performing offline guessing on the collected material.
+More simply, he can perform a \textbf{relay attack} in which just after he
+impersonated the server and the client in a NTLM authentication procedure, he
+impersonates the client and further communicates with the server. Of course,
+the attacker should be able to impersonate different protocols at once, so that
+the attack can work on any service. This all requires the exact timing, and it
+only works on a single authentication. Basically, \textbf{NTLM is weak to relay
+attacks}.
+
+NTLM can be made much more secure. In fact, NTLM can be upgraded to
+\textbf{NTLM with Signing \& Sealing}, in which the server must \emph{prove
+knowledge of the hash of the password}, negotiate a secret \texttt{K} with the
+client, and after the authentication secrecity, integrity (with the option of
+server authentication) are guaranteed. A MITM cannot execute relay attacks
+(since he does not know \texttt{K}), however the security mechanism is not
+enabled by default.
+
+\section{Kerberos}
+\textbf{Kerberos} is a computer-network authentication protocol that
+works on the basis of tickets to allow nodes communicating over a non-secure
+network to prove their identity to one another in a secure manner. Its
+designers aimed it primarily at a client–server model, and it provides mutual
+authentication—both the user and the server verify each other's identity.
+Kerberos protocol messages are protected against eavesdropping and replay
+attacks.
+
+Kerberos builds on symmetric-key cryptography and requires a trusted third
+party, and optionally may use public-key cryptography during certain phases of
+authentication. Kerberos uses UDP port 88 by default.
+
+
+\subsection{Private Key Cryptography}
+
+In \textbf{private key cryptography}, along with secrecy (encryption) every
+message exchange contains a \emph{Message Authentication Code} for providing
+\textbf{integrity}. For simplicity, MACs will be omitted from now on.
+
+Private key cryptography assures secrecy, mutual authentication and integrity.
+It resembles \textbf{digital signature}, since only the real part is able to
+use that secure channel (as it owns the specific secret that allow the
+communication to take place).
+
+\subsection{A simple version of Kerberos}
+
+The first simplified version of Kerberos has the following properties:
+\begin{enumerate}
+    \item mutual authentication;
+    \item key establishment;
+    \item secrecy, integrity, mutual athentication;
+    \item uses private key cryptography;
+    \item enforces short key lifetimes, with frequent rotation.
+\end{enumerate}
+
+The architecture is as follows:
+\begin{itemize}
+    \item every user \texttt{U} has a \textbf{secret key} \texttt{KU};
+    \item every server \texttt{S} has a \textbf{secret key} \texttt{KS};
+    \item each secret key had been derived by a \textbf{password}, so that
+    \begin{itemize}
+        \item \texttt{KU = H(U, pwd-U)};
+        \item \texttt{KS = H(S, pwd-S)};
+    \end{itemize}
+    \item an \textbf{Authentication Server} \texttt{AS} knows all secrets, as it
+        possesses an AuthDB containing the pairs \texttt{username, K-username};
+    \item the username is used as a \textbf{salt};
+    \item every node as a good, local clock.
+\end{itemize}
+
+Kerberos is particularly suitable for \textbf{local} environments, as an AS
+should exist for all users and servers. This is not scalable, as private key
+cryptography can't be managed on a large scale.
+
+The first phase of any login is the \textbf{interactive logon}. An interactive
+logon sees a user \emph{locally logging in} a machine (a workstation, a
+physical terminal of a server). After the local login, the workstation
+immediately authenticates to the AS -- if the operation results successfully,
+the interactive logon completes correctly, and the user is correctly
+authenticated (he knows \texttt{pwd-U}. The user can use all the services
+provided on the local workstation.
+
+The next phase is the \textbf{network logon}. A network logon involves a user's
+workstation \texttt{U} authenticating to \textbf{any} server \texttt{S} (he is
+authorized to perform the login on). The already\--authenticated workstation
+authenticates on user's behalf, and the end result is the user \texttt{U} able
+to use services from server \texttt{S}.
+
+In this simplified model, the 
+
+MARK slide 56
 
 
 
