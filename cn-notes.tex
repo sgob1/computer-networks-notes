@@ -5229,6 +5229,12 @@ after having guaranteed \textbf{persistence} with related techniques, thanks to
 which the infected device remains so even across restarts and changed
 credentials. 
 
+Lateral movement abuse is based on expansion of \emph{credentials} and
+\emph{access rights}, executed with \emph{credentials misuse},
+\emph{vulnerability exploitation} and \emph{Access Rights abuse}. Usually, a
+crucial aspect allowing all of this is \textbf{misconfiguration}, with
+overprivilege or inadequate account auditing.
+
 Also the phase of so\--called \textbf{Command \& Control} is
 relevant prior to lateral movement, allowing an attacker to communicate with
 the system under their control, by usually \emph{mimicking normal traffic} such
@@ -5436,9 +5442,61 @@ abuse}. During access rights abuse, an attacker exploits vulnerabilities in how
 access rights are defined so that logon on many machines and credentials
 discovery is faster.
 
-MARK slide 80
+
+For instance, let's say that \texttt{U-X} and \texttt{U-Y} belong to a certain
+\emph{credentials set}, and that
+\begin{itemize}
+    \item \texttt{U-X} has access right \emph{administrator of machine group
+        A};
+    \item \texttt{U-Y} has access right \emph{add a PC to machine group A}.
+\end{itemize}
+
+Suppose an attacker is capable to operate as \texttt{U-X} and as \texttt{U-Y},
+he is capable of inserting a lot of machines in group A (as \texttt{U-Y}) and
+start monitoring LSASS in all of those machines (as \texttt{U-X}); when a
+server\--domain administrator executes a process in any of those machines, the
+attacker will get its credentials.
+
+Another example of this is the \texttt{Backup Operators} group: a group that
+can read data from all servers, by default, including Domain Controllers. This
+is usually done in order to perform backup maintenance and administration.
+
+Suppose \texttt{U-X} has the access right to \emph{add a user to group
+\texttt{Backup Operators}}. Now, an attacker can insert \texttt{U-Y}
+\textbf{administrator} in \texttt{Backup Operators}, stealing data on all
+servers (even Domain Controllers).
+
+These abuses involve \emph{no password} and \emph{no software vulnerability}.
+Instead, they only rely on \textbf{overprivilege} of groups and accounts,
+leading to \textbf{undesired chains} of access right; straight to the Domain
+Controller full ownership. The above are usually (but not always) the result of
+inadequate auditing of accounts and asset management.
+
+
+\subsection{The Principle of the Least Privilege}
+
+The \textbf{Principle of the Least Privilege} states that
+
+\vspace*{1cm}
+\begin{center}
+\emph{``Every program and every user of the system should operate using the
+least set of privileges necessary to complete the job.''}
+\end{center}
+\begin{flushright}
+Saltzer and Schroeder 1975
+\end{flushright}
+\vspace*{1cm}
+
+and is a very deep principle, comprising any running system, no matter its
+goals, its requirements.
+
+\emph{Bloodhound} is a security software which can easily identify highly
+complex attack paths, that would otherwise be impossible to quickly grasp. It
+reveals hidden and unintended relationships within an AD environment, by means
+of queries to LDAP and Domain Controllers.
 
 \chapter{Categorizing the attacks}
+
 
 \section{Target categories}
 
@@ -5446,14 +5504,35 @@ There are three attack categories. The first one is to \emph{organizations},
 the second one is to \emph{Industrial Control Systems}, and the third one
 is against \emph{single individuals}.
 
+\subsection{Attacking Organizations}
+
+Attacking an \textbf{organization} is a very mainstream and remunerative way
+for an attacker to obtain money. Since there are many similarities between
+organizations, a \emph{given} set of skills, tools and knowledge might be
+reused or almost completely reused across many, different organizations.
+
+Attacks on organizations involve (all or some of) the steps we have previously
+encountered when discussing MITRE ATT\&CK framework.
+
 \subsection{Attacking Industrial Control Systems}
+
+\textbf{Industrial Control Systems} can be put under attack by a motivated
+attacker, with the goal of \emph{disruption of systems}.
+
+ICSs are usually built with the \textbf{Air Gap} principle in mind: the IT part
+is connected to the internet, while the ICS part is \textbf{fully disconnected}
+from the IT part and from the internet. Theoretically, no attacks are
+possibile, however quite often it happens that there are some laptops or
+systems to the ICS, or ICS is permanently accessible from the IT for remote
+control and monitoring: this could expose the ICS to attacks.
 
 Attacks on Industrial Control Systems are much less likely than attacks to
 organizations. Industrial Control Systems attacks are typically
 \emph{targeted}, \emph{techniques cannot be used again} and are \emph{harder to
 get money from}. Differently, attacking an organization does not typically
 require tergeted efforts and techniques, and ultimately there are consolidated
-means to obtain money from them.
+means to obtain money from them. Basically, ICSs have very few similarities
+between them, thus attacks cost a lot and have a low return in money.
 
 However, some important remarks should be done. Attacks to Industrial Control
 System are usually motivated by \emph{strategic} and \emph{intelligence}
@@ -5466,7 +5545,7 @@ prevented by means of a cyberattack. In all cases, a huge amount of resources
 is available to attackers, while interests are not related to money.
 
 Typically, an attack to Industrial Control System begins with many months of
-extensive \emph{reconnaissance}, with a very\--carefully crafted \textbf{spear
+extensive \emph{Reconnaissance}, with a very\--carefully crafted \textbf{spear
 phishing} attack which is quite impossible to detect and to prevent. The later
 lateral movement phase is made easier due to the extensive data collection on
 the specific target.
