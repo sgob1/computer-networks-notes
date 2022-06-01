@@ -4422,6 +4422,12 @@ Kerberos builds on symmetric-key cryptography and requires a trusted third
 party, and optionally may use public-key cryptography during certain phases of
 authentication. Kerberos uses UDP port 88 by default.
 
+Kerberos was initially designed in 1978 by \textbf{Needham} and
+\textbf{Schroeder}. In 1981 it had its first attacks, and some fix occurred --
+in 1987, the first release called \emph{Project Athena} (MIT), and in 1988 the
+first conference took place. Only in \emph{Windows 2000} Microsoft systems
+started implementing it for real.
+
 
 \subsection{Private Key Cryptography}
 
@@ -4478,9 +4484,306 @@ authorized to perform the login on). The already\--authenticated workstation
 authenticates on user's behalf, and the end result is the user \texttt{U} able
 to use services from server \texttt{S}.
 
-In this simplified model, the 
+In this simplified model, the user workstation \texttt{U} interacts with the authentication server \texttt{AS} by sending a message, containing:
+\begin{itemize}
+    \item \texttt{U};
+    \item \texttt{S} to which a connection should be performed;
+    \item \texttt{Eku(t1)}, with \texttt{t1} local clock and \texttt{ku}
+        \textbf{private key} known only by the client;
+\end{itemize}
 
-MARK slide 56
+If \texttt{t1} is sufficiently close to the clock of \texttt{AS} and the
+encryption key is the correct one, then the \texttt{AS} will respond with a
+message\footnote{Up to version $4$, \texttt{AS} would respond to messages
+\texttt{U,S} without \texttt{Eku(t1)}, thus providing unnecessary material for
+offline guessing since an attacker could simply ask for thousands of tickets.},
+encrypted with \texttt{ku}, containing the \textbf{session key} \texttt{Kus}
+and the clock \texttt{t1}. Since \texttt{ku} had been used, the message is
+authentic, and since \texttt{t1} is recent, the message is also fresh. The
+session key is a special key constructed by the \texttt{AS} whose purpose is to
+allow interaction between \texttt{U} and \texttt{S}.
+
+Since the message is encrypted with \texttt{ku}, how can the server possibly
+get \texttt{Kus}? The answer is by means of \textbf{service tickets} -- service
+tickets are messages containing \texttt{Kus} encrypted with the key \texttt{ks}
+belonging to the server. Service tickets are appended to the response message
+to the client. Service ticket is then sent to the server \texttt{S}. A service
+ticket contains \texttt{Kus}, can be read only by the server \texttt{S} since
+it is encrypted with \texttt{ks}, and can be only issued by \texttt{AS} (since
+no other entities will know \texttt{ks}).
+
+A service ticket is of the form \texttt{Eks(Kus, U, S, IP-U, Tas, LIFE, ...)} --
+it contains \texttt{Kus}, but also informations regarding the workstation
+(user, server, IP of workstation, time of \texttt{AS}, lifetime, and many other
+informations) so that the ticket \textbf{can only be used by the legitimate
+workstation, to submit requests to the legitimate server}. The lifetime is
+provided (usually in minutes) to prevent \emph{replay attacks}.
+
+During a request to \texttt{S}, the workstation \texttt{U} must authenticate as
+well, with an \textbf{Authenticator} message encrypted with the session key
+\texttt{Kus}. In order to do so, a message \texttt{Ekus(U, IP-U, TU1)} is
+appended so that the server can properly read informations on workstation (and
+comparing them to common network inspection). If the authentication succeeded,
+\texttt{S} will send back to the user \texttt{Ekus(TU1)}, so that he can check
+\texttt{S} identity and freshness of communication. Basically, both
+authenticator and ticket must agree on user's name, IP address and timestamp
+for this to work. The overall scheme is shown in
+Figure~\ref{fig:almost-kerberos}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/almost-kerberos.png}
+    \caption{A simplified overview of the Kerberos protocol.}
+    \label{fig:almost-kerberos}
+\end{figure}
+
+
+
+Network attackers in this path cannot succeed. First of all, communication between
+\texttt{U} and \texttt{AS} works perfectly, as the entire process runs on
+encrypted communications (by means of secrets known only by the two parties);
+secondly, communication between the \texttt{AS} and \texttt{S} guarantees
+secrecy, mutual authentication and integrity. The user becomes trusted as long
+as it cannot tamper \texttt{Kus}, because it doesn't know \texttt{ks}. An
+attacker cannot forge messages that should be encrypted with \texttt{Kus},
+cannot impersonate another user (as \texttt{U} would be different). The only
+attack left is Denial of Service.
+
+Among a single session (until the ticket expires), all the Kerberos\--related
+messages are always the same, as the ticket can be reused again. The only
+different things will be timestamps and requests\---responses between
+\texttt{U} and \texttt{S}. Since timestamps will mutate, the Authenticator
+message will mutate as well.
+
+Kerberos can be seen as a \emph{protocol} for making sure that an
+\textbf{Authentication Token}, authentic and intact across untrusted channels,
+is presented by its owner and to the legitimate service. With these expedients,
+Kerberos is able to provide secrecy, integrity and mutual authentication, at
+the cost of a lesser usability, greater costs and greater administration
+difficulty.
+
+
+\subsection{Kerberos and security properties in detail}
+\subsubsection{Improving the simplified Kerberos model to withstand replay attacks}
+
+A network attacker cannot read, modify or forge messages; however, he can
+\textbf{replay} them:
+\begin{itemize}
+    \item replaying \emph{responses} will result in a detection, as the
+        responses are always matched with the corresponding timestamp;
+    \item replaying \emph{requests} will be undetected with the above
+        techniques only.
+\end{itemize}
+
+However, requests to \texttt{AS} pose no problem, since the attacker will
+receive many copies of the same response (containing the service ticket), but
+he will never be able to decrypt them -- differently, an attacker may want to
+replay some request to a server \texttt{S}, so that \textbf{multiple
+executions} of a same command can be provoked.
+
+Since the client will insert the local clock in every sent message, the defense
+is to \emph{compare the clock contained in the message with the local clock},
+and then \textbf{discard} every message received with \texttt{msg.clock -
+rcv.clock} greater than a certain threshold (before of after the
+\texttt{rcv.clock}). In other words, \textbf{given a tolerance} $\delta$ every
+message whose clock is different from the clock of the receiver will be
+discarded. An attacker could still perform a quick replay and send a lot of
+requests during the threshold -- this is now possible, however, since
+\textbf{the server will store all received message with clock within $\delta$,
+and discard all copies of the same message}, thus preventing massive spam of
+replay attacks. This technique is also adopted in many modern protocols, such
+as \emph{OAuth} and \emph{SPID}.
+
+Kerberos can still be vulnerable to guessing attacks. Guessing can, of course,
+only be made against \texttt{Ku} and \texttt{Ks} as both are derived from
+password (plus a salt), and not against \texttt{Kus}.
+
+\subsubsection{The three different versions of Kerberos}
+
+Kerberos comes in three versions:
+\begin{enumerate}
+    \item the \textbf{very strong} configuration, providing \emph{private}
+        messages with guarantees of secrecy, integrity and mutual
+        authentication;
+    \item the \textbf{strong} configuration, providing only \emph{safe}
+        messages (integrity and mutual authentication);
+    \item the \textbf{so\--so} configuration, in which after the first
+        interaction the connection \textbf{is the same as TCP}. Sadly, this is
+        the default configuration when setting up a Kerberos instance.
+\end{enumerate}
+
+The first and strongest configuration is the one we have already seen, and it is depicted in Figure~\ref{fig:very-strong-kerberos}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/very-strong-kerberos.png}
+    \caption{The ``very strong'' Kerberos configuration.}
+    \label{fig:very-strong-kerberos}
+\end{figure}
+
+The second configuration has \textbf{no secrecy in requests}, only providing
+mutual authentication and integrity by means of \emph{Message Authentication
+Codes} appended in each message (Figure~\ref{fig:strong-kerberos}).
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/strong-kerberos.png}
+    \caption{The ``strong'' Kerberos configuration.}
+    \label{fig:strong-kerberos}
+\end{figure}
+
+The third, the weakest of all, provides mutual authentication \textbf{only} in
+the first interaction of the protocol (Figure~\ref{fig:so-so-kerberos}).
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/so-so-kerberos.png}
+    \caption{The ``so-so'' Kerberos configuration.}
+    \label{fig:so-so-kerberos}
+\end{figure}
+
+\subsubsection{Ticket lifetime}
+
+During a \textbf{Kerberos Session} there exists a single ticket. After the
+ticket expires, a new Kerberos Session should be created and a new ticket
+should be granted, all by contacting the \texttt{AS} again. The Kerberos
+Session and the ticket lifetime is \emph{completely independent} of the TCP
+connection lifetime -- a single TCP connection can end up by using
+\emph{multiple} service tickets, and a single service ticket can be used on
+\emph{multiple} TCP connections.
+
+The main reason to adopt a limited lifetime is the \emph{Crypto Prudent
+Engineering Practice}, which states that \textbf{every key must be changed
+every now and then}, a fundamental practice for every practical application in
+cryptography. There could be many reasons for this, for instance the
+cryptographic algorithm could have weaknesses exploitable by collecting a lot
+of traffic, or the key might be found \emph{somehow}, so all the traffic would
+be decrypted, forever. Thus, the session key that the service ticket grants
+must be changed every now and then.
+
+The problem with ticket expiring is that it protects a strong key by increasing
+the risk on a \textbf{weaker} key (\texttt{Ku}), by providing more
+opportunities for observing traffic (dictionary attack), and more traffic for
+cryptanalysis. The issue is solved by means of KDC (next section).
+
+\subsection{Key Distribution Center}
+
+In order to understand how the real Kerberos works, further modifications
+should be done.
+
+The \textbf{Key Distribution Center} is a server belonging to a Kerberos instance
+whose goal is to \textbf{provide tickets}. A real Kerberos works with two,
+distinct services (can be run on the same machine -- in fact, it runs on port
+88 on the same machine): one that \textbf{initiates authentication}, and the
+other one that \textbf{provides tickets}. The first one is the \texttt{AS} that
+had already been depicted in the previous paragraphs, while the KDC role will
+be explained now.
+
+Suppose a user wants a ticket to communicate with a server \texttt{S}. The user
+sends a request to the \textbf{Ticket Granting Service} (\texttt{TGS}). The
+\texttt{AS} grants the user a \textbf{Ticket Granting Ticket} (TGT), that is a
+ticket with which the user workstation will be able to communicate with the
+\texttt{TGS}. After that, the user presents its \texttt{TGT} to the
+\texttt{TGS}, along with a request for service \texttt{S}. The \texttt{TGS}
+will respond with the \textbf{service ticket} for communucating with service
+\texttt{S}. Next
+Figures~\ref{fig:real-kerberos-1}~and~\ref{fig:real-kerberos-2} illustrate the
+entire process in detail.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/real-kerberos-1.png}
+    \caption{The first steps of real Kerberos.}
+    \label{fig:real-kerberos-1}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/real-kerberos-2.png}
+    \caption{The further steps of real Kerberos.}
+    \label{fig:real-kerberos-2}
+\end{figure}
+
+
+\clearpage
+
+
+Hence, the process can be summarized in $4$, distinct steps (two phases):
+\begin{enumerate}
+    \item the user \texttt{U} performs an \textbf{interactive logon} on the
+        workstation. A concatenation of username and password is passwd through
+        a hash function, which produces \texttt{Ku};
+    \item the workstation \emph{proves its knowledge of \texttt{Ku}} with the
+        Authentication Server \texttt{AS} -- the latter grants the user's
+        workstation a \textbf{ticket granting ticket}, along with session key
+        \texttt{Ku-tgs}. The \emph{interactive logon} phase ends here;
+    \item the user performs a \textbf{network logon} to a service \texttt{S}.
+        The workstation presents the TGT to the \texttt{TGS}, also proving the
+        knowledge of \texttt{Ku-tgs}; the \texttt{TGS} gives it the
+        \emph{session ticket} for the communication between \texttt{U} and
+        \texttt{S}, along with \texttt{Ku-s};
+    \item the user completes the network logon by presenting the ticket to
+        \texttt{S}, proving knowledge of \texttt{Ku-s}.
+\end{enumerate}
+
+A Ticket Granting Ticket lasts \emph{hours}, and can be used to request new
+service tickets until it expires. During a single day, some of them might be
+requested by a workstation whose TGTs expired. A service ticket, instead, lasts
+\emph{minutes}. This means that \emph{the secret \texttt{Ku} is used only once
+in hours}, protecting it from the collection of guessing material, while the
+strong secret (the session key) is rotated multiple times, possibly hundreds of
+times each day. Basically, the high volume traffic is only performed with
+strong secrets, protecting the weaker user key.
+
+Some weak points of real Kerberos exist. For instance,
+\begin{itemize}
+    \item collecting service tickets is very easy. Service tickets are
+        encrypted with \texttt{Ks}, hence collecting guessing material to
+        attack server password is a realistic threat;
+    \item if weak or default passwords are used this is dangerous;
+    \item even more dangerous in the case of \emph{overprivilege}.
+\end{itemize}
+hence, an attacker that has obtained credentials of a single user (very
+realistic) can then obtain ST(S) for \textbf{any} server \texttt{S} by simply
+asking \texttt{TGS} for tickets (for this reason, servers passwords must be
+managed \textbf{very} carefully); this attack is known as
+\textbf{Kerberoasting}. There are many automated tools for this data
+collection, and there is no need to observe the traffic (only by communicating
+and possessing credentials of a user). When the attacker can only observe (and
+does not possess credentials) the attack is feasible, but not easy. In fact, he
+must perform the equivalent of an offline guessing attack, with salted
+passwords. This is still feasible as \texttt{Kerberos 5} protocol allows
+computing 13200 times more hashes than \texttt{bcrypt} or \texttt{blowfish}.
+
+\section{Access Management in Kerberos}
+
+Kerberos allows fine\--tuning the \textbf{permissions} related to
+\textbf{Access Management}. In particular, access management is performed in a
+\emph{centralized fashion}, with \textbf{access right specified on the ticket}.
+Basically, when a ticket is forged by a \texttt{TGS}, the access rights for a
+user are defined in the ticket (the server trusts them blindly) since the
+access rights are set up in the KDC. User requesting an operation which is out
+of his rights will result in a ``not authorized'' message from the server. Each
+resource has an Access Control List described in terms of groups of usernames
+-- the ticket specifies which groups the username belongs to.
+
+Kerberos can only work effectively towards a \emph{single organization}. In fact:
+\begin{itemize}
+    \item a server in the second organization must be able to verify the
+        authenticity and the integrity of tokens \textbf{issued by the first
+        organization};
+    \item the protocol is not NAT\--friendly;
+    \item the access right policies should be mapped between organizations
+        (hard to do due to privacy);
+    \item each organization should trust the other.
+\end{itemize}
+
+For the above reasons, Kerberos is practically used only between different
+parts of a same organization -- and not across the internetwork. Protocols that
+reliably work across the internet are \textbf{SAML}, which supports
+authentication and authorization, often used for authentication only, as in the
+case of SPID -- and \textbf{OAuth}, which supports authentication and
+authorization as well.
 
 
 
@@ -4489,20 +4792,436 @@ MARK slide 56
 
 \chapter{Identity and Access Management}
 
+Large organizations involve hundreds of servers, each one storing files and
+databases, thousands of workstations (either private or shared) and thousands
+of users (belonging to tens of partially\--overlapping groups). Some servers
+might even be accessible from the outside (POP, HTTP, for example). Users and
+groups are said to be \textbf{identities}, while everything else falls in the
+category of \textbf{resources}. What an identity \texttt{U} can do, is to
+request \textbf{operation} \texttt{O} on resource \texttt{R}. 
+
+Every software that manages a resource authenticats the identity that requests
+an operation, and verifies whether that identity has the access rights (the
+authorization) for such operation. That should be done in a centralized
+fashion, with a single \texttt{AuthDB} managin all identities and related
+permissions.
+
+The \textbf{Identity and Access Management} are the \emph{procedures} and
+\emph{technologies} for management of individual \emph{identities}, their
+\emph{authentication}, \emph{authorization}, \emph{roles} and ultimately their
+\emph{access rights} \textbf{within} or \textbf{across} system and enterprise
+boundaries.
+
+Almost all large organizations use \textbf{Windows Active Directory}, along
+with \textbf{LDAP}.
+
+\section{Identity and Access Management within an Organization}
+
+IAM within an organizations is realized thanks to the \textbf{Directory
+Service}. A Directory Service is a \emph{centralized} repository containing all
+\emph{identities} and their \emph{credentials}, all \emph{resources} and all
+\emph{access rights} associations between identities and resources.
+
+A process of \emph{Single Sign On} can be performed by users, with each
+resource executing authentication by interacting with \texttt{DS}. Access
+rights are stored on \texttt{DS} -- therefore, authorization can be queried to
+the Directory Service.
+
+\subsection{Windows Active Directory}
+
+On \textbf{Windows Active Directory}, a single entity -- the \textbf{Domain
+Controller} -- runs the three single most important services:
+\begin{itemize}
+    \item the \emph{Kerberos AS};
+    \item the \emph{Kerberos TGS};
+    \item the \emph{Directory Service};
+\end{itemize}
+thus, it should be safeguarded from attackers.
+
+Active Directory works wonderfully over Kerberos. The process is the following
+one:
+\begin{enumerate}
+    \item \texttt{U} presents credentials to a workstation and performs the
+        first phase of interactive logon;
+    \item the workstation obtains \texttt{TGT(U)} from \texttt{DC};
+    \item the workstation \emph{verifies} whether \texttt{TGT(U)} specifies
+        that \emph{the user \texttt{U} can logon on the workstation};
+    \item if yes, the workstation stores \texttt{TGT(U)} in its memory;
+    \item the network logon phase starts. The workstation presents
+        \texttt{TGT(U)} to the Domain Controller, which in return grants
+        \texttt{ST(U,S)};
+    \item the workstation presents \texttt{ST(U,S)} to server \texttt{S};
+    \item the server \texttt{S} verifies in \texttt{ST(U,S)} \emph{which
+        operations} the user \texttt{U} can execute on \texttt{S};
+    \item the user has correct privileges, both workstation and server
+        \texttt{S} store \texttt{ST(U,S)} in their memory;
+    \item the server executes \texttt{S}.
+\end{enumerate}
+
+A third way to logon is the \textbf{Remote Logon}. A remote logon occurs when a
+user wants to connect to a different workstation (not the same one) -- it works
+like in the case of a server:
+\begin{enumerate}
+    \item the workstation presents \texttt{TGT(U)} to \texttt{DC} and obtains
+        \texttt{ST(U,WKS')};
+    \item the workstation presents \texttt{ST(U,WKS')} to \texttt{WKS'};
+    \item the remote workstation \texttt{WKS'} \emph{verifies} in
+        \texttt{ST(U,WKS')} which operations \emph{the user \texttt{U} can
+        execute on \texttt{WKS'}}.
+    \item if all correct, the workstation and the remote workstation will store
+        \texttt{ST(U,WKS')} on their memory.
+\end{enumerate}
+
+A fourth way of logon is the \textbf{Network Logon with Delegation}. In this
+scenario, an user \texttt{U} authenticates to \texttt{S}, and the latter
+accesses \texttt{S'} \textbf{on behalf of \texttt{U}}. The typical case is when
+the \texttt{S} is a web server, and \texttt{S'} is a database server. In this
+case,
+\begin{enumerate}
+    \item the ticket \texttt{ST(U,S)} must be a \textbf{delegation ticket},
+        having a special flag denoting such peculiarity;
+    \item the server \texttt{S} presents \texttt{ST(U,S)} to \texttt{DC},
+        obtaining \texttt{ST(U,S')} -- with this ticket, the server \texttt{S'}
+        obtains the user's identity;
+    \item both servers keep \texttt{ST(U,S')} in memory.
+\end{enumerate}
+
+
+An important remark is that \emph{everything can be done with NTLM as well},
+for compatibiluty reasons. The important aspect is that \textbf{credentials
+such as hashes of user passwords are stored in memory}, always present in
+workstations -- a network attacker can grab oggline guessing material for
+\texttt{H(pwd-U)}, a secret that it allows impersonating the user \texttt{U}.
+
+\subsection{LDAP}
+
+\textbf{Lightweight Directory Access Protocol} is a protocol designed for Linux
+(or different than Windows) machines to interact with an exiting Active
+Directory configuration.
+
+Some services or web applications run on Linux. In order to interact with users
+of an existing Active Directory configuration, the Linux machine \textbf{asks
+Directory Service by means of the dedicated LDAP application protocol} if the
+credentials are valid and what are the proper access rights of an user (logged
+in with an application\--specific authentication protocol, let's say HTTPS,
+FTP, POP and so on). Basically, the Linux machines authenticates to the
+\texttt{DC} with an \emph{LDAP Authentication}, for instance with
+\emph{TLS+username\--password} (\textbf{LDAPS}) carried on a special LDAP
+message. Certain LDAP operations require \textbf{LDAP authentication} of the
+client application. After that, the Linux machine is successfully authenticated
+to the \texttt{DC}, and can then ask for credentials validity or access rights.
+
+
+LDAP has a double meaning:
+\begin{enumerate}
+    \item a \textbf{standard} for describing entities of IT interest, such as
+        \emph{users}, \emph{resources} and \emph{access rights};
+    \item a \textbf{protocol} for querying a directory service (the server that
+        stores those descriptions).
+\end{enumerate}
+
+
+
 
 
 \part{Cyberattacks}
 
-\chapter{Attackers and their \emph{modus operandi}}
+\chapter{An introduction to Vulnerabilities}
+
+\textbf{Vulnerabilities} are a \textbf{mistake in software} that can be
+directly used to \emph{gain access} to a system or to a network.
+
+The list of known vulnerabilities (CVE, \emph{Common Vulnerabilities and
+Exposures}) can be found at \texttt{https://cve.mitre.org/}.
+
+Vulenrabilities allow a wide range of attacks to succeed, with impacts ranging
+from better to worse:
+\begin{enumerate}
+    \item information disclosure;
+    \item privilege escalation;
+    \item code execution of existing operations, or arbitrary code execution.
+\end{enumerate}
+
+and are also categorized according to various methods of execution (not
+exhaustive list):
+\begin{itemize}
+    \item physical access needed;
+    \item can be exploited by a malicious running program;
+    \item remote execution with human interaction;
+    \item remote execution without human interaction.
+\end{itemize}
+
+
+
+A more general definition is the following one:
+
+\vspace*{1cm}
+\begin{center}
+    \emph{``A vulnerability is a flaw or weakness in a computer system, in its
+    security procedures or internal controls, which could be exploited to
+violate the system security policy. (NIST SP 800-28 Version 2)''}
+\end{center}
+\vspace*{1cm}
+
+Typical examples of vulnerabilities are:
+\begin{itemize}
+    \item over\--privileged user accounts;
+    \item oversized administrator groups;
+    \item bad practice in workstation administration;
+    \item bad practice in password management;
+    \item excessively loose firewall policies;
+    \item \dots
+\end{itemize}
+
+In a nutshell, vulnerabilities are software or configuration\---procedural
+\textbf{mistakes} that allow an attacker to violate the security policies in
+effect.
+
+Vulnerabilities are a \emph{growing trend} (we are not in the range of
+20000\--per\--year), and they are only the publicly known vulnerabilities.
+There are, however, the so\--called \textbf{zero\--day} vulnerabilities which
+are known to the attacker only, and unknown to both software manufacturer and
+defender.
+
+\textbf{Every kind of software} can be affected by vulnerabilities.
+Vulnerabilities are an intrinsic feature of software -- not a sporadic,
+occasional phenomenon. In practice, those categories can be affected:
+\begin{itemize}
+    \item end user software;
+    \item network devices;
+    \item security software;
+    \item software implementing security protocols;
+    \item Industrial Control Systems (ICS);
+    \item Medical Devices;
+    \item IoT devices (Cars, Ships, home devices);
+    \item \dots
+\end{itemize}
+
+
+\section{The Common Vulnerability Enumeration procedure}
+
+The \textbf{Common Vulnerability Enumeration} is a procedure for assigning a
+\emph{unique ID} to every known vulnerability. The first step is the
+\emph{submission} of the vulnerability details to a certain consortium (for
+instance, \texttt{https://\-www\-.cve.org}; \emph{analysis} will follow by
+\begin{itemize}
+    \item assignment of a new ID for the vulnerability, in format
+        \texttt{CVE-YYYY-NNNN}\dots;
+    \item merging of the vulnerability with an existing one, if already
+        existing.
+\end{itemize}
+
+CVE is the standard de facto nowadays, and all the organizations and documents
+will refer to a certain vulnerability by the same ID, its CVE. This is of a
+huge importance in order to avoid any confusion.
+
+Along with the CVE, the \textbf{impact} (or \textbf{risk evaluation}) of a
+vulnerability is provided, so that a defender can understand the danger of the
+vulnerability in question. Moreover, \textbf{reason} can be provided as well
+(does the attacker induce a crash? does the attacker induce an endless loop?
+does the device has a too small amount of resources? can the attacker consume
+all resources easily?)
+
+Parallel to CVEs, there exist \textbf{Common Weakness Enumeration} (CWE). CWEs
+are a \emph{list of types of mistakes}, constructed \emph{once and for all}
+(periodically revisited). Some of these mistakes in the list include
+\begin{itemize}
+    \item weak encryption;
+    \item improper validation of syntactic correctness in input;
+    \item improper certificate validation;
+    \item improper access control;
+    \item improper\dots
+\end{itemize}
+
+Each CVE might be associated with one or more \textbf{CWE}; this is very useful
+in order to grasp the underlying reasons quickly.
+
+
+
+
+
+\chapter{Attacks}
+
+\section{The reasons behind attacks}
+
+Attacks are most frequently done to \textbf{obtain money}. The first and
+foremost reason will always be to make money as easiest as possible. Some
+attackers, however, might be motivated enough to performing an attack to
+\textbf{steal informations} or \textbf{distrupting the operations} of a
+target organization.
+
+Attacks are a \textbf{professional activity}, with criminal groups of tens of
+people, hierarchically structured, and teams that are able to update malwares
+(for instance, the Conti Group updated their malwares every 4 hours, in order
+to avoid detection from \emph{Windows Defender}, so that signature is
+different). To obtain money, many creative ways do exist:
+\begin{itemize}
+    \item steal and use \emph{banking credentials};
+    \item steal and sell \emph{credentials};
+    \item steal and sell \emph{long term cookies};
+    \item employ \emph{Remote Access Trojans} to infect a device, and sell or
+        rent it;
+    \item and so on.
+\end{itemize}
+
+Usually, the victim is \textbf{not} aware of what happened, except in the case
+of \textbf{ransomwares} in which the victim is asked to pay an amount of money
+in order to unlock the files on his computer that had been encrypted by the
+attacker. Another kind of malware \emph{steals} data instead of encrypting it,
+asking ransom for not making it public.
+
+With all the above attacks, \emph{the attack cost is very low}, while the
+\emph{potential Return on Investment (ROI) is very high)}: this means that a
+lot of potential attackers are incentivized to perform attacks to obtain money.
+On top of this, anonymous payments worldwide allowed attackers to ask for
+ransoms anonimously, while the importance of data for organizations has grown
+exponentially in the last years. Ultimately, this is a huge societal problem.
+
+Three distinct target categories might exist:
+\begin{itemize}
+    \item organizations -- servers and data;
+    \item Industrial Control Systems -- sensors and actuators;
+    \item single individuals.
+\end{itemize}
+
+The term Organizations covers a whole range of entities, such as Hospitals,
+administration of manufacturing companies, universities, and any other entity
+that possesses servers and owns data. An organization might or might not
+possess an ICS infrastructure -- thus, with organization we mean the
+administration, logistics, payroll, sales\---purchasing, warehouse,
+email\---web (and so on) part, while with ICS one explicitly suggests the
+sensors and actuators infrastructure in a manufacturing or control process.
+
+A lot of money can be obtained by attacking
+\begin{itemize}
+    \item single organizations -- asking for huge ransoms;
+    \item many individuals -- asking for small ransoms;
+\end{itemize}
+
+while attacks on ICSs are frequently justified by other motivations (for
+instance, disruption and information disclosure). In fact, attacks to ICS
+rarely grant money.
+
+
+
+
+
 
 \section{Attacking an organization}
+
+Attacking an organizations usually is a many\--steps process: several phases
+follow one after the other, each of several steps, that can last from minutes
+to months. To describe attack phases, several \emph{models} have been built;
+the most famous two are the \textbf{Kill chain} model, the first widely used,
+and the \textbf{MITRE ATT\&CK} model, the one that represents today's standard.
+
+The MITRE ATT\&CK framework is used to describe an attack, and is composed of
+13 possible phases, called \emph{Tactics} -- some tactics are optional for an
+attacker, so that an attack can succeed without seeing all of the tactics
+involved. Tactics are also not necessarily executed in sequence.
+
+Each tactic comprises several \emph{Techniques}, that are the ways for
+executing each step of a tactic.
+
+The MITRE ATT\&CK framework involves three \emph{Matrices} in which all the
+tactics and techniques are
+exposed\footnote{https://attack.mitre.org/matrices/enterprise/}.
+
+The role of vulnerabilities is relevant in all tactics that involves
+penetrating security breaches; that are \emph{Initial Access},
+\emph{Execution}, \emph{Lateral Movement} and \emph{Privilege Escalation}.
+
+\subsection{Initial Access}
+
+The \textbf{Initial Access} tactic is the one that is almost always observed:
+an attacker overcomes the first defenses of an organization. Several techniques
+exist:
+\begin{description}
+    \item[Drive\--by Compromise] A user visits a website over the normal course
+        of browsing, and a \emph{vulnerability} is exploited
+    \item[Exploit Public\--Facing Application] A \emph{vulnerability
+        exploitation} is performed against an internet\--facing machine (be it
+        a server or a workstation)
+    \item[Phishing] \emph{Malicious attachments} or links in e\--mails lead to a
+        vulnerability exploitation
+    \item[Valid Accounts] \emph{Compromised credentials} are used to enter the organization
+    \item[Other 5 techniques] in MITRE ATT\&CK framework
+\end{description}
+
+A remark is that the techniques either exploit an existing vulnerability or get
+to deceipt a real human.
+
+An important cornerstone of initial access is \textbf{phishing}. Phishing is a still widely used and very effective attack technique, which is of two forms,
+\begin{itemize}
+    \item \textbf{non\--targeted}, when adversaries conduct malware spam
+        campaigns or other non\--targeted phishing attempts, with even low
+        success rates leading to huge gains (cost\--effective);
+    \item \textbf{targeted}, in the case of \textbf{spearphishing}: a specific
+        individual, company or industry is object of targeting by the
+        adversary. Defending against spearphishing is \textbf{very difficult},
+        and it usually follows the phase of \emph{Reconnaissance}.
+\end{itemize}
+
+
+\subsection{Execution}
+
+\textbf{Execution} techniques result in an \emph{adversary\--controlled} code,
+running within the organizations. Twelve techniques exist for this.
+
+\subsection{Persistence}
+
+\textbf{Persistence} should be granted across \emph{system restarts},
+\emph{changed credentials} and \emph{interruptions} that could cut off the
+attacker's access. Nineteen techniques exist.
+
+\subsection{Establishing Command \& Control}
+
+\textbf{Command \& Control} are a set of techniques that adversaries may use
+to \emph{communicate with systems under their control}, within a victim
+network. Adversaries commonly attempt to \emph{mimick normal, expected traffic
+to avoid detection} -- usually by means of existing protocols, but new
+``unseen'' protocols might be created by an attacker. The attacker will also
+\emph{obfuscate his location} to avoid detection from the defenders or other
+security organizations.
+
+An example of C\&C structure is the \textbf{DNS Tunneling} technique, in which
+an attacker controlled device encodes a \emph{request message} to attacker in a
+DNS query, for instance \texttt{dfg99872gh\-.innocent.com A?} -- whose CNAME
+response will be let's say \texttt{hhjsd67\-.innocent.com}, encoding a response
+message from the attacker. Sixteen more techniques exist.
+
+\subsection{Discovery}
+
+\textbf{Discovery} are a set of techniques in which an attacker \emph{gains
+knowledge} about the internal environment and decides how to act. The goal of
+discovery is to learn of networks, hosts, devices, applications, but also
+users, groups, access rights. Twentynine techniques exist.
+
+A simple and lightweight program for discovery is \textbf{\texttt{nmap}}
+(Network Mapper), an open source tool for \emph{network exploration} and
+\emph{security auditing}. The tool \texttt{nmap} is capable to scan either
+large networks or single hosts -- it uses raw IP packets in novel ways, to
+determine:
+\begin{itemize}
+    \item what \emph{hosts} are available on the network;
+    \item the \emph{services} that are running;
+    \item the \emph{Operating Systems} and their version the hosts are running;
+    \item the kind of \emph{firewalls} in use;
+    \item and many more.
+\end{itemize}
+
+Usually, \texttt{nmap} is quite noisy, but with certain flags it can be
+configured to be hardly detectable.
+
 
 \subsection{Lateral movement}
 
 \textbf{Lateral movement} is the phase in which an attacker, after having
 obtained access to a single point internal to the organization, performs
 attacks and operation in which tries to access new devices, usually in the same
-privilege sphere that the already attacked device lies. 
+privilege sphere that the already attacked device lies; applying then Execution
+and Persistence on other hosts. There are 9 techniques for lateral movement in
+MITRE ATT\&CK framework, under the tactic \emph{Lateral Movement}.
 
 Usually, the lateral
 movement phase comes after the attacker gained foothold during the first phase,
@@ -4527,7 +5246,198 @@ the encoded response.
 A link had been established between the
 attacker and the device.
 
-MARK
+With lateral movement, an attacker can access various kind of data -- which and
+with which access rights will depend on the available credentials. Of course,
+if the Domain Controller is accessed, the attacker will have the upper hand on
+the defenders.
+
+The main reasons for success of lateral movement are the following ones:
+\begin{itemize}
+    \item target has something with \emph{default} credentials;
+    \item target has something with \emph{easy to guess} credentials;
+    \item target has something accessible by \emph{stuffing or spraying} credentials;
+    \item credentials used locally by the attacker have some \emph{access
+        rights} on the target -- suppose the attacker managed to get his hands
+        on a privileged machine: the remote logon, for instance, will grant him
+        high access rights;
+    \item an unpatched \emph{vulnerability} can be exploited;
+    \item \dots
+\end{itemize}
+
+For instance, the tool \texttt{CrackMapExec} is able to \emph{identify} all
+machines in the provided IP range, \emph{attempt credentials} on those machines
+and ultimately \emph{extract password hashes} from all machines, where local
+admin.
+
+Lateral movement might happend with automated tools as well. The automated tool
+will attempt logon on more and more machines, making \emph{credential set}
+progressively larger and larger, until some credential allows executing
+operations for exfiltration\--impact. This can be done either with
+Kerberoasting or NetNTLM Collection.
+
+
+\subsection{Exfiltration}
+
+The end goal of \textbf{Exfiltration} is to \textbf{steal data} from the target
+machines -- transferring it over the already set up C\&C channel (or an
+alternate channel), usually employing compression, encryption and paying
+attention to size limits. There are 9 techniques to do so.
+
+For instance, \texttt{HTran} is a tool for \emph{proxying TCP connections} --
+installed on unsuspecting machines with prior attacks, it opens a TCP
+connection to a proxy, while the latter opens a connection to the attacker. Of
+course, many instances of \texttt{HTran} could be running between the attacker
+and the organization. It makes harder for the defender to guess where the
+attacker is. \texttt{HTran} usually hides its traffic on the majority of HTTPS
+users in the organizations, thus with the traffic commonly leaving the
+organizations without raising suspects. 
+
+Exfiltration effort might be split between many devices that are
+infected.
+
+\subsection{Reconnaissanse}
+
+The adversary is trying to gather information they can use to plan future
+operations.
+
+\textbf{Reconnaissance} consists of techniques that involve adversaries
+actively or passively gathering information that can be used to support
+targeting. Such information may include details of the victim organization,
+infrastructure, or staff/personnel. This information can be leveraged by the
+adversary to aid in other phases of the adversary lifecycle, such as using
+gathered information to plan and execute Initial Access, to scope and
+prioritize post-compromise objectives, or to drive and lead further
+Reconnaissance efforts. This is done \emph{before} attacking.
+
+There are 10 techniques.
+
+\subsection{Resource Development}
+
+The adversary is trying to establish resources they can use to support
+operations.
+
+\textbf{Resource Development} consists of techniques that involve adversaries
+creating, purchasing, or compromising/stealing resources that can be used to
+support targeting. Such resources include infrastructure, accounts, or
+capabilities. These resources can be leveraged by the adversary to aid in other
+phases of the adversary lifecycle, such as using purchased domains to support
+Command and Control, email accounts for phishing as a part of Initial Access,
+or stealing code signing certificates to help with Defense Evasion. This is
+done \emph{prior} to executing the attack, and consists in 7 different
+techniques.
+
+\subsection{Impact}
+
+The adversary is trying to manipulate, interrupt, or destroy your systems and
+data. This is done \emph{in place} of \emph{Exfiltration} -- for an attacker,
+it might suffice to interrupt data services at organization (disruption).
+
+\textbf{Impact} consists of techniques that adversaries use to disrupt
+availability or compromise integrity by manipulating business and operational
+processes. Techniques used for impact can include destroying or tampering with
+data. In some cases, business processes can look fine, but may have been
+altered to benefit the adversaries’ goals. These techniques might be used by
+adversaries to follow through on their end goal or to provide cover for a
+confidentiality breach.
+
+Usually it comprises \emph{ransomwares}, \emph{web defacement}, \emph{disk
+wiping} and many more possible damages. Moreover, an attacker could modify
+design data, emails content, or other relevant stuff at the organization.
+
+\subsection{Organizing defense}
+
+At this point, it should be clear that organizing the defense should include
+many of the tactics above. Insisting on \textbf{complete prevention of Initial
+Access is usually meaningless}, because the perimeter is too large to be
+properly controlled. The defense must consist of three pillars:
+\begin{itemize}
+    \item prevention;
+    \item detection;
+    \item and mitigation\---recovery;
+\end{itemize}
+with the last two \textbf{much more important} than the first one.
+
+A maturity test for organizations is to ask CTO to provide inventory of
+network\--interfacing systems, software with versions, who is in charge of
+things, and so on.
+
+\subsection{Human\--operated attacks vs automated attacks}
+
+\emph{Human\--operated} attacks are usually very effective, but they cost very
+much, since a human is supervisioning all the steps of the attack; they can be
+tailored to the specific environment of the organization. On contrary,
+\emph{automated} tools are executed by a program and thus not very effective;
+they cannot be tailored to the specific environment, and the investment can be
+amortized over many targets. Automated tools are more frequent than
+human\--operated attacks, and much less dangerous.
+
+However, in some circumstances automated attacks are \textbf{very effectice},
+resulting in a fast execution within the organization, and high damage. If
+organizations share some vulnerability, automated tools are capable of
+\textbf{propagating quickly} across different organizations (Petya, notPetya,
+Wannacry).
+
+\section{Privilege escalation}
+
+Privilege escalation attacks are very dangerous, as they allow an attacker to
+reach the state of maximum privileges over a machine, possibly allowing
+arbitrary code execution.
+
+On Windows, local users are defined in a SAM file, in a local machine, while
+domain users are defined in Active Directory (for machines domain\--joined).
+Any process running as administrator can read and write the entire
+disk\--memory of the PC (hence, it can do whatever it wants).
+
+The system process \texttt{lsass.exe} (\textbf{Local Security Authority Server
+Service}) keeps a table of \texttt{process\_name H(pwd-U)}, so that each
+process is labeled with the (ticket) hash of the user.
+
+Of course, a process running as administrator that knows \texttt{H(pwd-U)} can
+assume the identity of user \texttt{U} without knowing the password! It is
+sufficient to write at the correct location in LSASS. An administrator can
+obtain \texttt{H(pwd-U)} of every local user, thus impersonating anyone in the
+local workstation. A terrible side effect is that the process with admin rights
+can obtain \texttt{H(pwd-U)} of \textbf{every domain user executing a process
+on that machine} (for instance, with a remote logon for
+troubleshooting\---administration). Therefore, the admin process can
+impersonate every identity that operates on that PC.
+
+For an attacker, an effective strategy is to \emph{become admin}. In order to
+do so, \emph{privilege escalation} techniques must be adopted.
+
+If this succeeds, \textbf{Pass\--the\--hash} technique can be used. The admin
+process reads LSASS periodically with an automatic tool, collects credentials
+of any domain user \texttt{U-D} executing a process on that machine, and
+attempting logins everywhere as \texttt{U-D}. If the login succeeds, the
+attacker might also attack with that machine. Of course, it all depends on the
+rights of \texttt{U-D}: if \texttt{U-D} belongs to an \emph{administrator}
+group, or even worse it belongs to \emph{domain administrator} group, then the
+range of attacks that can be performed is order of magnitudes greater.
+
+As a rule of thumb, \textbf{never log on low\--tier machines with higher\--tier
+credentials}!
+
+Some variations to the formula have been developed:
+\begin{itemize}
+    \item \textbf{Pass\--the\--hash}, attacks based on reading and writing
+        password hashes from and to LSASS;
+    \item \textbf{Pass\--the\--ticket}, reading and writing tickets from and to
+        LSASS;
+    \item \textbf{Silver Ticket}, a forged server authentication ticket
+        \texttt{TGT(U,S)}, where \texttt{U} is the administrator of \texttt{S};
+    \item \textbf{Golden Ticket}, a forged \texttt{TGT(U,S)} where \texttt{U}
+        is the \textbf{administrator of the domain controller} \texttt{S}.
+\end{itemize}
+
+\subsection{Access Rights abuse}
+
+A different kind of \emph{privilege escalation} is the \textbf{Access Rights
+abuse}. During access rights abuse, an attacker exploits vulnerabilities in how
+access rights are defined so that logon on many machines and credentials
+discovery is faster.
+
+MARK slide 80
+
 \chapter{Categorizing the attacks}
 
 \section{Target categories}
