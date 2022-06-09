@@ -1,4 +1,4 @@
-\documentclass[10pt]{extbook}
+\documentclass[10pt]{extreport}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[document]{ragged2e}
@@ -19,7 +19,7 @@
 \usepackage{makecell}
 \usepackage{setspace}
 \usepackage{parskip}
-\usepackage[a4paper, inner=4.0cm, outer=5.2cm]{geometry}
+\usepackage[a4paper, inner=4.6cm, outer=4.6cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
 \definecolor{greengray}{rgb}{0.517,0.761,0.404}
@@ -522,7 +522,7 @@ On TCP, various \emph{events} can induce a transmission of data:
 \end{itemize}
 
 Each of the above will trigger a transmission either immediately or
-\emph{withing a maximum predefined time} (in the case of a timeout, for
+\emph{within a maximum predefined time} (in the case of a timeout, for
 instance). When a TCP layer ``is touched'' from above or below, \textbf{it reacts
 by transmitting a segment}. Transmission should occur \emph{even if there is no
 useful data to transmit} (e.g. if the transmission buffer is empty) \-- in that
@@ -674,7 +674,7 @@ Now with an example: let a buffer have length equal to $800$ bytes. Suppose
 IP protocol is \emph{unreliable} (packets can be lost, duplicated, or delivered
 in different order from which they were sent). To overcome this huge
 shortcoming, each data byte is implicitly identified by a $32$ bit
-\textbf{sequence number}\marginpar{\small\textsf{Sequence number}}. A sequence number is a label for each transmitted and
+\textbf{sequence number}. A sequence number is a label for each transmitted and
 received byte, so that both correct ordering and amount of data can be properly
 determined. The association is \emph{implicit} \--- the sender applies a
 sequence number to a segment, and the receiver uses that information to
@@ -682,9 +682,9 @@ reconstruct the original order of segments. This way, segments are
 reconstructed even if they show up haphazardly, and the data can be assembled
 as it originally was.
 
-There are many variables\marginpar{\small\textsf{snd.User}} involved in sequence numbers. \texttt{snd.User} is the
+There are many variables involved in sequence numbers. \texttt{snd.User} is the
 variable carrying the value of the next byte the \textbf{application} will
-send. The variable \texttt{snd.Next}\marginpar{\small\textsf{snd.Next}} carries the value of the next byte that
+send. The variable \texttt{snd.Next} carries the value of the next byte that
 the \textbf{TCP layer} will transmit \--- its value is contained in the TCP
 header (initial byte of the sequence, of course). Basically, \texttt{snd.User}
 refers to the next byte that will be filled by the invocation of
@@ -796,7 +796,7 @@ Basically, sequence number tracks the bytes a party \emph{has sent}, while
 acknowledgement number tracks the bytes a party \emph{has successfully
 received}. Both informations must be exchanged at every delivered segment.
 
-A fifth variable\marginpar{\small\textsf{snd.Ack}} is thus needed: \texttt{snd.Ack}, which \emph{points to the
+A fifth variable is thus needed: \texttt{snd.Ack}, which \emph{points to the
 byte in TX-buffer before which any transmitted byte had been acknowledged}.
 This variable is only increased upon receiving data (for instance, upon
 receiving a sequence with a greater ACK number from the sender). Since it has
@@ -819,12 +819,12 @@ sequence number will be at the value of the \emph{first} sent byte, that is the
 first byte the receiver is expecting.
 
 For instance, suppose the receiver has successfully received $130$ bytes from a
-sender: its \texttt{rcv.Next} points to the $130$th element in the RX-buffer.
-In order to inform the sender, all the new incoming segments from the receiver
-will carry $130$ as sequence number (it points to the $131$st element). Upon
-receiving such packets, the sender will successfully interpret the sequence
-number, and set the \texttt{snd.Ack} variable to $130$: all the data prior to
-$130$ can be safely discarded.
+sender: its \texttt{rcv.Next} points to the $130$th index in the RX-buffer,
+corresponding to the $131$th byte. In order to inform the sender, all the new
+incoming segments from the receiver will carry $130$ as sequence number (it
+points to the $131$st element). Upon receiving such packets, the sender will
+successfully interpret the sequence number, and set the \texttt{snd.Ack}
+variable to $130$: all the data prior to index $130$ can be safely discarded.
 
 Data bytes between pointers \texttt{snd.Ack} and \texttt{snd.Next} is said to
 be \textbf{in flight} data. These bytes have been transmitted but not yet
@@ -891,7 +891,7 @@ The connection state includes three more actors, related to
 \begin{itemize}
     \item a \textbf{retransmission timer}, which counts the time interval until
         which the retransmission is held back;
-	\item a variable that describes the \emph{duration of retransmission
+	\item a variable that describes the \emph{current duration of the retransmission
         timer interval}, the \textbf{RTO (Retransmission Time-Out)};
     \item a \textbf{retransmission counter}, that counts how many
         retransmissions for a segment have been performed.
@@ -935,7 +935,7 @@ The \textbf{retransmission algorithm} is as follows:
     occurs when a partial ACK comes, and prevents unnecessary retransmissions.
 \end{quote}
 
-Exact\marginpar{\small\textsf{Choosing RTO}} timings of retransmissions are hard to predict. A sender is completely
+Exact timings of retransmissions are hard to predict. A sender is completely
 blind if it does not receive any ACK: should it send again in-flight segments,
 or should it wait a little bit more? In practice, how long should the timer be
 set? Basically, a rule of thumb is that it should be ``slightly larger'' than
@@ -943,7 +943,7 @@ Round\---Trip Time. In order to do so, since RTT largely varies depending on
 connections, time, and many other conditions, RTO is \textbf{dinamically updated}
 by algorithms such as \emph{Jacobson algorithm}.
 
-Regarding the maximum number of retransmissions\marginpar{\small\textsf{Max\_Count}}, value of \texttt{MAX\_COUNT}
+Regarding the maximum number of retransmissions, value of \texttt{MAX\_COUNT}
 largely depends on the operating system. For instance, Windows closes
 connection after $5$ failed attempts, Linux after $15$. It is simple to realise
 that there may be a lot of unnecessary retransmissions: the timer can, for
@@ -1045,18 +1045,18 @@ adopted (not part of this course).
 
 Upon packet arrival, a \emph{system interrupt} is sent. 
 
-An operating system executes many concurrenct activities: application process, other networking processes, manages other system interrupts, and so on.
+An operating system executes many concurrent activities: application process, other networking processes, manages other system interrupts, and so on.
 
 When a system interrupt is cast, the operating system will try its best to fetch data from the network physical device.
 
-From the TCP point of view, after data comes from the operating system, he will
+From the TCP point of view, after data comes from the operating system, it will
 analyze the packet to sort it by \emph{looking at the connection table}, and
-then it will \textbf{push in the input queue} the relative packet. The input
+then will \textbf{push in the input queue} the relative packet. The input
 queue holds a certain amount of segments, stored in the order given by sequence
 number.
 
 When the TCP protocol decides it's time to process all segments in queue, it
-deeply analyzses them, picks their payload, grabs their header information, and
+deeply analyzes them, picks their payload, grabs their header information, and
 processes all of them. After processing all segments in input queue, the buffer
 is emptied.
 
@@ -1145,22 +1145,22 @@ slower receiver.
 Since application sends data much faster than ACK arrive, the TX-buffer could
 end up being filled up by incoming segments. Suppose at receiver's side the
 application invokes \texttt{receive()} much slower than incoming packages
-speed. This way, the RX-buffer could fill up as well. To solve this issues,
-application invokes \texttt{send()} only when TX-buffer is full, hence it is
+speed. This way, the RX-buffer could fill up as well. To solve this issues, as
+application invokes \texttt{send()} when TX-buffer is full, it is
 put to sleep (blocked) until TCP gets proper ACK and advances \texttt{snd.Ack}
 (when it has more free space).
 
-TCP sender keeps track\marginpar{\small\textsf{Window Size}} of free space in other end's RX-buffer by looking at a
+TCP sender keeps track of free space in other end's RX-buffer by looking at a
 variable in header (WindowSize) that informs it of how much free space is
 available, so that it can actually predict how much free space there is. When
 it guesses that receiver's RX-buffer could have no space left, it stops
 transmission and suspends the application. If the maximum window corresponds to
 the size of a single segment, the protocol is called \textbf{stop-and-wait}
-(that is \-- send a single segment, than wait for ACK). Larger windows enable
+(that is \-- send a single segment, then wait for ACK). Larger windows enable
 pipelining of multiple segments in a row, allowing far more efficient usage of
 the connection.
 
-Flow control algorithm\marginpar{\small\textsf{Sliding Window}} adopts the concept of \textbf{sliding window}. Each
+Flow control algorithm adopts the concept of \textbf{sliding window}. Each
 segment header has a \texttt{WindowSize} field in the header that contains
 \emph{how many free bytes are in the RX-buffer}. From sender's point of view,
 \texttt{snd.winSize} contains the \emph{number of free bytes in RX-buffer of
@@ -1256,7 +1256,7 @@ Congestion control mechanism.}.
 
 \subsubsection{Establishing size of RX-buffer}
 
-Size of RX-buffer\marginpar{\small\textsf{Receiver's Buffer Size}} should have the following characteristic: the size should be
+Size of RX-buffer should have the following characteristic: the size should be
 \emph{a multiple of MSS} \--- this is done to avoid leaving unused space at the
 end of the buffer, since in the lucky case exactly a multiple of MSS will be
 delivered. Non\--multiple sizes would make no sense.
