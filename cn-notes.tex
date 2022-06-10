@@ -2299,7 +2299,7 @@ just by sending packets to an endpoint.
 
 A \textbf{Man--On--The--Side} attack is an attack in which an ``observer''
 network attacker attempts to hijack the web browser of the target to a website
-controlled by the attacker, with the goal of injectinv exploits on the victim's
+controlled by the attacker, with the goal of injecting exploits on the victim's
 browser.
 
 To do so, an attacker first intercepts the HTTP request, and \emph{immediately
@@ -2579,12 +2579,12 @@ encapsulation means that the original packet is enclosed within the
 \emph{frame} of the virtual network. What happens is that the packet,
 travelling on the tunnel, is first encapsulated into a proper frame, in which
 it travels through the tunnel. After the packet has reached the other end of
-the tunnel, the packet will be extracted by remobing the frame capsule and it
+the tunnel, the packet will be extracted by removing the frame capsule and it
 will be treated as if it were never part of a virtual tunnel.
 
 A tunnel may be established between \textbf{any} pair of nodes, be them
 \emph{at the border of the organization} or be them \emph{internal nodes}. The
-traffic actually router on the tunnel will depend on the routing tables
+traffic actually routed on the tunnel will depend on the routing tables
 specified by the two endpoints. Since the virtual network will ``bypass'' NAT
 modules, integration between remote internetworks that have private IP
 addresses will be possible even without using traditional address translation.
@@ -2787,7 +2787,7 @@ OpenVPN is an \emph{open source} application program, composed of a
 for TLS payload (thus, carrying encrypted payloads), with the option of
 enabling TCP tunnels.
 
-What happens is that an \texttt{IP-CV} (on real address \texttt{IP-C}) wants to
+An \texttt{IP-CV} (on real address \texttt{IP-C}) wants to
 send a packet to \texttt{IP-D} inside the organization. What happens is that
 the packet \texttt{IP-CV, IP-D} is routed inside the tunnel as an
 \emph{encrypted payload}. The packet traveling in the tunnel has the form
@@ -2803,8 +2803,8 @@ The UDP packet is sent through the internet via an ordinary packet
 inspect the packet and open it, freeing the payload inside the organization's
 network.
 
-Although the OpenVPN protocol has not been specified in any request for
-comments, it is very used and reliable; it can manage multiple independent
+Although the OpenVPN protocol has not been specified in any Request For
+Comments, it is very used and reliable; it can manage multiple independent
 tunnels, and TLS is implemented with \emph{OpenSSL} library.
 
 An important remark is that application layer, TCP layer and IP layer
