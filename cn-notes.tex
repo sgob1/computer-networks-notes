@@ -1603,7 +1603,7 @@ order to avoid any kind of congestion in the network.
 
 The interaction between the two TCP control systems is not straightforward.
 After connection opening, the bound imposed by congestion control is
-\emph{much} tighter than the flow control one (2-4 MSS instead of $64KB$).
+\emph{much} tighter than the flow control one (2--4 MSS instead of 64KB).
 
 Hence, at the beginning the network \emph{will follow congestion control}'s
 dictated bounds: data transfer begins slowly.
@@ -1932,7 +1932,7 @@ The system calls in sequence are
 \begin{itemize}
 	\item \texttt{socket};
     \item \texttt{bind};
-    \item \texttt{listen(num, ...};
+    \item \texttt{listen(num, ...)};
     \item \texttt{accept}.
 \end{itemize}
 
@@ -2262,19 +2262,20 @@ The attacker's objective is to determine the client information regarding \emph{
         the server.
 \end{enumerate}
 
-To determine a possible candidate, the idea is to first get the initial
-sequence number, then estimate the amount of data exchanged by the TCP
-connection, so that by adding the estimated amount one could obtain the initial
-sequence number and choose the candidate in the most promising range. The
-initial number is obtained by a fraudulent connection opening with the client,
-so that the initial sequence number can be obtained; if the \emph{slope} of the
-initial sequence number generator is known at the time interval $t$ (that is,
-if one knows \texttt{ISN@C(t)} and how \texttt{ISN@C} behaves he can estimate
-\texttt{ISN@C(topen)}), the attacker can make a guess on the \emph{starting}
-sequence number the client employed. After that, estimation is based on the
-application protocol and the total number of bytes sent can be guessed. A
-\emph{range of likelihood} for sequence number is determined, and finally as
-many segments as possible are sent to the server, hoping for the best.
+To determine a possible candidate, the idea is to first get the current initial
+sequence number from the client, then estimate the amount of data exchanged by
+the TCP connection, so that by adding the estimated amount one could obtain the
+initial sequence number at the time and choose the candidate in the most promising range.
+The initial number is obtained by a fraudulent connection opening with the
+client, so that the initial sequence number can be obtained; if the
+\emph{slope} of the initial sequence number generator is known at the time
+interval \texttt{t} (that is, if one knows \texttt{ISN@C(t)} and how \texttt{ISN@C}
+behaves he can estimate \texttt{ISN@C(topen)}), the attacker can make a guess
+on the \emph{starting} sequence number the client employed. After that,
+estimation is based on the application protocol and the total number of bytes
+sent can be guessed. A \emph{range of likelihood} for sequence number is
+determined, and finally as many segments as possible are sent to the server,
+hoping for the best.
 
 The power of this method lies in the sheer computational power of the attacker.
 If the attacker is able to produce a huge number of sequence number and port
@@ -3510,7 +3511,7 @@ certificate pinning --- software update channel.
 
 Attacks can be summarized into two, main, categories: 
 \begin{itemize}
-    \item the first one being a \textbf{user following an \texttt{HTTP} link},
+    \item the first one being a \textbf{user following an HTTP link},
         with a MITM attacker providing a complete copy of the real site, either
         with an inserted \emph{HTTP link} (SSLStrip) or with an inserted HTTPS with
         \emph{slightly different URL}. This category of attacks can be
@@ -4011,7 +4012,7 @@ procedure:
         showing a QR code that should be captured by the smartphone on which
         the AuthApp is running;
     \item the smartphone follows the link and opens a secure TLS connection
-        with \texttt{URL-U-tmp} --- a proof that the owner of the device is the
+        with \texttt{URL-U-tmp},  a proof that the owner of the device is the
         same person that surfs through that browser;
     \item at this very moment, the service generates \texttt{K1} and privately
         sends it to the smartphone by means of the TLS encrypted channel;
