@@ -11,10 +11,11 @@
 %\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
 %\usepackage[p]{scholax}
 %\usepackage[default,regular,bold]{sourceserifpro}
-\usepackage{amsmath,amsthm}% must be loaded before newtxmath
+%\usepackage{amsmath,amsthm}% must be loaded before newtxmath
 \usepackage{mlmodern}
+\usepackage[stickstoo,vvarbb]{newtxmath}
 % amssymb should not be loaded
-%\usepackage{stix2}
+\usepackage[T1]{fontenc}
 %\usepackage[scaled=1.075,ncf,vvarbb]{newtxmath}% need to scale up math package
 % vvarbb selects the STIX version of blackboard bold.
 \usepackage[all]{nowidow}
@@ -550,8 +551,8 @@ Protocol information is, in fact, necessary to keep the connection alive and
 well-performing.
 
 Upon transmission, TCP may deliver a varying number of bytes, ranging from
-empty up to a number of bytes \emph{larger than Maximum Segment Size} ($536$ in
-Internet network, $1460$ for same Ethernet network). Since huge payloads cannot
+empty up to a number of bytes \emph{larger than Maximum Segment Size} (536 in
+Internet network, 1460 for same Ethernet network). Since huge payloads cannot
 fit into a single segment with a predefined MSS, the TCP protocol
 \emph{fragments} them before delivery, resulting in \emph{multiple segments
 delivered in sequence}. TCP protocol will try its best to send as many segments
@@ -561,16 +562,16 @@ are initially delivered before receiving the other party's response.
 \begin{table}[ht]
 \centering
 \begin{tabular}{cc}
-CPU Cycle & $0.3 ns$ \\
-Main Memory Access (DRAM) & $120ns$ \\
-SSD & 50-150 $\mu s$ \\
-HHD & $10 ms$ \\
-Internet, San Francisco to New York & $40ms$
+CPU Cycle & 0.3 ns \\
+Main Memory Access (DRAM) & 120ns \\
+SSD & 50--150 $\mu s$ \\
+HHD & 10 ms \\
+Internet, San Francisco to New York & 40ms
 \end{tabular}
 \caption{Some interesting metrics. Notice the order of magnitudes differences
 between CPU cycles and network delays. This table highlights the fact that
 bytes cannot be injected through the internetwork at full\--speed: suppose one
-has a $100MB$ transmission buffer that is delivered across just $1ms$ \--
+has a 100MB transmission buffer that is delivered across just 1ms \--
 injected throughput would be $100 \cdot 10^6 \cdot 8 b/(10^{-3} s)$, which
 yields an astonishing $8 \cdot 10^{11} b/s = 800 Gb/s$, unsustainable for most
 of internetworks.}
@@ -633,7 +634,7 @@ repeatable.
 \subsubsection{Retrieving data from TCP}
 
 Data retrieval occurs with another system call, \texttt{receive()}. System call
-\texttt{receive()} is quite similar to the \texttt{send()} call: both
+\texttt{re\-cei\-ve()} is quite similar to the \texttt{send()} call: both
 receiver's TCP layer and Application layer execution flows act independently to
 each other, and receiving buffer is not guaranteed to contain any data.
 
