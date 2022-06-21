@@ -1,16 +1,21 @@
 \documentclass[10pt]{extreport}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[document]{ragged2e}
+%\usepackage[document]{ragged2e}
 \usepackage{microtype}
-\usepackage{mlmodern}
+%\usepackage{mlmodern}
+\usepackage{fontspec}
 %\usepackage[bitstream-charter]{mathdesign}
 %\usepackage{scholax}
 %\usepackage{XCharter}
 %\usepackage{CharisSIL}
 %\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
 %\usepackage[p]{scholax}
-\usepackage[default,regular,bold]{sourceserifpro}
+%\usepackage[default,regular,bold]{sourceserifpro}
+\usepackage{amsmath,amsthm}% must be loaded before newtxmath
+% amssymb should not be loaded
+\usepackage[scaled=1.075,ncf,vvarbb]{newtxmath}% need to scale up math package
+% vvarbb selects the STIX version of blackboard bold.
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
@@ -66,6 +71,9 @@
 %\setmonofont[Scale=.93]{IBM Plex Mono Medium}
 
 
+\setmainfont{Century Supra A}
+\setsansfont{Concourse 6}
+\setmonofont{Triplicate A}
 \include{cn-titlepage}
 \setlength{\emergencystretch}{0pt}
 \pretolerance=150
@@ -82,7 +90,10 @@
 %\maketitle
 \tableofcontents
 
-\setsansfont{Source Serif 4 Display}
+\setmainfont{Century Supra A}
+\setsansfont{Concourse 6}
+\setmonofont{Triplicate A}
+%\setsansfont{Source Serif 4 Display}
 
 \titleformat{\part}[display]
 {\Huge\bfseries\sffamily}{}{0pt}{\center{ Part \thepart\ \ \\ \ \ }}
@@ -1693,7 +1704,7 @@ between the maximum throughput of the network \texttt{T\_MAX}, and the window
 size $M \cdot MSS$.
 
 Notably, throughput in congestion control cannot be assumed to be exactly
-$\frac{T\_MAX}{2}$ -- in fact, that is the average value over \emph{multiple}
+$\frac{T\_MAX}{2}$ --- in fact, that is the average value over \emph{multiple}
 periods, possibly many of them. In the case of a small value $B$ to delivery,
 one could not have enough periods to assume the average throughput is the half
 of the maximum throughput of the network.
@@ -1714,7 +1725,7 @@ provides both delivery and reliability. Unfortunately, the \texttt{send()} call
 only guarantees that the data has been handed to the underlying operating
 system, without being able to tell whether the data has been successfully
 delivered or not. In order to do so and achieve reliability, the application
-must ask for data by invoking \texttt{receive()} -- the \texttt{receive()} call
+must ask for data by invoking \texttt{receive()} --- the \texttt{receive()} call
 will check whether there is a segment with a correct \texttt{ACK} or not.
 
 Application layer invoking \texttt{send()} does not know how many bytes are
@@ -2018,7 +2029,7 @@ capabilities, and increase the chance an attacker is successfully repelled.
 Important questions when dealing with attackers are the following ones, 
 
 \vspace*{1cm}
-\setsansfont{Source Sans 3}
+\setsansfont{Heliotrope 4}
 \begin{quote}
 \begin{center}
     \sffamily {What's the \emph{threat model} for that specific attack technique?
@@ -2033,7 +2044,7 @@ defend to a given attack?}
 \end{center}
 \end{quote}
 \bigskip
-\setsansfont{Source Serif 4 Display}
+\setsansfont{Concourse 6}
 
 Typical threat models involve the following scenarios, in increasing pessimism:
 \begin{itemize}
@@ -2115,7 +2126,7 @@ and altering existing traffic. An attacker of this kind cannot act on the
 endpoints.
 
 The implicit assumptions are that everything on the endpoints is perfectly
-implemented, operated and maintained -- this means that there are no
+implemented, operated and maintained --- this means that there are no
 vulnerabilities, no exploits, and no obvious mistakes by the system
 administrator. Software is perfectly maintained as well. No mistakes are
 allowed, no remote code execution, no vulnerability, no mistakes from the
@@ -2144,7 +2155,7 @@ protocols make use of cryptography:
 
 Examples of possible attacks a network attacker is capable of are listed below,
 \begin{itemize}
-    \item \textbf{DNS Spoofing} -- a DNS attack in which an attacker modifies
+    \item \textbf{DNS Spoofing} --- a DNS attack in which an attacker modifies
         the IP address (and the ID in header) contained in the response to a
         DNS query, in order to hijack a client to an attacker controlled
         server, and act as man in the middle, or showing a perfect copy of
@@ -2152,11 +2163,11 @@ Examples of possible attacks a network attacker is capable of are listed below,
         kind of attack, since by default they prefer any IPv6 server and
         happily substitute the preconfigured IPv4 server upon a malicious
         packet containing new instructions arrive;
-    \item \textbf{ARP Spoofing} -- fake responses crafted by an attacker, whose
+    \item \textbf{ARP Spoofing} --- fake responses crafted by an attacker, whose
         goal is to make a device change its default gateway to an attacker's
         controlled device, so that it can act as man in the middle. Open WiFi
         is vulnerable to this kind of attacks;
-    \item \textbf{BGP Spoofing} -- highly--skilled attack in which an attacker
+    \item \textbf{BGP Spoofing} --- highly--skilled attack in which an attacker
         manages to alter the routing of the internet, so that it can direct
         traffic to different places. Border Gateway Protocol messages are not
         authenticated; Autonomous Systems can claim ownership of any IP
@@ -2212,7 +2223,7 @@ Data injection by an attacker cannot happen at an arbitrarily high rate.
 Attacker must forge correctly numbered segments, so that both the client and
 the server could not notice the manipulation. This in the past was a tremendous
 issue, since there were big problems with remote shells from clients
-authenticated by IP -- today it poses no longer a problem, since authentication
+authenticated by IP --- today it poses no longer a problem, since authentication
 occurs almost always by encrypted protocols such as \emph{SSH (Secure Shell)}.
 Injecting data is easier at TCP level, with carefully crafted headers and
 proper payload; backwards, data injection at application layer is much harder,
@@ -2406,7 +2417,7 @@ most important defense mechanisms is to avoid access from the outside; by using
 a NAT module, one is able to immediately obtain network insulation from the
 outside, for free. For this reason, NAT is said to be \emph{``a native
 firewall''}. All of this does not require change or configuration on internal
-nodes, they only need to set up a proper gateway -- address translation happens
+nodes, they only need to set up a proper gateway --- address translation happens
 to be \textbf{transparent} to the clients.
 
 NAT modules can be configured with \textbf{immutable entries} as well.
@@ -2438,7 +2449,7 @@ connections}, in particular looking for \texttt{FIN} flags. Upon observing the l
 Moreover, old entries are discarded as well:
 \begin{itemize}
     \item if an entry is \textbf{unused} during time interval $t_{u}$, the
-        entry is removed -- TCP connections will crash as a result (and UDP
+        entry is removed --- TCP connections will crash as a result (and UDP
         connections may not work as well);
     \item if an entry is still in use, but allocated \textbf{timer} $t_{a}$
         \textbf{expired}, the entry is removed. The TCP connection will likely
@@ -2448,7 +2459,7 @@ Moreover, old entries are discarded as well:
 
 \section{Multiple NAT modules on the path}
 
-Multple NAT modules on a single path are the norm. What usually happens is that two devices of two distinct organizations want to communicate -- at each organization's boundary lies a NAT module. 
+Multple NAT modules on a single path are the norm. What usually happens is that two devices of two distinct organizations want to communicate --- at each organization's boundary lies a NAT module. 
 
 The mechanics are completely similar to the previous ones. What happens is that
 \emph{each NAT module hides internal IP address from the other's end},
@@ -2521,7 +2532,7 @@ There are tons of protocols that are port number agnostic. For instance, the \te
 
 In reality, a NAT modules handles ad hoc all ICMP packets, by creating a
 \emph{temporary association} that it is not based on port numbers (suppose a
-\texttt{ping} message exits the network -- the NAT module creates a temporary
+\texttt{ping} message exits the network --- the NAT module creates a temporary
 association so that the response could be delivered to the requesting client). 
 
 If the client requesting a \texttt{ping} is outside the network, the NAT module
@@ -2537,9 +2548,9 @@ path, they may not work properly.
 For instance, consider \textbf{FTP} protocol. FTP uses two ports, port 20 for
 communication and port 21 for actual data transfer. Suppose now a client uses
 command port to communicate that one wants to use a \emph{different} port than
-21 for data transfer -- the server responds, let's say, with port 10000. Now,
+21 for data transfer --- the server responds, let's say, with port 10000. Now,
 the NAT module that actually transforms the packets \textbf{will be unaware}
-and simply keep checking for packets at port 20 -- even worse, port 10000 may
+and simply keep checking for packets at port 20 --- even worse, port 10000 may
 already be in use! Thus, FTP protocol is said to be NAT-unfriendly due to the
 incompatibility between how port numbers are exchanged and how NAT actually
 works.
@@ -2550,7 +2561,7 @@ assigned properly, by understanding the case in which there is a change of data
 port from 20 to another one.
 
 Another NAT-unfriendly protocol is the \textbf{HTTP} protocol. Embedded and
-hardcoded urls in HTML documents may ask for non standard ports -- in that
+hardcoded urls in HTML documents may ask for non standard ports --- in that
 case, NAT module should be configured for accepting traffic to that port, from
 the outside (while there are no issues for an internal client). Even though it
 is unfriendly in practice, HTTP protocol is considered to be a NAT-friendly
@@ -2597,7 +2608,7 @@ addresses will be possible even without using traditional address translation.
 The tunnel is an \textbf{abstraction}, only valid from a logical point of view.
 In particular, the tunnel functionality is provided by a regular TCP or UDP
 connection between two endpoints, through the internet. This means that the
-frame is encapsulated in an external packet -- a packet that could actually
+frame is encapsulated in an external packet --- a packet that could actually
 travel through the internetwork.
 
 VPNs might have many implementations. One of them is by means of a
@@ -2666,7 +2677,7 @@ this by \textbf{reducing the attack surface} a lot:
 
 An attacker can only detect the existence of VPN traffic, possibly performing
 some DoS attacks (only if MITM). A network attacker can conceptually be in any
-network -- in practice, however, it is much simpler to sniff and manipulate
+network --- in practice, however, it is much simpler to sniff and manipulate
 traffic \textbf{when closer} to the organization boundaries. In other words, an
 attacker will try to shorten the distance between himself and the organization
 to attack. When closer, focusing on traffic of interest becomes easier. Bigger
@@ -2677,7 +2688,7 @@ airport, at the school.
 
 
 \section{Three use cases for a VPN}
-\subsection{Scenario I -- connecting remote organizations}
+\subsection{Scenario I --- connecting remote organizations}
 
 The first useful scenario for a VPN is \textbf{to connect remote organizations
 with internet connectivity}. In this first scenario, two VPN endpoints are
@@ -2698,7 +2709,7 @@ Basically, this scenario boils down to \textbf{securing} integration between
 \textbf{remote locations} that have \textbf{internet} connectivity. All devices
 are under the same administrative domain.
 
-\subsection{Scenario II -- using a VPN provider services}
+\subsection{Scenario II --- using a VPN provider services}
 
 The second, useful, scenario is the one in which personal devices are connected
 to a VPN that is \textbf{managed by a VPN provider}. A VPN provider
@@ -2723,7 +2734,7 @@ not available in their own country; another one could simply want to switch to
 a far away location in order to obfuscate its traffic even more.
 
 A paramount remark is that the VPN provider acts as a \textbf{MITM for all
-traffic}. Choosing a VPN provider means that it must be trustworthy -- let
+traffic}. Choosing a VPN provider means that it must be trustworthy --- let
 alone the fact that they represent a highly--valuable target for high--skill
 criminal groups, intelligence agencies, and many other potential group that
 could \textbf{target} a VPN provider specifically.
@@ -2740,7 +2751,7 @@ provided software. There could be either \textbf{full--device} or
 both a third--party software, on Windows, or integrated with OS, on Linux). VPN
 activation can either be triggered---automatic or manual.
 
-\subsection{Scenario III -- accessing risky devices}
+\subsection{Scenario III --- accessing risky devices}
 
 Real organizations possess many devices that both play a \emph{crucial} role
 for the organization and \emph{cannot be replaced} for costs and time reasons.
@@ -2772,7 +2783,7 @@ guaranteed protection is much higher (they are no longer exposed to the
 network).
 
 This mechanism is only usable \emph{within} organizations. Also remember that
-this is as secure as the VPN credentials are -- if an attacker manages to steal
+this is as secure as the VPN credentials are --- if an attacker manages to steal
 the VPN credentials, the game is over.
 
 \section{OpenVPN}
@@ -2879,10 +2890,10 @@ The last question is \emph{does OpenVPN work across NAT}?
 In order to answer that, simply remind that the OpenVPN is based on UDP or TCP,
 therefore \textbf{it works just like any other protocol}: NAT modules will
 modify the ``external capsule'', leaving the encrypted payload intact. For this
-reason, no matter how many NAT modules -- if the path client---server is
+reason, no matter how many NAT modules --- if the path client--server is
 practicable, the VPN will work.
 
-Client---side, there is no need to configure NAT modules, while on server side
+Client--side, there is no need to configure NAT modules, while on server side
 static port mapping is required for functioning. The default port numbers,
 identical on both sides, are \texttt{UDP/1194-1194}. Various differences arise
 from other configurations; for instance, different port numbers could be set,
@@ -2901,7 +2912,7 @@ since it is considered unsafe.
 
 L2TP implementations exist both as application programs and natively supported
 be operating system. The basic idea of \emph{IPsec} is that the IP packet in
-payload is \emph{directly contained} in another, encrypted, IP packet -- this
+payload is \emph{directly contained} in another, encrypted, IP packet --- this
 way, IPsec is in a way ``leaner'' than OpenVPN, which in turn requires a TCP or
 UDP packet to travel to destination.
 
@@ -2910,7 +2921,7 @@ properly both in the client and in the organization's server and machines
 (especially in NAT and in firewall).
 
 Within the tunnel, there are strong security guarantees such as in all examples
-above -- the attacker only knows the IP addresses of tunnel endpoints, the VPN
+above --- the attacker only knows the IP addresses of tunnel endpoints, the VPN
 protocol, and possibly the \emph{volume} of the traffic (this last knowledge is
 only enforceable by almost--omniscent adversaries, such as intelligence
 agencies, big CDN providers and some powerful organizations). An attacker does
@@ -2953,12 +2964,12 @@ communicate, and act as MITM. HTTPS is adopted by more than $80\%$ of the
 websites, and it is almost--mandatory for applications as well. HTTPS is a
 pillar of the web security against network attackers. A remarkable aspect to
 consider is that the HTTPS protocol is \textbf{useless} against a \emph{Man In
-the Browser} attacker -- that way, the protocol doesn't guarantee anything; in
+the Browser} attacker --- that way, the protocol doesn't guarantee anything; in
 fact HTTPS protects only the communication against a network attacker.
 
 HTTPS protects against \textbf{sidejacking} attacks. Sidejacking attacks are
 attacks in which a victim authenticated against a server W on HTTP sees its
-authentication cookies stolen by an attacker that is able to observe -- the
+authentication cookies stolen by an attacker that is able to observe --- the
 cookie grant the attacker the possibility to impersonate the victim on server
 W.
 
@@ -2972,7 +2983,7 @@ Extremely simplifying, TLS is implemented in this way:
         signature provided by a trusted authority;
     \item the client sends a \emph{session key} encrypted with the public key
         of the server;
-    \item only the server is able to decrypt it -- communication holds with this
+    \item only the server is able to decrypt it --- communication holds with this
         key.
 \end{enumerate}
 
@@ -3006,7 +3017,7 @@ filterings can be applied depending on scenario. A proxy basically
 the requested remote service.
 
 Then there's the case of the HTTPS proxy. An HTTPS proxy \textbf{cannot} read
-HTTPS traffic -- that means that the proxy can only \textbf{forward} traffic by
+HTTPS traffic --- that means that the proxy can only \textbf{forward} traffic by
 creating the two TCP streams at its ends; not understanding anything that
 passes through it.
 
@@ -3014,7 +3025,7 @@ A proxy cannot understand HTTPS traffic: to do so, it would be able to decrypt
 the traffic between the browser and the website, but that would be impossible:
 \begin{itemize}
     \item the browser will not connect to a web service if it cannot
-        authenticate it -- trusted certificates do not allow the proxy to give
+        authenticate it --- trusted certificates do not allow the proxy to give
         its own in place of the website's one;
     \item a proxy cannot read the traffic if the browser validated it and the
         key exchange occurred in private, that is when the proxy forwarded the
@@ -3022,7 +3033,7 @@ the traffic between the browser and the website, but that would be impossible:
 \end{itemize}
 
 Basically, if the proxy forwards the server certificate it cannot read the
-traffic due to HTTPS security guarantees -- on contrary, if it blocks the
+traffic due to HTTPS security guarantees --- on contrary, if it blocks the
 certificate and sends its own, the browser will never accept it and will not
 keep the connection.
 
@@ -3068,7 +3079,7 @@ be able to see, control and manipulate a connection. Suppose that happens on
         that domain, and hijacks the existing HTTP connection so that the
         browser won't redirect to the legit domain, but to the attacker
         controlled domain. In this case the browser will display a valid HTTPS
-        connection, but with another domain -- the attacker will act as MITM,
+        connection, but with another domain --- the attacker will act as MITM,
         in the sense that it will ``copy'' the content of the legit website;
     \item in the second scenario, an attacker doesn't register a new URL, but
         simply hijacks the connection, acting as MITM. What happens here is
@@ -3087,11 +3098,11 @@ are all that's needed to perform this attack.
 
 A general lesson on security is that even though the website implements HTTPS,
 a \textbf{victim with a risky internet connection} and a \textbf{victim that
-does not verify the URL bar} is damned -- attackers will focus on the
+does not verify the URL bar} is damned --- attackers will focus on the
 \emph{weakest} point in security.
 
 What to do to defend to redirection attacks, then?
-Removing the support for port $80$ is not enough -- a user is simply required
+Removing the support for port $80$ is not enough --- a user is simply required
 to \emph{follow} a HTTP URL: the connection will happen despite the real server
 would never have accepted it. 
 
@@ -3121,19 +3132,19 @@ Another important policy is the \textbf{Content Security Policy}. The CSP's
 site's insecure URLs, served over HTTP, as though they have been replaced with
 secure versions, served over HTTPS. The policy is valid only \emph{for links in
 the page transported by that response}, and \emph{only for that specific
-response} -- it has no persistent effect overtime. Differently to HSTS, it
+response} --- it has no persistent effect overtime. Differently to HSTS, it
 doesn't last overtime and it happens only when a page is transported by that
 response (it depends on the referrer). HSTS works even across different
 websites.
 
-With HSTS the \emph{vulnerability window} is \textbf{dramatically reduces} -- a
+With HSTS the \emph{vulnerability window} is \textbf{dramatically reduces} --- a
 browser is vulnerable only if it has never contacted the server or if the
 policy had expired before any new contact with the server. A proper value of
 \texttt{max-age} should then be properly set.
 
 A final remark is the \textbf{HSTS Preloading} practice. Some modern browsers
 are \textbf{preloaded} with a list of common--HSTS policies. Those websites are
-virtually immune to SSLStrip -- however, this is not scalable.
+virtually immune to SSLStrip --- however, this is not scalable.
 
 \subsection{How to become a MITM for HTTP and HTTPS connections}
 
@@ -3208,22 +3219,22 @@ security protocols, an attacker should be assumed to possess unlimited storage
 capabilities, unlimited process capabilities and be able to observe, modify and
 drop any message at any time.
 
-\subsection{Handling HTTP -- a server's point of view}
+\subsection{Handling HTTP --- a server's point of view}
 
 Servers must choose among various behaviors for a key practical problem:
 \emph{how to respond to HTTP requests?}
 
-The first approach is to respond with HTTP content as well -- this is
+The first approach is to respond with HTTP content as well --- this is
 \emph{wrong}, because if a content can be served over HTTPS, it should be
 served over that. The second approach is to respond with a \emph{redirection}
 to HTTPS. This is the most pragmatic and practical approach; not really secure
 as the communication could still be intercepted. A HSTS policy could be served
-as well. The third -- and most secure -- approach is to \emph{not respond} (and
+as well. The third --- and most secure --- approach is to \emph{not respond} (and
 do not even listen).
 
 The second approach is the most practical one, and almost the most secure one
 -- HSTS makes the client vulnerable to \textbf{only} the first request.
-Subsequent requests -- provided the user didn't change browser, clean the HSTS
+Subsequent requests --- provided the user didn't change browser, clean the HSTS
 policies along with browsing data, and visited the website again in a year --
 will be protected by HTTPS. Despite that, HSTS is used by only $23.5\%$ of all
 the websites; a clear \textbf{misalignment of incentives} since all the costs
@@ -3256,14 +3267,14 @@ The most useful pratical solution consists in two steps:
     \item enable HTTP Strict Transport Security.
 \end{enumerate}
 
-It won't matter if some pages are still reachable from HTTP links -- the
+It won't matter if some pages are still reachable from HTTP links --- the
 browser will issue only HTTPS requests. There is no need then to inspect and
 modify any content, with just an initial vulnerability window.
 
 A potential problem still persists. If any resource cannot be served over
 HTTPS, it will \textbf{never be fetched by any browser}. It is really hard then
 to assure that the HTTPS redirection won't affect the working of many important
-pages -- a long testing phase is required.
+pages --- a long testing phase is required.
 
 A curious way to solve this is to enable for a certain amount of time the
 \textbf{Content Security Policy Report Only} Policy. In header,
@@ -3272,7 +3283,7 @@ URL\--contact} will be delivered to a browser. The policy stats that should a
 browser encounter a site not compliant with the \texttt{URL-pattern} (for
 instance, not working on HTTPS) still fetch that URL, but send a note at
 \texttt{URL-Contact}. The \texttt{URL-contact} is a web server prepared to
-receive HTTP requests carrying JSON data, while \texttt{URL-pattern} could be
+receive HTTP requests carrying JSON data, while \texttt{URL\--pat\-tern} could be
 \texttt{https}.
 
 This way, a service could start logging CSPRO notes to build a map of the
@@ -3288,7 +3299,7 @@ valid from, valid through, parameters, alternate name and so on.
 The key concept behind certificates is the concept of \textbf{certificate
 chain}. A certificate chain is the tree relationship between a certificate and
 another, in the case where the first one is adopted to issue the second one.
-The \emph{root certificate} is a certificate that it is
+The \emph{root certificate} is a certificate that is
 \emph{self--signed}\footnote{Remember: anyone can generate a self--signed certificate
 for \textbf{any} subject.} by a Certification Authority, an entity who has been
 assigned the task of issuing certificates, and is at the root of the dependency
@@ -3320,7 +3331,7 @@ Real website almost always are based on certificate chains composed of more
 than $2$ certificates. Usually, everything but the trust anchor is transmitted
 over the internet.
 
-Two kinds of certificates exist -- the first one we already encountered is the
+Two kinds of certificates exist --- the first one we already encountered is the
 \textbf{normal certificate}. Normal certificates describe the associations
 between a subject (usually a domain) and their public key, and offer no
 guarantees about assertions by the subject. The second one is the
@@ -3331,7 +3342,7 @@ Certification Authority by browsers and all devices trusting the entire chain
 trust.
 
 Possessors of delegation certificates are also able to create new delegation
-certificates as well -- potentially in an endless chain. As a rule, any
+certificates as well --- potentially in an endless chain. As a rule, any
 certificate must be signed by delegation certificates. An example of chain of
 trust could be the following one,
 
@@ -3371,7 +3382,7 @@ the victim. The browser will not suspect anything, and the user too (in order
 to spot this, a user should be aware of the correct chain of trust by
 inspecting the certificate and remembering the correct chain). A MITM attacker
 can now interact with the user by means of a \emph{perfect} copy on correct
-HTTPS URL -- thus, he can observe and modify all the traffic.
+HTTPS URL --- thus, he can observe and modify all the traffic.
 
 In recent years, due to structural flaws in the HTTPS certificate system,
 certificates and issuing CAs have proven vulnerable to compromise and
@@ -3384,7 +3395,7 @@ An attacker could also operate \emph{on victim}, by means of injecting a rogue
 certificate \texttt{CA-R} either in KeySet or in TrustSet. After that, a MITM
 attack can be easily performed, as the attacker is only required to generate an
 on--the--fly keypair and certificate \texttt{C} for a target website, and serve
-it to the victim. The victim will consider it trusted -- since \texttt{C} has
+it to the victim. The victim will consider it trusted --- since \texttt{C} has
 been generated with \texttt{CA-R}.
 
 Operating on victim is easier for two reasons,
@@ -3405,9 +3416,9 @@ all their proxies can use them to incercept HTTPS traffic for certain websites.
 
 \subsection{The Certificate Transparency}
 
-With \textbf{Certificate Transparency} we mean the fact that \emph{Logging
-Authorities} maintain public logs of certificates issued by the major CAs.
-Every CA must log certificates in at least 2 public logs -- every subject
+The \textbf{Certificate Transparency} refers to the fact that \emph{Logging
+Authorities} maintain publicly available logs of certificates issued by the major CAs.
+Every CA must log certificates in at least 2 public logs --- every subject
 should periodically monitor those logs.
 
 If an attacker manages to obtain a certificate for a certain domain\---subject,
@@ -3416,7 +3427,7 @@ in public logs.
 
 Certificate Transparency only allows detection, it doesn't act as a prevention
 tool (damage is likely already done) and addresses only ``real'' Certification
-Authorities -- a MITM that generates certificates on--the--fly won't be
+Authorities --- a MITM that generates certificates on--the--fly won't be
 detected this way.
 
 Moreover, \emph{certificate revocation} is complex and takes time; subjects
@@ -3426,7 +3437,7 @@ integrity} should be guaranteed somehow.
 
 \vspace*{1cm}
 \begin{center}
-    \emph{``A defense mechanism need not to be \textbf{perfect} -- its necessary
+    \emph{``A defense mechanism need not to be \textbf{perfect} --- its necessary
     property is that its usage will cost \textbf{more to the attacker} than to
 the defender.''}
 \end{center}
@@ -3441,11 +3452,13 @@ software. The client will also be instructed to \textbf{not trust} any other
 chain for a specific service name. Ultimately, any MITM with a different chain
 that is valid at the client will not be able to impersonate the service name.
 
-The major conceptual change is that certificate should be transmitted over an
-\emph{additional, trusted channel}. The certificate pinning is impractical for
-browsers (except \emph{Google Chrome} with pinning for \emph{Google} services),
-but very powerful for \emph{PC and smartphone applications}, as they only need
-to interact with a specific subset of domains.
+The major conceptual change is that certificates should be transmitted over an
+\emph{additional, trusted channel}, independent of the first one. Certificate
+pinning is impractical for browsers (except \emph{Google Chrome} with pinning
+for \emph{Google} services) as there are simply too many services that should
+have their certificate pinned; regardless, the practice is very powerful for
+\emph{PC and smartphone applications}, as they only need to interact with a
+\emph{specific} subset of domains which can be easily pinned.
 
 All certificate should \emph{expire} after a certain date, as prudent
 engineering practices enforce. Expired certificates are said to be
@@ -3454,7 +3467,7 @@ a specific application, and the service has been switching to a newer
 certificate (the older one had been expired); how can clients be managed?
 
 An idea would be to make sure that \textbf{all} copies of clients are updated
-before the expire date -- those not updated will remain disconnected.
+before the expire date --- those not updated will remain disconnected.
 Basically, the last certificate is transmitted over HTTPS by means of the old
 certificate.
 
@@ -3475,9 +3488,10 @@ software should know the public key of the update channel in order to fetch
 updates, and must accept only if signed with such key (by means of certificate
 pinning).
 
-Problems don't end up here, as the software update organization should be able to handle two more issues,
+Problems don't end up here, as the software update organization should be able
+to handle two more issues:
 \begin{enumerate}
-    \item how can the software update organization authenticate the update request
+    \item how can the software update organization possibly authenticate the update request
         from a certain subject?
     \item how can the software update organization revoke its update public key
         safely?
@@ -3487,8 +3501,8 @@ Basically, certificate pinning is a very powerful weapon against rogue
 certificates, although it has its own drawbacks. For instance, a subject should
 implement it carefully in order to not leave clients permanently disconnected,
 and prepare for certificate revocation at any moment before expiration.
-Revocation should also be handled by means of a different -- also powered by
-certificate pinning -- software update channel.
+Revocation should also be handled by means of a different --- also powered by
+certificate pinning --- software update channel.
 
 \section{Brief summary of HTTPS attacks}
 
@@ -3496,11 +3510,10 @@ Attacks can be summarized into two, main, categories:
 \begin{itemize}
     \item the first one being a \textbf{user following an \texttt{HTTP} link},
         with a MITM attacker providing a complete copy of the real site, either
-        with an inserted \emph{HTTP link} or with an inserted HTTPS with
+        with an inserted \emph{HTTP link} (SSLStrip) or with an inserted HTTPS with
         \emph{slightly different URL}. This category of attacks can be
         mitigated by either \emph{verifying landing URL}, or \emph{enabling
-        HTTPS by default}, or \emph{enabling Strict\--Transport\--Security
-        (HSTS)};
+        HTTPS by default}, or \emph{enabling Strict\--Transport\--Security};
     \item the second one being the \textbf{MITM with Rogue Certificates}, with
         an attacker having managed to either \emph{obtain a delegation
         certificate} or to \emph{inject a rogue certificate in the KeySet or
@@ -3533,7 +3546,7 @@ organization, as happens with the Active Directory domain controller for
 Windows machines.
 
 The core concept of \emph{authentication} is that each registered user must
-prove to the machine that \emph{he knows a certain secret} -- for instance, a
+prove to the machine that \emph{he knows a certain secret} --- for instance, a
 password. Typically, such proof knowledge can be either transferred locally
 (everything happens on the same machine) or remotely (through the network or
 the internetwork), either in the same or in different organizations. Location
@@ -3555,19 +3568,21 @@ safe against the stealing of credentials from the AuthDB.
 Any attacker that wants to collect real secrets for the users is now forced to
 apply \texttt{F()} to a \emph{list of candidates passwords} and see if any of
 the results matches any entry in the stolen AuthDB. This practice is called
-\textbf{offline guessing}.
+\textbf{offline guessing}. Offline guessing is called in such way to
+distinguish it from \textbf{online guessing}, an attack practice that will be
+covered later in this chapter.
 
 The non\--reversible function largely depends on operating systems: for
 instance, on Windows it is collected in a \texttt{SAM} file, while on Linux
-secrets are collected on \texttt{/etc/shadow/} file. Android uses analogous
+secrets are collected on \texttt{/etc/shadow} file. Android uses analogous
 mechanisms as well. When served over the network (usually by means of an
 authentication protocol over TCP), it depends on the server implementation. Not
-infrequently, passwords are stored ``in the clear'', in plain text (what a
-shame!) as many servers have their default settings to store cleartext
-passwords. Across organizations, users would like to use the same credentials
-everywhere; hence, keeping all AuthDB synchronized is close to impossible. For
-this reason, the \textbf{Single Sign\--On} technique is adopted, as we will see
-in a later moment.
+infrequently, passwords are stored ``in the clear'', in plain text as many
+servers have their default settings to store cleartext passwords. Across
+organizations, users would like to use the same credentials everywhere; hence,
+keeping all AuthDB synchronized is close to impossible. For this reason, the
+\textbf{Single Sign\--On} technique is adopted, as we will see in a later
+moment.
 
 \section{Password Attacks}
 
@@ -3579,21 +3594,22 @@ Passwords can have a huge \emph{value}, that it can be:
 \begin{itemize}
     \item \emph{direct}, let's think of banking or e\--mail services;
     \item they might allow \emph{credential stuffing}, with many users using
-        the same password across many services -- this amplifies the value of a
+        the same password across many services --- this amplifies the value of a
         credential;
     \item they might let \emph{organization multistep attacks}, with the
-        so\--called ``lateral movement phase'' and spear phishing;
+        so\--called ``lateral movement phase'' and even adoption of spear phishing;
     \item they might be \emph{sold on the black market};
     \item and so on.
 \end{itemize}
 
-Password attacks are usually \textbf{not targeted} -- password of any user
-across an organization is enough: they are dangerous threats that could affect
-virtually anyone!
+Password attacks are usually \textbf{not targeted} --- passwords of any
+user across an organization are enough. Password attacks are indeed dangerous
+threats that could affect virtually anyone, no matter the technical skills
+of the person in exam.
 
 The thread model involves many steps further than the classic network attacker
-threat model. In particulare, to steal passwords an attacker is now able (and
-required) to:
+threat model. In particulare, to steal passwords an attacker is required (and
+supposedly able) to:
 \begin{itemize}
     \item install \emph{malware} on devices;
     \item perform \emph{phishing} attacks or campaings;
@@ -3615,11 +3631,13 @@ hardware) and number of attempts should be considered. This is said to be
 
 Differently, a network attacker that is able to communicate will be also able
 to perform \textbf{online guessing}, an attack that is carried out against a
-``dumb'' server with no detection capabilities. The online guessin attack
-consists in trying to use each password in a candidate set \emph{against the
-real server}, hoping to find the correct one. There is a \emph{tight limit} on
-speed and number of attempts. These attacks still succeed, because some
-passwords are \textbf{very} weak, or are left to their -- publicly known --
+``dumb'' server with no detection capabilities. Perhaps a server is not
+configured or able to detect multiple (possibly in the order of thousands) of
+login attemps; hence, online guessing attacks are feasible. The online guessing
+attack consists in trying to use each password in a candidate set \emph{against
+the real server}, hoping to find the correct one. There is a \emph{tight limit}
+on speed and number of attempts. These attacks still succeed, because some
+passwords are \textbf{very} weak, or are left to their --- publicly known --
 defaults. Online guessing is ``equivalent'' to the offline guessing, only
 against the users involved.
 
@@ -3629,7 +3647,7 @@ or online guessing); otherwise, with malware, phishing and Insiders the
 password choice becomes irrelevant as long as it is stolen with other means
 other than guessing.
 
-Basically, a harder password is only \emph{harder to guess}, not \emph{harder
+As a matter of fact, a harder password is only \emph{harder to guess}, not \emph{harder
 to steal}.
 
 
@@ -3670,19 +3688,19 @@ AuthDB stealing is one of the most important risks across organizations and
 across users. Authentication databases records \texttt{< username, C >} are
 implemented with 4 ``general'' approaches, from worst to best:
 \begin{enumerate}
-    \item \emph{in clear} -- the worst of the worst, consists in storing the
+    \item \emph{in clear} --- the worst of the worst, consists in storing the
         password in plain text along with the username. An attacker would
         immediately obtain passwords for all users;
-    \item \emph{encrypted} -- a little better, but still useless. Storing
+    \item \emph{encrypted} --- a little better, but still useless. Storing
         \texttt{< user. Ek(pwd) >} is uneffective the moment \texttt{Ek} is
         compromised (usually along with an attack). Both the previous storing
         mechanisms are not to be used at all;
-    \item \emph{hashed} -- the bare minimum requirement, passwords are stored
+    \item \emph{hashed} --- the bare minimum requirement, passwords are stored
         after having hashed them by a unidirectional function. The server
         should not know the password, and only store \texttt{< user, H(pwd) >}.
         When server receives \texttt{pwd}, it immediately computes
         \texttt{F(pwd)} and checks against the database entry;
-    \item \emph{hashed and salted} -- the best way to store credentials, it
+    \item \emph{hashed and salted} --- the best way to store credentials, it
         involves the previous step \emph{plus} the addition of a ``salt'' to
         decrease the likelihood of an attacker to possess a pre\--computed
         table of hashes to speed up password guessing. By altering the
@@ -3736,20 +3754,21 @@ Hash function algorithms, and cryptographic algorithms in general are
 
 \subsubsection{Lookup table attacks}
 
-Lookup table attacks are offline guessing attacks in which \emph{the dictionary
+\textbf{Lookup table} attacks are offline guessing attacks in which \emph{the dictionary
 is known in advance}. Basically, hashes are pre\--computed so that a
 \emph{simple search} can be performed, and are valid for any AuthDB that uses
 the corresponding hash function. Lookup tables require a lot of storage, but
 are available on the internet in cracking tools.
 
 The protection against lookup tables is \textbf{salting}. Salting consists in
-picking the input of the hash function -- that is the password -- and adding a
+picking the input of the hash function --- that is the password --- and adding a
 \emph{random number or symbol} to it, at any position. The new ``password''
-will then be the password itself \emph{plus} the salt, and its corresponding
-hash will be stored in the AuthDB. A given password at different users is
-associated with different random numbers. Basically, the lookup table
-\textbf{cannot} be pre\--computed anymore, since the random numbers would make
-the task practically unfeasible. Salts are stored in AuthDB as well.
+will then be the password itself \emph{plus} the salt; its corresponding
+hash will be stored in the AuthDB together with the salt that should be added
+to compute the hash. A given password at different users is associated with
+different random numbers. Basically, the lookup table \textbf{cannot} be
+pre\--computed anymore, since the random numbers would make the task
+practically unfeasible.
 
 All the server is required to do is to first retrieve the salt from the AuthDB
 corresponding to a user, then concatenate the password with the salt and
@@ -3759,19 +3778,20 @@ unfeasible.
 
 Moreover, salting prevents \emph{password frequency analysis}. Password
 frequency analysis is a technique that involves an attacker looking for
-frequent passwords by simply looking at the AuthDB -- many users have the same
+frequent passwords by simply looking at the AuthDB --- many users have the same
 passwords, probably in a dictionary. With salting, hashes are unpredictable,
 thus frequency analysis of passwords is not possible anymore.
 
 On Windows, the non\--reversible function produces hashes that are not salted, with a
 lightweight hash function fast to compute. Even worse, Windows authentication
 protocols require the knowledge of \texttt{H(pwd)} (a knowledge that it is
-sufficient to have to impersonate a user -- the hash is even stored in the
+sufficient to have to impersonate a user --- the hash is even stored in the
 machine's memory; basically, if AuthDB is stolen, no guessing is required to
 impersonate anyone).
 
 On Android or Linux the non\--reversible function makes use of salts, and it is
-very heavyweight. The file in which it is stored is the \texttt{/etc/shadow}.
+very heavyweight. On Linux, the file in which it is stored is the
+\texttt{/etc/shadow} file.
 
 A very general and powerful approach in security is the \textbf{defense in
 depth} approach. It consists in multiple, \textbf{independent} layers of
@@ -3782,29 +3802,30 @@ than for the defender}.
 \subsubsection{Online guessing}
 Now let's talk of \emph{online guessing} attacks. Online guessing attacks are
 different, since a very low number of attempts can be performed --- either
-because the network introduces some lag, an invalicable limit, or because there
+because the network introduces some lag (an invalicable limit) or because there
 could be a chance to be detected by the organization to which the attack is
 performed.
 
 Online guessing attacks are usually executed by means of \emph{botnets} when
 outside organization, or by a set of clients or machines when inside an
-organization. Usually, online guessing attacks are not cheap -- for this
+organization. Usually, online guessing attacks are not cheap --- for this
 reason, an online guessing attack will focus on common passwords, predictable
 patterns, default passwords and passwords from previous breaches \textbf{only}.
 If an access has not been found, then the most rational behavior would be to
 change service or webapp.
 
 The first technique is the \textbf{credential stuffing}. For each username, try
-a few thousand passwords -- basically, for every user multiple passwords are
+a few thousand passwords --- basically, for every user multiple passwords are
 tried in a row. Since this can easily be detected by a defender (its log will
 contain thousands of failed login attempts on single users), another technique
 is preferred: the \textbf{credential spraying}. Credential spraying is
 different in the sense that the two for loops are now reversed: for each
 password, try it on many usernames. Defender's log will now present a
 less\--obvious pattern of login attempts. Typically, there are up to 50
-passowrds sprayed across usernames, resulting in up to 20000 attempts per hour
-(2019 data -- around $0.5\%$ of all accounts get compromised each month, with
-nearly all hacked accounts on \emph{legacy protocols}).
+passwords sprayed across usernames, resulting in up to 20000 attempts per hour,
+each following a hard-to-predict pattern (2019 data --- around $0.5\%$ of all
+accounts get compromised each month, with nearly all hacked accounts on
+\emph{legacy protocols}).
 
 As a general remark, the realistic threat model for organizations is to
 \textbf{assume breach} inside the organization, with possibily many credentials
@@ -3816,15 +3837,15 @@ guessing rate and traffic usually occurring across an organization.
 
 The possible action against online guessing attacks are the following ones:
 \begin{enumerate}
-    \item \emph{automatic username lockout} -- a wrong practice, since it will
+    \item \emph{automatic username lockout} --- a wrong practice, since it will
         then be trivial to perform a Denial of Service attack on a target;
-    \item \emph{blacklist IP addresses} involved in guessing attacks -- a weak
+    \item \emph{blacklist IP addresses} involved in guessing attacks --- a weak
         action, since it's easily circumvented, with a lot of potential false
         positives and users damage more than attackers;
-    \item \emph{alert toward targeted usernames} -- only feasible for stuffing;
+    \item \emph{alert toward targeted usernames} --- only feasible for stuffing;
     \item enforcing \textbf{time throttling} depending on failed attempts, with
         a threshold\---based system having a progressive increase of response
-        delay -- a really effective technique that prevents most of guessing
+        delay --- a really effective technique that prevents most of guessing
         attacks. Despite being really useful, this mechanism is rarely
         implemented for servers.
 \end{enumerate}
@@ -3839,7 +3860,7 @@ and collecting observed traffic.
 
 Let an Authentication Protocol traffic travel over an encrypted channel
 (examples of this are BASIC/FORM over HTTPS, SMTP/POP over TLS, MSCHAPv2 over
-TLS, and so on); guessing should not be feasible due to encryption -- however,
+TLS, and so on); guessing should not be feasible due to encryption --- however,
 it might still be able to guess a easy\--enough credentials, since modern
 cracking tools handle most authentication protocols. The possible number of
 hash per second depends on hardware, with GPU clusters and with weak hash
@@ -3849,16 +3870,16 @@ functions such as NTLM we are in the order of millions guesses per second.
 
 The key objective when choosing a password is that \textbf{it must resist
 guessing attacks}. The first and most important requirement for any password is
-\textbf{not to be in any dictionary} -- not a common or predictable pattern,
+\textbf{not to be in any dictionary} --- not a common or predictable pattern,
 not a word, not a mangled common word. Second, \textbf{passwords should be
-unique for each service} -- an extremely important remark, since a compromised
+unique for each service} --- an extremely important remark, since a compromised
 credential could lead to compromising even more services. The password,
 ultimately, \textbf{must be sufficiently long and complex}.
 
 To put it briefly, a password should be \textbf{at least 14 characters long},
 with special symbols that matter not particularly. This last requirement is the
-icing in the cake, since all attacks will use dictionaries and only some of
-them also perform an exhaustive search on permutations space. Moreover,
+most fundamental one, since all attacks will use dictionaries and perhaps only
+some of them will also perform an exhaustive search on permutations space. Moreover,
 passwords used on multiple services pose a serious threat to security for
 aforementioned reasons.
 
@@ -3885,7 +3906,7 @@ an unavoidable trade\--off. Pushing users against the security side will
 \textbf{inevitably} affect usability. When forced ``to the ropes'' to maintain
 very high security levels, users will find out ways to manage their security
 (in this case, their passwords) so that the usability increases and reaches
-acceptable levels for them -- de facto, loweing the security. A good
+acceptable levels for them --- de facto, loweing the security. A good
 sweet\--spot should be achieved by the security manager, by producing security
 policies that take the user behavior into account.
 
@@ -3897,7 +3918,7 @@ thus they \textbf{must} change their passwords frequently.
 \textbf{Multi\--Factor Authentication} is an \emph{additional identity proof}
 that should be given alongside with the main credentials, username and
 password. Multi\--Factor Authentication is indeed very effective against
-realistic threat models -- enabling 2FA is a very high priority defensive
+realistic threat models --- enabling 2FA is a very high priority defensive
 investment, because it literally saves you from credentials stealing and
 \emph{significantly increases the cost for attackers}. MFA is optional for
 common web services, mandatory for banking services.
@@ -3921,7 +3942,7 @@ one\--time\--passwords) are available, which are similar to a security key, but
 less flexible.
 
 All \emph{roaming authenticators} will connect to the device which is
-connecting to a service -- the roaming authenticator then will also connect
+connecting to a service --- the roaming authenticator then will also connect
 with the remove service by itself, with a complex protocol. All protocols are
 standard protocols.
 
@@ -3931,7 +3952,7 @@ Two\--Factor Authentication might be enabled by linking the second factor to
 the service during an authenticated session, a process that generally is
 necessary \emph{once}. The 2FA\--login should be performed this way: the user
 browser or device authenticates with the server, and the latter asks for a
-\emph{challenge} -- a knowledge or a token that can only be retrieved by the
+\emph{challenge} --- a knowledge or a token that can only be retrieved by the
 second factor. The second factor \emph{confirms} the browser login, either on
 the same channel or on different ones (that's the case of smartphone\--2FA).
 
@@ -3944,7 +3965,7 @@ browser is considered a \emph{trusted device} by the service.
 The OTP works like this: a browser authenticates itself to a service, and then
 the latter asks for a further \emph{challenge}. After a waiting period, the
 user will read the OTP code, insert it in the browser (as asked by the
-service), and it will send it to the service -- if the OTP code is the one that
+service), and it will send it to the service --- if the OTP code is the one that
 is expected, the authentication will be a success.
 
 Usually, OTP codes are 6\--digits long with uniform distribution, valid for
@@ -3973,7 +3994,7 @@ involved in transmission of a second factor is the \texttt{FIDO2} protocol.
 
 The first requirement of an AuthApp implementation is the \emph{linking}. A
 private key \texttt{K1} is \emph{generated by service} and \emph{securely sent
-to AuthApp} upon activation -- the so\--called linking process. The
+to AuthApp} upon activation --- the so\--called linking process. The
 Authentication Application is usually linked to \emph{several} services, unless
 the application is service\--related. For instance, an Authentication
 Application will contain the pairs \texttt{U, K} related to various services,
@@ -3988,7 +4009,7 @@ procedure:
         showing a QR code that should be captured by the smartphone on which
         the AuthApp is running;
     \item the smartphone follows the link and opens a secure TLS connection
-        with \texttt{URL-U-tmp} -- a proof that the owner of the device is the
+        with \texttt{URL-U-tmp} --- a proof that the owner of the device is the
         same person that surfs through that browser;
     \item at this very moment, the service generates \texttt{K1} and privately
         sends it to the smartphone by means of the TLS encrypted channel;
@@ -4021,7 +4042,7 @@ Possible issues of this mechanisms are the following ones:
 
 hence, the above formula cannot reliably work! The solution is to apply a sort
 of \emph{module operation}, in which 
-$$ OTP(t) = Enc_K((t - t_0) \% DX), $$  with $DX = 30s$ -- this means that the OTP
+$$ OTP(t) = Enc_K((t - t_0) \% DX), $$  with $DX = 30s$ --- this means that the OTP
 changes once every $30s$ (and not at each and every second), and there is a
 $30s$ time window to insert the OTP code before it expires.
 
@@ -4053,7 +4074,7 @@ containing the OTP the service expects.
 However, this doesn't guarantee security against those threats:
 \begin{itemize}
     \item \emph{malware} on smartphone (can read, forward, delete SMS);
-    \item \emph{SIM swap} (a fraudulent SIM change -- phone number fraudulently
+    \item \emph{SIM swap} (a fraudulent SIM change --- phone number fraudulently
         taken by another SIM);
     \item \emph{SMS routing attacks} involving weaknesses of \emph{SS7 phone
         protocol} and resulting in the SMS sent to the attacker.
@@ -4119,21 +4140,21 @@ Some more things should be provided before the security key works. For
 instance, the browser \textbf{must be authenticated with HTTPS and with real
 domain}, otherwise the key will refuse to encrypt the challenge. The model is
 broken only in the case of false certificate (and if the attacker already knows
-the public key -- that is an attacker that already existed at the beginning).
+the public key --- that is an attacker that already existed at the beginning).
 Thus, the security key protects against \emph{real\--time phishing} (DNS name
 mismatch, phishing does not work as the user is completely bypassed).
 
 Other security guarantees provided by a security key are the following ones,
 \begin{itemize}
     \item if the attacker has physical access to the security key, the
-        \emph{cloning} procedure must be very difficult -- in particular,
+        \emph{cloning} procedure must be very difficult --- in particular,
         extracting set of service names must be as unfeasible as possible;
     \item a service must be able to know who the Manufacturer of a security key
-        is, and the product ID that the key holds -- this is because an
+        is, and the product ID that the key holds --- this is because an
         attacker might be the Manufacturer itself, so that the trust to certain
         security key may be \emph{revoked};
     \item the Set of Services might collude to link respective user identities
-        -- the Service cannot \emph{identify} which specific security key the
+        --- the Service cannot \emph{identify} which specific security key the
         user is using for login process.
 \end{itemize}
 
@@ -4156,7 +4177,7 @@ device}.
 Smartphones can be used as security keys. In particular, if the service
 supports it, a smartphone can be used to receive a push notification, informing
 the user of a tentative login. The user might accept or not. The smartphone
-should be able to communicate with the service -- no smartphone near the user,
+should be able to communicate with the service --- no smartphone near the user,
 no login from that user. Push notifications work very similarly to security
 key, in the sense that \texttt{DNS NAME, username, prv key, pub key} are stored
 inside the device. The implementation is \emph{almost identical} to that of the
@@ -4173,7 +4194,7 @@ independent HTTPS connection is established.
 
 Push notification system is still \emph{vulnerabile to real\--time phishing}.
 An attacker could act as MITM, and as the attacker logs in into the service,
-the user is asked to press the button -- the attacker will login at user's
+the user is asked to press the button --- the attacker will login at user's
 behalf. Push notifications describe which device or browser is logging in,
 often in a not easy to understand way for an end user. Basically, this system
 does not bypass the user and therefore it doesn't solve phishing and vishing.
@@ -4206,8 +4227,8 @@ notifications.
 \subsection{Passwordless login}
 
 \textbf{Passwordless login} is possible in the case that \emph{a trusted
-device} has a ``built\--in authenticator'' -- a fingerprint reader, a face
-recognition mechanism -- from which the device can perform authentication based
+device} has a ``built\--in authenticator'' --- a fingerprint reader, a face
+recognition mechanism --- from which the device can perform authentication based
 on \emph{biometrics}. In that case, the device ``guarantees'' for the user: the
 user \textbf{authenticates with the trusted device}, then the device
 authenticates with the service, allowing user to access \texttt{S}. This is the
@@ -4221,7 +4242,7 @@ It works as follows:
     \item the trusted device asks the user to authenticate itself with
         biometrics;
     \item if the authentcation is a success, password is not required and the
-        login proceeds -- otherwise, the authentication will require knowledge
+        login proceeds --- otherwise, the authentication will require knowledge
         of password.
 \end{enumerate}
 
@@ -4235,8 +4256,8 @@ be defined.
 
 Two\--Factor Authentication always allow \emph{exceptional login} with
 \textbf{alternate second factors}. Recovery information should be provided to
-the service -- for instance, a ``downgrade'' to \texttt{OTP -- SMS} or
-\texttt{OTP -- email} might be allowed to avoid account lockout. This is,
+the service --- for instance, a ``downgrade'' to \texttt{OTP --- SMS} or
+\texttt{OTP --- email} might be allowed to avoid account lockout. This is,
 however, \textbf{not} password recovery as they are in addition to password
 login.
 
@@ -4244,7 +4265,7 @@ Still, the unsolved threat model is the one in which the attack knows both
 password \textbf{and credentials for exceptional login}. This might be
 exploited in the cases where a single password is used across various services
 -- especially if the e\--mail password is the same one as the password of the
-service that allows \texttt{OTP -- email}. In all cases, a service never allows
+service that allows \texttt{OTP --- email}. In all cases, a service never allows
 changing 2FA recovery information without a second factor. It allows protecting
 against attackers that know only the password.
 
@@ -4265,7 +4286,7 @@ independent of each other.
 Usually, authentication is performed following an \emph{authentication
 protocol} over an \emph{encrypted channel}. Some examples of this are the
 \emph{BASIC\---FORM over HTTPS}, \emph{SMTP\---POP over TLS} and \emph{MSCHAPv2
-over TLS}. Many protocols do exist -- involving file servers, printers, and
+over TLS}. Many protocols do exist --- involving file servers, printers, and
 many other machines.
 
 Authentication provides some \emph{guarantees} to a certain entity, from
@@ -4290,7 +4311,7 @@ Authentication can occur in three different aspects:
 \end{enumerate}
 
 The first will be considered in this chapter (although the entirety of all the
-three above had been inspected in the previous chapter -- since the
+three above had been inspected in the previous chapter --- since the
 two\--factor authentication involves all of the above three, with the latter
 only used for local authentication).
 
@@ -4345,7 +4366,7 @@ this last phase, where the two strings are checked to be equal.}
 \end{figure}
 
 A first remark of this NTLM protocol is that \textbf{the server does not prove
-its knowledge of the \texttt{H(pwd-user)}} -- in practice, the client
+its knowledge of the \texttt{H(pwd-user)}} --- in practice, the client
 authentication is completely \emph{unilateral} as the server can actually be
 impersonated by anyone.
 
@@ -4354,7 +4375,7 @@ attacks, as the string \texttt{X} cannot be replayed in future executions
 (\texttt{CHS} changes at every execution). The \texttt{H(pwd-user)} is
 \textbf{unknown} to the attacker, that only knows the MAC result (\texttt{X}),
 \texttt{CHC} and \texttt{CHS}. Equivalently to salted database, an attacker
-cannot compute anything in advance -- this means that he must employ a cracking
+cannot compute anything in advance --- this means that he must employ a cracking
 tool and perform an exaurient search in the password space (or, more cleverly,
 adopt a candidate password set as seen in previous chapters).
 
@@ -4364,17 +4385,18 @@ are that guessing attacks are actually possible, and basically
 \emph{unavoidable} in Windows environments. The number of realistic guesses is
 very high. Windows password have a huge value for attacks, as most
 organizations implement \textbf{Single Sign On (SSO)}. Thus, possessing strong
-passwordsshould be a priority in large organizations.
+passwords should be a priority in large organizations.
 
 However, on NTLM that is almost \emph{useless}: the client only
 \textbf{demonstrates the knowledge of the hash, that is \texttt{H(pwd-user)}}.
 Basically, \textbf{knowledge of the hash of a password suffices to impersonate
-the user}, a weakness that renders NTLM very dangerous to use. Basically,
-\emph{hash knowledge is enough} to impersonate an user, no matter how strong
-the password is: offline guessing can be done with the goal of obtaining
-\texttt{H(pwd-user)} rather than \texttt{pwd-user} itself. Moreover, softwares
-capable of extracting the hashes from a Windows machine exist: when a client is
-compromised, the user can immediately be impersonated on the network.
+the user}, a weakness that renders NTLM very dangerous to use. What happens is
+that on Windows environments hash knowledge is enough to impersonate an user,
+no matter how strong the password is: offline guessing can be done with the
+goal of obtaining \texttt{H(pwd-us\-er)} rather than \texttt{pwd-user} itself.
+Moreover, softwares capable of extracting the hashes from a Windows machine
+exist: when a client is compromised, the user can immediately be impersonated
+on the network.
 
 The hash of the password is nowadays computed by a function that is called
 \textbf{NetNTLM Hash}: the computation hardness of the function is a lot better
@@ -4390,7 +4412,7 @@ server. The drawback of this is that the communication occurs without
 encryption or any security guarantee that might be expected from an
 authentication protocol (that is, no shared secret key \texttt{K} is
 established). Of course, a network attacker can inject application data in open
-connections, alter the traffic, and observe everything -- something that cannot
+connections, alter the traffic, and observe everything --- something that cannot
 occur in the cases of an authentication procedure that guarantees something
 more. Weak protocols in this sense are HTTP BASIC or FORM, POP, and
 \textbf{NTLM}. Strong protocols are HTTPS, Personal or Enterprise Wi\--Fi, any
@@ -4418,27 +4440,32 @@ enabled by default.
 \textbf{Kerberos} is a computer-network authentication protocol that
 works on the basis of tickets to allow nodes communicating over a non-secure
 network to prove their identity to one another in a secure manner. Its
-designers aimed it primarily at a client–server model, and it provides mutual
+designers aimed it primarily towards a client-server model, and it provides mutual
 authentication—both the user and the server verify each other's identity.
-Kerberos protocol messages are protected against eavesdropping and replay
+Kerberos protocol messages are protected against both eavesdropping and replay
 attacks.
 
-Kerberos builds on symmetric-key cryptography and requires a trusted third
-party, and optionally may use public-key cryptography during certain phases of
-authentication. Kerberos uses UDP port 88 by default.
+Kerberos is built on symmetric-key cryptography and requires a trusted third
+party; optionally it might use public-key cryptography during certain phases of
+authentication. Kerberos uses \emph{UDP port 88} by default.
 
 Kerberos was initially designed in 1978 by \textbf{Needham} and
 \textbf{Schroeder}. In 1981 it had its first attacks, and some fix occurred --
 in 1987, the first release called \emph{Project Athena} (MIT), and in 1988 the
 first conference took place. Only in \emph{Windows 2000} Microsoft systems
-started implementing it for real.
+started implementing it for real. History tells that for most crucial protocols
+a huge amount of time and money should be spent on research, and the results
+can be perceived only after some years.
 
 
 \subsection{Private Key Cryptography}
 
 In \textbf{private key cryptography}, along with secrecy (encryption) every
-message exchange contains a \emph{Message Authentication Code} for providing
-\textbf{integrity}. For simplicity, MACs will be omitted from now on.
+message exchange contains a \emph{Message Authentication Code} to provide
+\textbf{integrity}. MACs are appended to each message and allow checking for
+the integrity of the message. If a receiver realises that the digest of the
+message and the MAC don't match, then the message has been subject of errors or it
+might have been tampered. For simplicity, MACs will be omitted from now on.
 
 Private key cryptography assures secrecy, mutual authentication and integrity.
 It resembles \textbf{digital signature}, since only the real part is able to
@@ -4468,7 +4495,7 @@ The architecture is as follows:
     \item an \textbf{Authentication Server} \texttt{AS} knows all secrets, as it
         possesses an AuthDB containing the pairs \texttt{username, K-username};
     \item the username is used as a \textbf{salt};
-    \item every node as a good, local clock.
+    \item every node has a good, local clock.
 \end{itemize}
 
 Kerberos is particularly suitable for \textbf{local} environments, as an AS
@@ -4478,7 +4505,7 @@ cryptography can't be managed on a large scale.
 The first phase of any login is the \textbf{interactive logon}. An interactive
 logon sees a user \emph{locally logging in} a machine (a workstation, a
 physical terminal of a server). After the local login, the workstation
-immediately authenticates to the AS -- if the operation results successfully,
+immediately authenticates to the AS --- if the operation results successfully,
 the interactive logon completes correctly, and the user is correctly
 authenticated (he knows \texttt{pwd-U}. The user can use all the services
 provided on the local workstation.
@@ -4509,7 +4536,7 @@ session key is a special key constructed by the \texttt{AS} whose purpose is to
 allow interaction between \texttt{U} and \texttt{S}.
 
 Since the message is encrypted with \texttt{ku}, how can the server possibly
-get \texttt{Kus}? The answer is by means of \textbf{service tickets} -- service
+get \texttt{Kus}? The answer is by means of \textbf{service tickets} --- service
 tickets are messages containing \texttt{Kus} encrypted with the key \texttt{ks}
 belonging to the server. Service tickets are appended to the response message
 to the client. Service ticket is then sent to the server \texttt{S}. A service
@@ -4582,7 +4609,7 @@ A network attacker cannot read, modify or forge messages; however, he can
 
 However, requests to \texttt{AS} pose no problem, since the attacker will
 receive many copies of the same response (containing the service ticket), but
-he will never be able to decrypt them -- differently, an attacker may want to
+he will never be able to decrypt them --- differently, an attacker may want to
 replay some request to a server \texttt{S}, so that \textbf{multiple
 executions} of a same command can be provoked.
 
@@ -4593,7 +4620,7 @@ rcv.clock} greater than a certain threshold (before of after the
 \texttt{rcv.clock}). In other words, \textbf{given a tolerance} $\delta$ every
 message whose clock is different from the clock of the receiver will be
 discarded. An attacker could still perform a quick replay and send a lot of
-requests during the threshold -- this is now possible, however, since
+requests during the threshold --- this is now possible, however, since
 \textbf{the server will store all received message with clock within $\delta$,
 and discard all copies of the same message}, thus preventing massive spam of
 replay attacks. This technique is also adopted in many modern protocols, such
@@ -4613,8 +4640,9 @@ Kerberos comes in three versions:
     \item the \textbf{strong} configuration, providing only \emph{safe}
         messages (integrity and mutual authentication);
     \item the \textbf{so\--so} configuration, in which after the first
-        interaction the connection \textbf{is the same as TCP}. Sadly, this is
-        the default configuration when setting up a Kerberos instance.
+        interaction the connection \textbf{is the same as TCP}, therefore it is
+        vulnerable to relay attacks just as default NTLM configuration. Sadly,
+        this is the default configuration when setting up a Kerberos instance.
 \end{enumerate}
 
 The first and strongest configuration is the one we have already seen, and it is depicted in Figure~\ref{fig:very-strong-kerberos}.
@@ -4653,7 +4681,7 @@ During a \textbf{Kerberos Session} there exists a single ticket. After the
 ticket expires, a new Kerberos Session should be created and a new ticket
 should be granted, all by contacting the \texttt{AS} again. The Kerberos
 Session and the ticket lifetime is \emph{completely independent} of the TCP
-connection lifetime -- a single TCP connection can end up by using
+connection lifetime --- a single TCP connection can end up by using
 \emph{multiple} service tickets, and a single service ticket can be used on
 \emph{multiple} TCP connections.
 
@@ -4678,7 +4706,7 @@ should be done.
 
 The \textbf{Key Distribution Center} is a server belonging to a Kerberos instance
 whose goal is to \textbf{provide tickets}. A real Kerberos works with two,
-distinct services (can be run on the same machine -- in fact, it runs on port
+distinct services (can be run on the same machine --- in fact, it runs on port
 88 on the same machine): one that \textbf{initiates authentication}, and the
 other one that \textbf{provides tickets}. The first one is the \texttt{AS} that
 had already been depicted in the previous paragraphs, while the KDC role will
@@ -4691,7 +4719,7 @@ ticket with which the user workstation will be able to communicate with the
 \texttt{TGS}. After that, the user presents its \texttt{TGT} to the
 \texttt{TGS}, along with a request for service \texttt{S}. The \texttt{TGS}
 will respond with the \textbf{service ticket} for communucating with service
-\texttt{S}. Next
+\texttt{S}. To summarise, a first ticket --- the \emph{Ticket Granting Ticket} --- should be provided by the Ticket Granting Service to request other tickets. Subsequent tickets --- the \emph{Service Tickets} --- are the same ones we illustrated in the previous sections. Next
 Figures~\ref{fig:real-kerberos-1}~and~\ref{fig:real-kerberos-2} illustrate the
 entire process in detail.
 
@@ -4719,7 +4747,7 @@ Hence, the process can be summarized in $4$, distinct steps (two phases):
         workstation. A concatenation of username and password is passwd through
         a hash function, which produces \texttt{Ku};
     \item the workstation \emph{proves its knowledge of \texttt{Ku}} with the
-        Authentication Server \texttt{AS} -- the latter grants the user's
+        Authentication Server \texttt{AS} --- the latter grants the user's
         workstation a \textbf{ticket granting ticket}, along with session key
         \texttt{Ku-tgs}. The \emph{interactive logon} phase ends here;
     \item the user performs a \textbf{network logon} to a service \texttt{S}.
@@ -4780,14 +4808,15 @@ Kerberos can only work effectively towards a \emph{single organization}. In fact
     \item the protocol is not NAT\--friendly;
     \item the access right policies should be mapped between organizations
         (hard to do due to privacy);
-    \item each organization should trust the other.
+    \item each organization should trust the other. Perhaps, this is the most
+        crucial aspect.
 \end{itemize}
 
 For the above reasons, Kerberos is practically used only between different
-parts of a same organization -- and not across the internetwork. Protocols that
+parts of a same organization --- and not across the internetwork. Protocols that
 reliably work across the internet are \textbf{SAML}, which supports
 authentication and authorization, often used for authentication only, as in the
-case of SPID -- and \textbf{OAuth}, which supports authentication and
+case of SPID --- and \textbf{OAuth}, which supports authentication and
 authorization as well.
 
 
@@ -4829,19 +4858,21 @@ Service}. A Directory Service is a \emph{centralized} repository containing all
 
 A process of \emph{Single Sign On} can be performed by users, with each
 resource executing authentication by interacting with \texttt{DS}. Access
-rights are stored on \texttt{DS} -- therefore, authorization can be queried to
+rights are stored on \texttt{DS} --- therefore, authorization can be queried to
 the Directory Service.
 
 \subsection{Windows Active Directory}
 
-On \textbf{Windows Active Directory}, a single entity -- the \textbf{Domain
-Controller} -- runs the three single most important services:
+On \textbf{Windows Active Directory}, a single entity --- the \textbf{Domain
+Controller} --- runs the three single most important services:
 \begin{itemize}
     \item the \emph{Kerberos AS};
     \item the \emph{Kerberos TGS};
     \item the \emph{Directory Service};
 \end{itemize}
-thus, it should be safeguarded from attackers.
+thus, it runs both Kerberos and the Directory Serivce and should definitely be
+safeguarded from attackers. Obtaining access to this server usually leads to a
+complete catastrophe.
 
 Active Directory works wonderfully over Kerberos. The process is the following
 one:
@@ -4864,7 +4895,7 @@ one:
 \end{enumerate}
 
 A third way to logon is the \textbf{Remote Logon}. A remote logon occurs when a
-user wants to connect to a different workstation (not the same one) -- it works
+user wants to connect to a different workstation (not the same one) --- it works
 like in the case of a server:
 \begin{enumerate}
     \item the workstation presents \texttt{TGT(U)} to \texttt{DC} and obtains
@@ -4886,7 +4917,7 @@ case,
     \item the ticket \texttt{ST(U,S)} must be a \textbf{delegation ticket},
         having a special flag denoting such peculiarity;
     \item the server \texttt{S} presents \texttt{ST(U,S)} to \texttt{DC},
-        obtaining \texttt{ST(U,S')} -- with this ticket, the server \texttt{S'}
+        obtaining \texttt{ST(U,S')} --- with this ticket, the server \texttt{S'}
         obtains the user's identity;
     \item both servers keep \texttt{ST(U,S')} in memory.
 \end{enumerate}
@@ -4895,7 +4926,7 @@ case,
 An important remark is that \emph{everything can be done with NTLM as well},
 for compatibiluty reasons. The important aspect is that \textbf{credentials
 such as hashes of user passwords are stored in memory}, always present in
-workstations -- a network attacker can grab oggline guessing material for
+workstations --- a network attacker can grab oggline guessing material for
 \texttt{H(pwd-U)}, a secret that it allows impersonating the user \texttt{U}.
 
 \subsection{LDAP}
@@ -4939,7 +4970,7 @@ directly used to \emph{gain access} to a system or to a network.
 The list of known vulnerabilities (CVE, \emph{Common Vulnerabilities and
 Exposures}) can be found at \texttt{https://cve.mitre.org/}.
 
-Vulenrabilities allow a wide range of attacks to succeed, with impacts ranging
+Vulnerabilities allow a wide range of attacks to succeed, with impacts ranging
 from better to worse:
 \begin{enumerate}
     \item information disclosure;
@@ -4975,7 +5006,7 @@ Typical examples of vulnerabilities are:
     \item bad practice in workstation administration;
     \item bad practice in password management;
     \item excessively loose firewall policies;
-    \item \dots
+    \item and so on\dots
 \end{itemize}
 
 In a nutshell, vulnerabilities are software or configuration\---procedural
@@ -4989,7 +5020,7 @@ are known to the attacker only, and unknown to both software manufacturer and
 defender.
 
 \textbf{Every kind of software} can be affected by vulnerabilities.
-Vulnerabilities are an intrinsic feature of software -- not a sporadic,
+Vulnerabilities are an intrinsic feature of software --- not a sporadic,
 occasional phenomenon. In practice, those categories can be affected:
 \begin{itemize}
     \item end user software;
@@ -4999,7 +5030,7 @@ occasional phenomenon. In practice, those categories can be affected:
     \item Industrial Control Systems (ICS);
     \item Medical Devices;
     \item IoT devices (Cars, Ships, home devices);
-    \item \dots
+    \item and so on\dots
 \end{itemize}
 
 
@@ -5084,28 +5115,41 @@ exponentially in the last years. Ultimately, this is a huge societal problem.
 
 Three distinct target categories might exist:
 \begin{itemize}
-    \item organizations -- servers and data;
-    \item Industrial Control Systems -- sensors and actuators;
-    \item single individuals.
+    \item organizations --- servers and data;
+    \item Industrial Control Systems --- sensors and actuators;
+    \item single individuals;
 \end{itemize}
+
+each one possessing their own attackers and their own crucial aspects.
 
 The term Organizations covers a whole range of entities, such as Hospitals,
 administration of manufacturing companies, universities, and any other entity
 that possesses servers and owns data. An organization might or might not
-possess an ICS infrastructure -- thus, with organization we mean the
+possess an ICS infrastructure --- thus, with organization we mean the
 administration, logistics, payroll, sales\---purchasing, warehouse,
 email\---web (and so on) part, while with ICS one explicitly suggests the
 sensors and actuators infrastructure in a manufacturing or control process.
 
+Organizations are often under attack of criminal groups. Criminal groups
+usually possess high skill and a great amount of resources, that very often
+exceeds those of the target organizations. Crime groups will typically attack
+organizations in order to get huge amounts of money with the least possible
+effort --- a rational behavior.
+
 A lot of money can be obtained by attacking
 \begin{itemize}
-    \item single organizations -- asking for huge ransoms;
-    \item many individuals -- asking for small ransoms;
+    \item single organizations --- asking for huge ransoms;
+    \item many individuals --- asking for small ransoms;
 \end{itemize}
 
 while attacks on ICSs are frequently justified by other motivations (for
 instance, disruption and information disclosure). In fact, attacks to ICS
-rarely grant money.
+rarely grant money. Very often, attacks to single individuals are designed to
+affect a very broad range of devices, to maximize the possible targets. Each
+individual will likely yield a small amount of money, but the very wide set of
+victims will provide a large amount of money, enough to justify the efforts.
+Ultimately, attacking a category of devices is far simpler than attacking
+powerful organizations.
 
 
 
@@ -5121,7 +5165,7 @@ the most famous two are the \textbf{Kill chain} model, the first widely used,
 and the \textbf{MITRE ATT\&CK} model, the one that represents today's standard.
 
 The MITRE ATT\&CK framework is used to describe an attack, and is composed of
-13 possible phases, called \emph{Tactics} -- some tactics are optional for an
+13 possible phases, called \emph{Tactics} --- some tactics are optional for an
 attacker, so that an attack can succeed without seeing all of the tactics
 involved. Tactics are also not necessarily executed in sequence.
 
@@ -5171,41 +5215,48 @@ An important cornerstone of initial access is \textbf{phishing}. Phishing is a s
 \subsection{Execution}
 
 \textbf{Execution} techniques result in an \emph{adversary\--controlled} code,
-running within the organizations. Twelve techniques exist for this.
+running within the organizations. Twelve techniques exist for this. Attacker's
+code is usually arbitrary code, in the sense that the device is now completely
+controlled by the attacker and can respond at will.
 
 \subsection{Persistence}
 
 \textbf{Persistence} should be granted across \emph{system restarts},
 \emph{changed credentials} and \emph{interruptions} that could cut off the
-attacker's access. Nineteen techniques exist.
+attacker's access. Nineteen techniques exist. Persistence is necessary in order
+to keep the infected machines as such --- attacks might require weeks of
+efforts, so an attacker should carefully design its exploits so that they will
+also grant persistence across interuptions or configuration changes.
 
 \subsection{Establishing Command \& Control}
 
 \textbf{Command \& Control} are a set of techniques that adversaries may use
 to \emph{communicate with systems under their control}, within a victim
 network. Adversaries commonly attempt to \emph{mimick normal, expected traffic
-to avoid detection} -- usually by means of existing protocols, but new
+to avoid detection} --- usually by means of existing protocols, but new
 ``unseen'' protocols might be created by an attacker. The attacker will also
 \emph{obfuscate his location} to avoid detection from the defenders or other
 security organizations.
 
 An example of C\&C structure is the \textbf{DNS Tunneling} technique, in which
 an attacker controlled device encodes a \emph{request message} to attacker in a
-DNS query, for instance \texttt{dfg99872gh\-.innocent.com A?} -- whose CNAME
+DNS query, for instance \texttt{dfg99872gh\-.innocent.com A?} --- whose CNAME
 response will be let's say \texttt{hhjsd67\-.innocent.com}, encoding a response
-message from the attacker. Sixteen more techniques exist.
+message from the attacker. This way, a very hard to detect channel can be
+established. Sixteen more techniques exist.
 
 \subsection{Discovery}
 
 \textbf{Discovery} are a set of techniques in which an attacker \emph{gains
-knowledge} about the internal environment and decides how to act. The goal of
-discovery is to learn of networks, hosts, devices, applications, but also
-users, groups, access rights. Twentynine techniques exist.
+knowledge} about the internal environment of an organizations and decides how
+to act accordingly. The goal of discovery is to learn of networks, hosts, devices,
+applications, but also users, groups, access rights. Twentynine techniques
+exist.
 
 A simple and lightweight program for discovery is \textbf{\texttt{nmap}}
 (Network Mapper), an open source tool for \emph{network exploration} and
 \emph{security auditing}. The tool \texttt{nmap} is capable to scan either
-large networks or single hosts -- it uses raw IP packets in novel ways, to
+large networks or single hosts --- it uses raw IP packets in novel ways, to
 determine:
 \begin{itemize}
     \item what \emph{hosts} are available on the network;
@@ -5216,7 +5267,8 @@ determine:
 \end{itemize}
 
 Usually, \texttt{nmap} is quite noisy, but with certain flags it can be
-configured to be hardly detectable.
+configured to be hardly detectable. Of course, many more programs exist for
+this purpose.
 
 
 \subsection{Lateral movement}
@@ -5225,54 +5277,41 @@ configured to be hardly detectable.
 obtained access to a single point internal to the organization, performs
 attacks and operation in which tries to access new devices, usually in the same
 privilege sphere that the already attacked device lies; applying then Execution
-and Persistence on other hosts. There are 9 techniques for lateral movement in
-MITRE ATT\&CK framework, under the tactic \emph{Lateral Movement}.
+and Persistence on other hosts. Lateral movement, indeed, is much easier when
+the attacker had obtained the privileges of an administrator. There are 9
+techniques for lateral movement in MITRE ATT\&CK framework, under the tactic
+\emph{Lateral Movement}.
 
-Usually, the lateral
-movement phase comes after the attacker gained foothold during the first phase,
-after having guaranteed \textbf{persistence} with related techniques, thanks to
-which the infected device remains so even across restarts and changed
-credentials. 
+Usually, the lateral movement phase comes after the attacker gained foothold
+during the first phase and after having guaranteed \textbf{persistence} with
+related techniques.
 
 Lateral movement abuse is based on expansion of \emph{credentials} and
 \emph{access rights}, executed with \emph{credentials misuse},
 \emph{vulnerability exploitation} and \emph{Access Rights abuse}. Usually, a
 crucial aspect allowing all of this is \textbf{misconfiguration}, with
-overprivilege or inadequate account auditing.
+overprivilege or inadequate account auditing. An attacker might be able to
+devise a technique to circumvent access right policies, by exploiting bad
+configurations from careless system administrators.
 
-Also the phase of so\--called \textbf{Command \& Control} is
-relevant prior to lateral movement, allowing an attacker to communicate with
-the system under their control, by usually \emph{mimicking normal traffic} such
-as DNS queries or HTTPS traffic to \emph{avoid detection}. Attacker's location
-in that phase is also \emph{obfuscated}, to prevent to be found out in case of
-detection of fraudulent behavior. Command \& Control phase detection is nearly
-impossible in the case of traffic hidden in DNS queries or HTTPS traffic. 
-
-A technique is the so\--called \emph{DNS Tunneling}, for which any message is
-encoded in a DNS query, by CNAME. This works by performing a \texttt{CNAME} DNS
-request, in which a message is encoded in the subdomain, apparently a legit
-request to a server. The DNS server will reply with another domain, carrying
-the encoded response.
-
-A link had been established between the
-attacker and the device.
-
-With lateral movement, an attacker can access various kind of data -- which and
+With lateral movement, an attacker can access various kind of data --- which and
 with which access rights will depend on the available credentials. Of course,
 if the Domain Controller is accessed, the attacker will have the upper hand on
-the defenders.
+the defenders, basically owning the data across the entire section of the organization pertaining to the Domain Controller.
 
 The main reasons for success of lateral movement are the following ones:
 \begin{itemize}
-    \item target has something with \emph{default} credentials;
-    \item target has something with \emph{easy to guess} credentials;
-    \item target has something accessible by \emph{stuffing or spraying} credentials;
+    \item target has some device with \emph{default} credentials;
+    \item target has some device with \emph{easy to guess} credentials;
+    \item target has some device accessible by \emph{stuffing or spraying} credentials;
     \item credentials used locally by the attacker have some \emph{access
-        rights} on the target -- suppose the attacker managed to get his hands
+        rights} on the target --- suppose the attacker managed to get his hands
         on a privileged machine: the remote logon, for instance, will grant him
         high access rights;
     \item an unpatched \emph{vulnerability} can be exploited;
-    \item \dots
+    \item a careless system administrator did a poor job regarding access
+        rights, misconfiguring them;
+    \item and so on\dots
 \end{itemize}
 
 For instance, the tool \texttt{CrackMapExec} is able to \emph{identify} all
@@ -5290,7 +5329,7 @@ Kerberoasting or NetNTLM Collection.
 \subsection{Exfiltration}
 
 The end goal of \textbf{Exfiltration} is to \textbf{steal data} from the target
-machines -- transferring it over the already set up C\&C channel (or an
+machines --- transferring it over the already set up C\&C channel (or an
 alternate channel), usually employing compression, encryption and paying
 attention to size limits. There are 9 techniques to do so.
 
@@ -5304,12 +5343,13 @@ users in the organizations, thus with the traffic commonly leaving the
 organizations without raising suspects. 
 
 Exfiltration effort might be split between many devices that are
-infected.
+infected, in order to both relieve the load across devices and to make harder
+to detect the illicit traffic.
 
-\subsection{Reconnaissanse}
+\subsection{Reconnaissance}
 
-The adversary is trying to gather information they can use to plan future
-operations.
+In this phase, the adversary is trying to gather information they can use to
+plan future operations towards a target, before attack.
 
 \textbf{Reconnaissance} consists of techniques that involve adversaries
 actively or passively gathering information that can be used to support
@@ -5325,7 +5365,7 @@ There are 10 techniques.
 \subsection{Resource Development}
 
 The adversary is trying to establish resources they can use to support
-operations.
+operations towards a target, before the attack occurs.
 
 \textbf{Resource Development} consists of techniques that involve adversaries
 creating, purchasing, or compromising/stealing resources that can be used to
@@ -5340,7 +5380,7 @@ techniques.
 \subsection{Impact}
 
 The adversary is trying to manipulate, interrupt, or destroy your systems and
-data. This is done \emph{in place} of \emph{Exfiltration} -- for an attacker,
+data. This is done \emph{in place} of \emph{Exfiltration} --- for an attacker,
 it might suffice to interrupt data services at organization (disruption).
 
 \textbf{Impact} consists of techniques that adversaries use to disrupt
@@ -5357,7 +5397,7 @@ design data, emails content, or other relevant stuff at the organization.
 
 \subsection{Organizing defense}
 
-At this point, it should be clear that organizing the defense should include
+At this point, it should be clear that organizing the defense should address
 many of the tactics above. Insisting on \textbf{complete prevention of Initial
 Access is usually meaningless}, because the perimeter is too large to be
 properly controlled. The defense must consist of three pillars:
@@ -5368,9 +5408,11 @@ properly controlled. The defense must consist of three pillars:
 \end{itemize}
 with the last two \textbf{much more important} than the first one.
 
-A maturity test for organizations is to ask CTO to provide inventory of
+A maturity test for organizations is to ask CTO to provide an inventory of
 network\--interfacing systems, software with versions, who is in charge of
-things, and so on.
+things, and all the necessary details. Whether or not this report is
+timely\textendash{}provided and enough detailed tells a lot about an
+organization's defense capabilities.
 
 \subsection{Human\--operated attacks vs automated attacks}
 
@@ -5379,10 +5421,11 @@ much, since a human is supervisioning all the steps of the attack; they can be
 tailored to the specific environment of the organization. On contrary,
 \emph{automated} tools are executed by a program and thus not very effective;
 they cannot be tailored to the specific environment, and the investment can be
-amortized over many targets. Automated tools are more frequent than
-human\--operated attacks, and much less dangerous.
+amortized over many targets. Automated tools occur more frequently than
+human\--operated attacks, and are much less dangerous due to their lack of
+adaptiveness.
 
-However, in some circumstances automated attacks are \textbf{very effectice},
+However, in some circumstances automated attacks are \textbf{very effective},
 resulting in a fast execution within the organization, and high damage. If
 organizations share some vulnerability, automated tools are capable of
 \textbf{propagating quickly} across different organizations (Petya, notPetya,
@@ -5390,9 +5433,9 @@ Wannacry).
 
 \section{Privilege escalation}
 
-Privilege escalation attacks are very dangerous, as they allow an attacker to
-reach the state of maximum privileges over a machine, possibly allowing
-arbitrary code execution.
+\textbf{Privilege escalation} attacks are indeed very dangerous, as they allow
+an attacker to reach the state of maximum privileges over a machine, possibly
+allowing arbitrary code execution. Locally, they mean game over.
 
 On Windows, local users are defined in a SAM file, in a local machine, while
 domain users are defined in Active Directory (for machines domain\--joined).
@@ -5400,21 +5443,23 @@ Any process running as administrator can read and write the entire
 disk\--memory of the PC (hence, it can do whatever it wants).
 
 The system process \texttt{lsass.exe} (\textbf{Local Security Authority Server
-Service}) keeps a table of \texttt{process\_name H(pwd-U)}, so that each
+Service}) keeps a LSASS table of \texttt{process\_name, H(pwd-U)}, so that each
 process is labeled with the (ticket) hash of the user.
 
-Of course, a process running as administrator that knows \texttt{H(pwd-U)} can
-assume the identity of user \texttt{U} without knowing the password! It is
-sufficient to write at the correct location in LSASS. An administrator can
-obtain \texttt{H(pwd-U)} of every local user, thus impersonating anyone in the
-local workstation. A terrible side effect is that the process with admin rights
-can obtain \texttt{H(pwd-U)} of \textbf{every domain user executing a process
-on that machine} (for instance, with a remote logon for
-troubleshooting\---administration). Therefore, the admin process can
-impersonate every identity that operates on that PC.
+Of course, in Windows a process running as administrator that knows
+\texttt{H(pwd-U)} can assume the identity of user \texttt{U} without knowing
+the password! It is sufficient to write at the correct location in LSASS. An
+administrator can obtain \texttt{H(pwd-U)} of every local user, thus
+impersonating anyone in the local workstation. A terrible side effect is that
+the process with admin rights can obtain \texttt{H(pwd-U)} of \textbf{every
+domain user executing a process on that machine} (for instance, with a remote
+logon for troubleshooting\---administration). Therefore, the admin process can
+impersonate every identity that operates on that PC, even a Domain Controller
+administrator.
 
-For an attacker, an effective strategy is to \emph{become admin}. In order to
-do so, \emph{privilege escalation} techniques must be adopted.
+For an attacker, an effective strategy is to become administrator of a machine.
+In order to do so, \emph{privilege escalation} techniques must be adopted, such
+as vulnerability exploitment or local access rights misconfiguration.
 
 If this succeeds, \textbf{Pass\--the\--hash} technique can be used. The admin
 process reads LSASS periodically with an automatic tool, collects credentials
@@ -5531,15 +5576,17 @@ possibile, however quite often it happens that there are some laptops or
 systems to the ICS, or ICS is permanently accessible from the IT for remote
 control and monitoring: this could expose the ICS to attacks.
 
-Attacks on Industrial Control Systems are much less likely than attacks to
-organizations. Industrial Control Systems attacks are typically
+Attacks on Industrial Control Systems are much less likely to occur than
+attacks to organizations. Industrial Control Systems attacks are typically
 \emph{targeted}, \emph{techniques cannot be used again} and are \emph{harder to
 get money from}. Differently, attacking an organization does not typically
 require tergeted efforts and techniques, and ultimately there are consolidated
 means to obtain money from them. Basically, ICSs have very few similarities
-between them, thus attacks cost a lot and have a low return in money.
+between them, thus attacks cost a lot and have a low return in money. Very few
+rational attackers would compromise an Industrial Control System in order to
+obtain money.
 
-However, some important remarks should be done. Attacks to Industrial Control
+Some important remarks should be done, though. Attacks to Industrial Control
 System are usually motivated by \emph{strategic} and \emph{intelligence}
 reasons. The so--called \emph{state\--backed groups} are fundamentally hired
 by state\--level adversaries whose interests are different from the common
@@ -5566,13 +5613,14 @@ and military facilities.
 
 \subsection{Attacking single individuals}
 
-Attacker is usually interested in affecting and debilitating a single device.
-For this reason, attacks on \textbf{single individuals} follow a rather simple
-pattern when compared to the previous kind of targets: there are the initial
-phases of \emph{initial access}, \emph{execution} and \emph{persistence}, along
-with \emph{Command \& Control}, however there immediately comes the
-\textbf{impact} phase. No \emph{discovery} and no \emph{lateral movement} are
-usually adopted, much frequently for a reason of costs.
+Attacker is usually interested in affecting and debilitating a single device,
+owned by a large group of people. For this reason, attacks on \textbf{single
+individuals} follow a rather simple pattern when compared to the previous kind
+of targets: there are the initial phases of \emph{initial access},
+\emph{execution} and \emph{persistence}, along with \emph{Command \& Control},
+however there immediately comes the \textbf{impact} phase. No \emph{discovery}
+and no \emph{lateral movement} are usually adopted, much frequently for a
+reason of costs.
 
 Impact comes through adoption of \emph{ransomwares}, \emph{exfiltration}, and
 \emph{disruption of operations}. Especially the first one is employed to
@@ -5580,13 +5628,13 @@ directly ask for money to the individual.
 
 In fact, regarding attacks related to a single individual the most frequent
 motivation is \textbf{money}. Single individuals category of attacks is
-\textbf{never targeted} -- the attacker employs techinques crafted for a category
+\textbf{never targeted} --- the attacker employs techinques crafted for a category
 of devices, and puts into effect the attack to as many targets as possible.
 Each target can yield little money with respect to attacking a single
-enterprise, however the sheer number of affected users can quickly lead to huge
-amounts of money.
+enterprise, however the sheer number of affected users can quickly sum up to
+huge amounts of money.
 
-Attacks to individuals are usually \textbf{automated}. First, it is much
+Attacks to individuals are usually \textbf{automated}. It is much
 simpler to create a tool that is effective in attacking a single individual
 than creating a tool that is effective in attacking a large organization. Since
 there is no need for lateral movement, discovery phase, and it is much easier
@@ -5599,11 +5647,13 @@ economic gain.
 \section{Attack categories}
 
 An ideal set of attacks represents all possible categorization of attacks.
-Partitioning this set can be done in many ways -- one of them is due to
-\emph{Steve Bellovin}, who categorized attacks in \textbf{$4$ classes}:
+Partitioning this set can be done in many ways --- one of them is due to
+\emph{Steve Bellovin}, who categorized attacks in 4 classes:
 \begin{itemize}
-    \item \textbf{targeted} attacks;
-    \item \textbf{not targeted} attacks;
+    \item \textbf{targeted} attacks involving a \textbf{low\textendash{}skilled} attacker;
+    \item \textbf{targeted} attacks involving a \textbf{high\textendash{}skilled} attacker;
+    \item \textbf{not targeted} attacks involving a \textbf{low\textendash{}skilled} attacker;
+    \item \textbf{not targeted} attacks with a \textbf{high\textendash{}skilled} attacker.
 \end{itemize}
 
 \subsection{Targeted attacks}
@@ -5627,7 +5677,7 @@ other kinds of large organizations.
 one \emph{selects} a target, \emph{collects information}, then \emph{executes
 attack}; however, \emph{if the attack becomes too difficult, then target is
 quickly changed}. Since money is the most frequent motivation, a
-cost--effectice target should be chosen. Any attacker will simply look for the
+cost--effective target should be chosen. Any attacker will simply look for the
 low--hanging fruit: \emph{who pays is irrelevant}, as long as it pays a proper
 amount of money.
 
@@ -5674,7 +5724,7 @@ of systems.
 
 \subsection{The Threat Matrix}
 
-The \textbf{Threat Matrix} arranges all possible $4$ categories in a matrix:
+The \textbf{Threat Matrix} arranges all possible 4 categories in a matrix:
 \begin{enumerate}
     \item the \textbf{opportunistic} (\emph{non--targeted}, \emph{high--skill})
         attacks. Opportunistic category usually targets organizations and looks
@@ -5707,12 +5757,12 @@ From a defender's point of view, \textbf{low--skill attacks} are very frequent
 and practically unavoidable: for this reason, these kind of attacks
 \textbf{must be addressed} by basic security hygiene, which usually suffices to
 defend against these attacks. Those attacks are uneffective against system
-updates, basic controls, an enough careful user.
+updates, basic controls, a careful enough user.
 
 By far, the most dangerous category is the \textbf{high--skill},
 \textbf{non--targeted} attacks. These attacks are relatively frequent, and it
 is \emph{very} unlikely that the defender's resources exceed those of the
-attacker -- this means that the attacker will \emph{almost always} surpass the
+attacker --- this means that the attacker will \emph{almost always} surpass the
 capabilities of a defender, especially because the defender's focus is not
 defense. Moreover, costs are \textbf{highly asymmetrical}: the attacker
 may concentrate his efforts on a few points in a few moments, while any
@@ -5725,10 +5775,8 @@ As an example of this asymmetry, just consider an enterprise having hundreds of
 personal computers or notebooks, end--of--life web frameworks, network
 printers, webcams, heating and cooling systems\dots While an attacker simply
 has a few computers, network resources, probably a botnet at their disposal
-(much cheaper)!
-
-It is evident that the attacker almost always has the advantage over the
-defender.
+(much cheaper)! It is evident that the attacker almost always has the advantage
+over the defender.
 
 The most effective and most rational behavior for a defender towards
 opportunistic attacks is to \emph{encourage the attacker to change target}.
@@ -5746,11 +5794,11 @@ the tool. Examples of defensive mechanisms belonging to this category are
 \emph{endpoint firewalls}, and many other.
 
 In the last attack category, \textbf{Advanced Persistent Threat}, the attacker
-usually has more resources than the defender.
-
-The most rational behavior for a defender is to just ``cross the fingers'' and
-hope the APT attack will never come. A strong focus on opportunistic category
-of attacks should instead be enforced.
+usually has more resources than the defender. In this case, the most rational
+behavior for a defender is to just ``cross the fingers'' and hope that an APT
+attack will never occur. A strong focus on opportunistic category of attacks
+should instead be enforced, and most if not all the security budget should be
+spent addressing them.
 
 \chapter{Attack tools}
 
@@ -5763,14 +5811,15 @@ single entity, called the \textbf{botnet master}. Usually, a botnet master is a
 criminal group.
 
 To survive, a botnet needs a dedicated Command \& Control network. A botnet is
-extremely relevant in practice -- as of today there are several botnets around
+extremely relevant in practice --- as of today there are several botnets around
 the world, resulting in many problems.
 
 A botnet is usually created by implanting malware by \emph{automated} and
-\emph{not--targeted}, very cheap, attacks, to a lot of devices, making them
-bots. Devices can involve single individual devices (smartphones, home routers,
-PCs) or within an organization (PCs, workstations, printers, routers). Some of
-the largest botnets nowadays are solely composed of home routers.
+\emph{not--targe\-ted} attacks that are very cheap to operate, against a lot of
+devices with the end goal of making them bots. Single individual devices
+(smartphones, home routers, PCs) can be involved, or devices within an
+organization (PCs, workstations, printers, routers). Some of the largest
+botnets nowadays are solely composed of consumer home routers.
 
 Infection of internet--facing devices may occur \emph{quickly}, \emph{easily}
 and in an \emph{automated} way. The \emph{IoT devices} are a significant
@@ -5785,7 +5834,7 @@ displays, and similar devices.
 The issue with unsecure devices is relevant when costs and incentives are
 analyzed:
 \begin{itemize}
-    \item the owner of an infected IoT device does not have enough knowledge
+    \item the owner of an infected IoT device does not possess enough knowledge
         and skill to understand that the device has been infected, and he is
         almost certainly unable to remove the malware. IoT owners has little to
         no incentive in fixing the device, which is probably working regardless
@@ -5793,20 +5842,21 @@ analyzed:
     \item IoT manufacturers, as well, have little to no incentive to fix
         vulnerabilities. Gain margins are very tight, developing secure
         software is very costly and patch development is even more costly.
+        Moreover, there is no liability of such incidents.
 \end{itemize}
 
 
 \subsection{Making money with botnets}
 
 Botnets usually exist for \emph{money} reasons. In ordet to obtain money, one
-could employ various techniques, for instance stolend and used credentials and
+could employ various techniques, for instance stolen and used credentials and
 banking credentials, stolen and sold long term cookies, devices infected by the
-so called \emph{Remote Access Trojans}, who falls under the category of
+so called \emph{Remote Access Trojans}, who fall under the category of
 remotely controllable malware. Therefore, making money out of a botnet is
-rather cheap, easy and manageable. A huge amount of attacks involve, for
-instance, large video and entertainment brands -- in fact, access to verified
+rather cheap, easy and quite manageable. A huge amount of attacks involve, for
+instance, large video and entertainment brands --- in fact, access to verified
 accounts is rather wanted in the black market; this is done by credentials
-stuffing. Credentials stuffing tentatives are increasingly growing. 
+stuffing. Credentials stuffing tentatives are increasingly growing.
 
 A botnet could be used to \textbf{test credentials} of a data leak. For instance,
 bots can be configured to try to login with some credentials, in order to sell
@@ -5818,10 +5868,10 @@ apply his own set of attacks and mischievous behavior. The unitary cost of a
 single bot is \emph{tens of cents}, with thousands of them that can sum up to a
 hundred of bucks (the lesson here is that botnet are very, very affordable).
 
-Another kind of way to make money is to adopt the \textbf{clickfraud}. Let a
-published of a website enroll some advertising, from an Ad Network of choice.
-Advertisers pay the Ad Network to show advertisement on some websites. Overall,
-the money will end up in the publisher's website for each click on
+Another kind of way to make money is to adopt the \textbf{clickfraud} method.
+Let a published of a website enroll some advertising, from an Ad Network of
+choice. Advertisers pay the Ad Network to show advertisement on some websites.
+Overall, the money will end up in the publisher's website for each click on
 advertisements. The publisher website is controlled and managed by the
 attacker. Bots are then instructed to go to the attacker's website, and to
 click on the advertisements, in order to increase the ad--click counter for the
@@ -5830,12 +5880,16 @@ detect whether a bot or a human is clicking on an ad; this is, however, very
 difficult and even harder for small advertisement networks.
 
 From the economic point of view, the owner of a bot does not experience a
-significant loss or increased energy consumption. However, the advertiser
-suffers a lot of financial loss. The Ad Network does not suffer from anything
-relevant (it gets paid anyway), just a small reputation loss. This asymmetry in
-costs makes repelling this kind of fraudulent activity near to impossible.
+significant loss or increased energy consumption. His device will most likely
+work regardless of the presence of a malware (it's in the attacker's interest
+that the device survives as much as possible in an infected state), and he will
+perhaps lack enough knowledge to uncover the malicious traffic. On contrary, the
+advertiser suffers a lot of financial loss. The Ad Network does not suffer from
+anything relevant (it gets paid anyway), just a small reputation loss. This
+asymmetry in costs makes repelling this kind of fraudulent activity near to
+impossible.
 
-Each rented bot is paid with a few clicks -- 100 bots will roughly cost 10\$,
+Each rented bot is paid with a few clicks --- 100 bots will roughly cost 10\$,
 while a single click will generate from 0.1\$ to 1\$. If a bot is instructed to
 click 10 times a day, a single day should suffice to repay that bot. This means
 that there is a huge potential for gain, with 100000\$ dollars \emph{a day}
@@ -5843,7 +5897,7 @@ with a botnet of 10000 bots, no taxes involved.
 
 A botnet involved in clickfraud was called \emph{ZeroAccess} (2014). According
 to the estimates, ZeroAccess likely generated a million of fraudulent clicks
-per day -- which results in, approximately, 100000\$ per day. ZeroAccess was
+per day --- which results in, approximately, 100000\$ per day. ZeroAccess was
 partly dismantled by a Microsoft and Europol takedown, by taking down Command
 \& Control structure. With \emph{hours}, there had been a new clickfraud
 modules, by updating the botnet with a new Command \& Control. For no reason,
@@ -5899,17 +5953,17 @@ bot contacted a \emph{predefined \texttt{N-BO} name}. The attacker
 \texttt{N-BO A IP-X}, so blocking by IP address was no longer possible. As long
 as a defender detects the nature of \texttt{N-BO}, every organization could
 still blacklist \texttt{N-BO}. Moreover, legal actions against Registrar that
-manages \texttt{N-BO} could dismantle the botnet completely -- hence,
+manages \texttt{N-BO} could dismantle the botnet completely --- hence,
 \emph{questionable Registrars} are adopted by attackers.
 
 In \textbf{Generation 2}, bots contained a \textbf{predefined algorithm}, that
 generated a \emph{different name \texttt{N(day)} everyday}. This meant that
-everyday bots contact a different name -- rules blocking names and IP addresses
+everyday bots contact a different name --- rules blocking names and IP addresses
 no longer worked, with firewalls that should have been updated everyday. On any
 different day, a new Registrar might be involved.
 
 With a lot of effort, defenders might \emph{reverse engineer the bot code}.
-However, this is very hard -- just realizing which names are generated by a bot
+However, this is very hard --- just realizing which names are generated by a bot
 at the boundary of an organization is astonishingly hard. After the domain
 chain generated by the algorithm has been discovered, defenders could purchase
 a domain that will be generated in the future, taking control of the botnet.
@@ -5984,7 +6038,7 @@ longer work.
 
 In the case of the Word document, a specific exploit involved inserting an URL
 in a document, whose content was a VBSCRIPT script. Word automatically
-downloaded the code and run it -- attacker could simply insert any code and the
+downloaded the code and run it --- attacker could simply insert any code and the
 end result was to download and run a malware in the user's machine. HTML document
 containing the script should have been saved with \texttt{.rtf} extension, and
 be served by the remote web server with \texttt{Content-Type: application/hta}.
@@ -6115,7 +6169,7 @@ remote devices \textbf{behind firewalls}, isolating them from the business
 networks. When remote access is required, \textbf{use only secure methods} such
 as VPNs; however, recognize that VPNs may have vulnerabilities and should be
 updated to the most current version available. VPNs are also as secure as the
-connected device -- if a device runs a malware, the game is over.
+connected device --- if a device runs a malware, the game is over.
 
 Isolation and the concealing of those devices is the bare minimum security
 practice nowadays.
@@ -6255,7 +6309,7 @@ vulnerability before people starts applying patches (for instance, the
 The ideal case does not always match reality, though. One of the previous steps
 might not occur:
 \begin{enumerate}
-    \item \textbf{researches} \emph{may not notify} the software vendor -- they
+    \item \textbf{researches} \emph{may not notify} the software vendor --- they
         could rather sell their information to criminal organizations (or be
         part of them\dots), looking for a greater amount of money. There is a
         huge \emph{illegal} market of software vulnerabilities, especially when
@@ -6267,14 +6321,14 @@ might not occur:
         2004 to 2016, 50\% unknown and with average life expectancy of
         approximately 7 years (only 25\% survive less than a year and a half).
         As of 5 April 2022, \emph{Google Project Zero} estimates are of 211
-        zero days on the wild. Zero days are used very infrequently -- before
+        zero days on the wild. Zero days are used very infrequently --- before
         using a zero day exploits, the attacker tries with other techniques.
         Zero days are highly effective, but they cost very much, and they could
         be discovered by defenders at each usage. Minimizing the risk of zero
         day discovery is crucial for intelligence agencies. Moreover, the same
         organization that owns a zero day will be vulnerable to that specific
         vulnerability as well;
-    \item \textbf{software vendor} \emph{may not develop} a patch -- they could
+    \item \textbf{software vendor} \emph{may not develop} a patch --- they could
         bot be interested; Also, \emph{patch development is costly}. It may
         also be very difficult, and in most cases there is \emph{little to no
         contractual obligation} for patch development. Depending on the
@@ -6284,7 +6338,7 @@ might not occur:
         (therefore, all copies of that software will be vulnerable
         \emph{forever}).
     \item \textbf{public disclosure} may occur \emph{without an available patch}
-        -- someone leaks the information for some reason. Another issue with
+        --- someone leaks the information for some reason. Another issue with
         software vendors is that they could \emph{downplay relevance} and do
         not act. Keeping a vulnerability secret won't work, as the only
         advantage is that the researcher will not lose time and won't fear
@@ -6293,9 +6347,9 @@ might not occur:
         along with a proof of concept exploit for maximal public pressure. The
         most ethical approach dictates that, before disclosing, a
         \emph{reasonable deadline} should be given to the software vendor for
-        acting -- that is called \emph{Responsible Disclosure};
+        acting --- that is called \emph{Responsible Disclosure};
     \item \textbf{system administrators} \emph{might not apply the provided
-        patch} -- they could be lazy or unskilled. Moreover, applying a patch
+        patch} --- they could be lazy or unskilled. Moreover, applying a patch
         \emph{takes time}, requires usually \emph{service downtime} (think of
         Linux kernel patches) and \emph{compatibility problems}. Indeed, a
         system administrator may not have enough time to upgrade; or he may be
@@ -6322,7 +6376,7 @@ vulnerabilities, and whether devices are exposed to the internet or not.
 
 The asset management is a \emph{basic} requirement; often not fulfilled
 adequately, especially since it's much harder than it seems. As a maturity test
-for an organization, ask a CTO to provide the asset management -- accurate
+for an organization, ask a CTO to provide the asset management --- accurate
 answer should come in less than 30 minutes.
 
 \subsection{Other important issues}
@@ -6341,8 +6395,8 @@ Some good practices, depending on who you are, can be summarized as follows:
         should consider himself a software developer, and the related company
         as a software company, thus managing software security accordingly;
     \item \textbf{IT Administrators} should check their devices for known
-        vulnerabilities. In particular, there exist tools -- for instance,
-        \emph{Nessus} -- which are capable of discovering and assessing
+        vulnerabilities. In particular, there exist tools --- for instance,
+        \emph{Nessus} --- which are capable of discovering and assessing
         vulnerabilities, along with an asset management. Every organization
         will find a lot of vulnerabilities in its software and services: a
         proper \emph{structured process} for managing vulnerabilities is
@@ -6404,7 +6458,7 @@ The other fundamental problem is related to cybersecurity.
 
 Testing a software requirement is rather easy: it is sufficient to check that
 the software has some properties. Testing the requirement means tries executing
-the task -- if the task is performed successfully the software is ready, else
+the task --- if the task is performed successfully the software is ready, else
 refactor or redesign. This kind of requirements of what the software
 \textbf{can} do is said to be a \emph{positive requirement}.
 
@@ -6423,7 +6477,7 @@ both \emph{totally unexpected} and \emph{wrong}, usually with the help of
 automated tools.
 
 An \textbf{hostile} environment is an environment in which inputs may be
-extreme and perhaps uncommon -- in software, an \textbf{adversarial}
+extreme and perhaps uncommon --- in software, an \textbf{adversarial}
 environment is an enviroment even more dangerous in which inputs that are
 actively selected to provoke undesired behavior; ``the worst possible input at
 the worst possible time''. Basically, software is subjected to \emph{actively}
@@ -6520,7 +6574,7 @@ Antivirus software works by detecting \emph{expoint injections}. What happens is
 \begin{enumerate}
     \item figure out how $v$ works;
     \item develop detection rules for \textbf{all} the possible
-        exploits\footnote{This is crucial -- there may be \emph{many} different
+        exploits\footnote{This is crucial --- there may be \emph{many} different
         exploits for a single vulnerability, each one having possibly a very
     distinct behavior. This is not easy, especially in exploits carried by
 let's say Word documents (an antivirus should be able to detect a very general
@@ -6531,7 +6585,7 @@ repeat as necessary overtime;
     \item antivirus are ready to be updated (\textbf{signature download}).
 \end{enumerate}
 
-The signature development and download phases are very delicate -- they
+The signature development and download phases are very delicate --- they
 \emph{take time}, and they leave the antivirus unable to protect the device to
 new threats. This means that as soon as a new vulnerability is discovered, a
 \emph{time delay} is required before the antivirus starts protecting against
@@ -6593,7 +6647,7 @@ From a defender's point of view, this is a true nightmare, since \emph{no one
 can be trusted anymore}.
 
 \textbf{SolarWinds} software for network security monitoring has been
-compromised in late 2020 -- adopted by over 18000 large and security--conscious
+compromised in late 2020 --- adopted by over 18000 large and security--conscious
 organizations, the compromised software has seen \emph{malicious updates}
 installed and distributed. Many more examples are available on the web (and on
 the last pack of slides).
@@ -6601,7 +6655,7 @@ the last pack of slides).
 Supply chain attacks are marvellous for an attacker that wants money, since
 \emph{a single attack can result in many, many organizations infected}, all the
 organizations that use the compromised software or device. The average open
-source project depends on 180 libraries on average -- there are 180 different
+source project depends on 180 libraries on average --- there are 180 different
 points in which a malware could be inserted.
 
 Basically, supply chain compromise may take place in \textbf{any} of the
@@ -6623,7 +6677,7 @@ following ways,
 
 From the defender's point of view, this represent a real nightmare, since even
 the \textbf{perimeter} of defense is unknown! Questions arise whether hardware
-and software vendors and manufacturers might be compromised -- moreover,
+and software vendors and manufacturers might be compromised --- moreover,
 internal applications could still be compromised (who built our
 website? on which platform does it run? with which libraries?) as well as
 software development tools and libraries in use.
@@ -6636,7 +6690,7 @@ software development tools and libraries in use.
 
 \vspace*{1cm}
 
-The only defense is like any other malware -- scan downloads for malicious
+The only defense is like any other malware --- scan downloads for malicious
 signatures, test software before production deployment for any suspicious
 activity, perform physical inspection of hardware to look for potential
 tampering.
@@ -6647,7 +6701,7 @@ integrity checks on hardware--level, operating system--level and
 software--level.
 
 Today's best practice regarding supply chain compromises is not really a
-defense -- it is something related to understanding \emph{who your providers
+defense --- it is something related to understanding \emph{who your providers
 are}, and \emph{decide who you put your trust on}.
 
 Another important approach is \emph{reproducible builds}. Reproducible builds
@@ -6659,7 +6713,7 @@ on.
 \chapter{Some important case studies and related considerations}
 
 \begin{itemize}
-    \item Vulnerabilities affect most software in everyday usage -- for this
+    \item Vulnerabilities affect most software in everyday usage --- for this
         very reason, Microsoft releases a patch every month fixing hundreds of
         bugs and vulnerabilities.
     \item Remotely controlling a malware on a ICS---SCADA devices with
@@ -6674,7 +6728,7 @@ on.
         on \emph{disruption}, \emph{sabotage} and similar.
     \item To solve above issues, \emph{suggested mitigations} \textbf{didn't
         include patching}: ICS devices often do not have patches. There are 14
-        items in the list -- most of them really hard to perform (a nightmare
+        items in the list --- most of them really hard to perform (a nightmare
         for security workers). One of the listed items is to change passwords
         into \emph{device--unique strong ones}.
     \item Other important security mitigations: enforce \emph{principle of
@@ -6685,7 +6739,7 @@ on.
         operating system}; use \emph{multi--factor authentication}; use
         \emph{strong passwords}, ensure \emph{antivirus} and security software
         is \emph{up to date}.
-    \item Computer attacks no longer affect only data -- they also affect
+    \item Computer attacks no longer affect only data --- they also affect
         \emph{physical world} and \emph{public safety}.
     \item The key way to understand how an organization works is to
         \textbf{focus on the incentive structure} of your environment.
