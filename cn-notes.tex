@@ -1,23 +1,13 @@
-\documentclass[10pt]{extreport}
+\documentclass[10pt,twoside]{extreport}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
 %\usepackage[document]{ragged2e}
-\usepackage{microtype}
+%\usepackage{notomath}
 \usepackage{fontspec}
-%\usepackage[bitstream-charter]{mathdesign}
-%\usepackage{scholax}
-%\usepackage{XCharter}
 %\usepackage{CharisSIL}
-%\usepackage[usefilenames,RMstyle={Text, Text},SSstyle={Text,Bold},TTstyle={Text,Semibold},DefaultFeatures={Ligatures=Common}]{plex-otf} %
-%\usepackage[p]{scholax}
-%\usepackage[default,regular,bold]{sourceserifpro}
-%\usepackage{amsmath,amsthm}% must be loaded before newtxmath
 \usepackage{mlmodern}
-\usepackage[stickstoo,vvarbb]{newtxmath}
-% amssymb should not be loaded
-\usepackage[T1]{fontenc}
-%\usepackage[scaled=1.075,ncf,vvarbb]{newtxmath}% need to scale up math package
-% vvarbb selects the STIX version of blackboard bold.
+\usepackage[stickstoo]{newtxmath}
 \usepackage[all]{nowidow}
 \usepackage{graphicx}
 \usepackage{svg}
@@ -26,7 +16,7 @@
 \usepackage{makecell}
 \usepackage{setspace}
 \usepackage{parskip}
-\usepackage[a4paper, inner=4.6cm, outer=4.6cm]{geometry}
+\usepackage[a4paper, inner=3.8cm, outer=5.4cm]{geometry}
 \usepackage{listings}
 \definecolor{dkgreen}{rgb}{0.1,0.5,0.1}
 \definecolor{greengray}{rgb}{0.517,0.761,0.404}
@@ -34,7 +24,7 @@
 \definecolor{blue}{rgb}{0.164,0.317,0.600}
 \definecolor{background}{rgb}{0.990,0.990,0.990}
 \lstset {
-    frame=lrtb,
+	frame=lrtb,
 	language=java,
 	aboveskip=0.7cm,
 	belowskip=0.2cm,
@@ -52,61 +42,73 @@
 	tabsize=3
 }
 
+\newcommand{\bodyfont}{Century Supra A}
+\newcommand{\headingfont}{Concourse 6 Caps}
+\newcommand{\sansfont}{Concourse 3}
+\newcommand{\scfont}{Century Supra A Caps}
+\newcommand{\monospacefont}{Triplicate A}
+\newcommand{\Footheadfont}{Concourse 4 Caps}
+\newcommand{\footheadfont}{Concourse 4}
+\font \bodyfontfs = "\bodyfont"
+\font \sansfontfs = "\sansfont"
+\font \scfontfs = "\scfont"
+\font \monofontfs = "\monospacefont"
+\font \Footheadfontfs = "\Footheadfont"
+\font \footheadfontfs = "\footheadfont"
+
 \newtheorem{thm}{Teorema}
 \setlength{\tabcolsep}{0.5em} % for the horizontal padding
 {\renewcommand{\arraystretch}{1.35}% for the vertical padding
 
 \usepackage{fancyhdr}
-
-
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[LE,RO]{\leftmark}
-\fancyfoot[LE,RO]{\thepage}
-
-\renewcommand{\headrulewidth}{1pt}
-%\renewcommand{\footrulewidth}{1pt}
-
-\usepackage{titlesec}
+\fancyhead[LE,RO]{\Footheadfontfs \nouppercase \leftmark}
+\fancyfoot[CE,CO]{\footheadfontfs \thepage}
+\renewcommand{\headrulewidth}{1.0pt}
+\renewcommand{\footrulewidth}{1.0pt}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}}
 
 \begin{document}
-%\setmonofont[Scale=.93]{IBM Plex Mono Medium}
+%\setmonofont[Scale=.85]{Fira Code Retina}
+\setmainfont{\bodyfont}
+\setsansfont{\sansfont}
+\setmonofont{\monospacefont}
 
 
-\setmainfont{Century Supra A}
-\setsansfont{Concourse 6}
-\setmonofont{Triplicate A}
 \include{cn-titlepage}
+\setstretch{1.25}
 \setlength{\emergencystretch}{0pt}
 \pretolerance=150
 \tolerance=250
-\setstretch{1.25}
 \hbadness=150
 \hfuzz=0pt
 \setlength{\headsep}{30pt}
 \setlength{\footskip}{40pt}
 \setlength{\marginparsep}{20pt}
-\setlength{\marginparwidth}{50pt}
-%\title{Computer Networks 2 and Introduction to Cybersecurity}
+\setlength{\marginparwidth}{90pt}
+
+%\title{Complessità}
 %\author{Marco Sgobino}
 %\maketitle
 \tableofcontents
 
-\setmainfont{Century Supra A}
-\setsansfont{Concourse 6}
-\setmonofont{Triplicate A}
-%\setsansfont{Source Serif 4 Display}
+\let\oldtextsc\textsc
+\renewcommand{\textsc}[1]{\oldtextsc{\scfontfs #1}}
 
-\titleformat{\part}[display]
-{\Huge\bfseries\sffamily}{}{0pt}{\center{ Part \thepart\ \ \\ \ \ }}
-\titleformat{\chapter}[display]
-{\Huge\bfseries\sffamily}{}{0pt}{Chapter \thechapter\\\bigskip}
-\titleformat{\section}[display]
-{\LARGE\bfseries\sffamily}{}{0pt}{\thesection\ \ \ \ \ }
-\titleformat{\subsection}[display]
-{\Large\bfseries\sffamily}{}{0pt}{\thesubsection\ \ \ \ \ }
-\titleformat{\subsubsection}[display]
-{\large\bfseries\sffamily}{}{0pt}{}
+\let\oldchapter\chapter
+\renewcommand{\chapter}[1]{\setmainfont{\headingfont}\oldchapter{#1}\setmainfont{\bodyfont}}
+
+\let\oldsection\section
+\renewcommand{\section}[1]{\setmainfont{\headingfont}\oldsection{#1}\setmainfont{\bodyfont}}
+
+\let\oldsubsection\subsection
+\renewcommand{\subsection}[1]{\setmainfont{\headingfont}\oldsubsection{#1}\setmainfont{\bodyfont}}
+
+\let\oldsubsubsection\subsubsection
+\renewcommand{\subsubsection}[1]{\setmainfont{\headingfont}\oldsubsubsection{#1}\setmainfont{\bodyfont}}
+
 
 \part{Security in Networking Protocols}
 
