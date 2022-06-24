@@ -263,7 +263,7 @@ between TCP and IP, set aside their abstraction layer, TCP should be properly
 built to manage IP differences and quirks. 
 
 IP protocol operates between \emph{nodes}: it is \emph{connectionless},
-\textbf{unreliable}, and is \emph{message-oriented}. The \textbf{Maximum
+\textbf{unreliable}, and is \emph{mes\-sa\-ge--o\-rien\-ted}. The \textbf{Maximum
 Transmission Unit} size of an IP packet is $MTU = 64KB$: this implicitly means
 a TCP segment can never be greater than the MTU, because a TCP segment is
 carried \emph{inside} an IP packet.
@@ -399,8 +399,8 @@ Figure~\ref{fig:ipHeader} shows the structure of an IP packet. Essentially,
         (DiffServ) per \texttt{RFC 2474}. Real-time data streaming makes use of the
         DSCP field. An example is Voice over IP (VoIP), which is used for
         interactive voice services;
-    \item[Explicit Congestion Notification (ECN), 2 bit] This field is defined in \texttt{RFC
-        3168} and allows end-to-end notification of network congestion without
+    \item[Explicit Congestion Notification (ECN), 2 bit] This field is defined in RFC
+        3168 and allows end-to-end notification of network congestion without
         dropping packets. ECN is an optional feature available when both
         endpoints support it and effective when also supported by the
         underlying network;
@@ -416,7 +416,7 @@ Figure~\ref{fig:ipHeader} shows the structure of an IP packet. Essentially,
         primarily used for uniquely identifying the group of fragments of a
         single IP datagram. Some experimental work has suggested using the ID
         field for other purposes, such as for adding packet-tracing information
-        to help trace datagrams with spoofed source addresses, but \texttt{RFC 6864}
+        to help trace datagrams with spoofed source addresses, but RFC 6864
         now prohibit any such use;
     \item[Flags, 3 bit] A three-bit field follows and is used to control or
         identify fragments. They are (in order, from most significant to least
@@ -6074,7 +6074,7 @@ in a document, whose content was a VBSCRIPT script. Word automatically
 downloaded the code and run it --- attacker could simply insert any code and the
 end result was to download and run a malware in the user's machine. HTML document
 containing the script should have been saved with \texttt{.rtf} extension, and
-be served by the remote web server with \texttt{Content-Type: application/hta}.
+be served by the remote web server with \texttt{Content-Type:} \texttt{application/\-hta}.
 
 The next step is to create a deceiving Word file (whose appearance is
 legitimate), containing a Word Object with link to the malicious URL. Finally,
@@ -6149,7 +6149,7 @@ should be decided by reasonning on the strictly necessary inputs, and by
 removing the unnecessary ones. The set of possible inputs \emph{should be
 minimized}.
 
-\subsection{Managing the exposure to internetwork of Internet of Things and Industrial Control Systems devices}
+\subsection{Managing IoT and ICS devices}
 
 Some categories of devices that are increasingly connected to the network are:
 \begin{itemize}
