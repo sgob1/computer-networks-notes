@@ -1,11 +1,41 @@
-\documentclass[10pt,twoside]{extreport}
+% --------------------------------------------------------------------------------
+%                     __   __        _      _    _
+%                     \ \ / /_ _ _ _(_)__ _| |__| |___ ___
+%                      \ V / _` | '_| / _` | '_ \ / -_|_-<
+%                       \_/\__,_|_| |_\__,_|_.__/_\___/__/
+%
+% --------------------------------------------------------------------------------
+\newcommand{\classname}{extbook}
+\newcommand{\innermargin}{3.8cm}
+\newcommand{\outermargin}{5.4cm}
+\newcommand{\bodyfont}{Century Supra A}
+\newcommand{\headingfont}{Concourse 6 Caps}
+\newcommand{\sansfont}{Concourse 3}
+\newcommand{\scfont}{Century Supra A Caps}
+\newcommand{\monospacefont}{Triplicate A}
+\newcommand{\Footheadfont}{Concourse 4 Caps}
+\newcommand{\footheadfont}{Concourse 4}
+\newcommand{\titlepagename}{cn-titlepage}
+\newcommand{\spacingvalue}{1.25}
+\newcommand{\headsepvalue}{30pt}
+\newcommand{\footskipvalue}{40pt}
+\newcommand{\marginparsepvalue}{20pt}
+\newcommand{\marginparwidthvalue}{90pt}
+
+
+% --------------------------------------------------------------------------------
+%                          _  _             _
+%                         | || |___ __ _ __| |___ _ _
+%                         | __ / -_) _` / _` / -_) '_|
+%                         |_||_\___\__,_\__,_\___|_|
+%
+% --------------------------------------------------------------------------------
+\documentclass[10pt]{\classname}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[italian]{babel}
 %\usepackage[document]{ragged2e}
-%\usepackage{notomath}
 \usepackage{fontspec}
-%\usepackage{CharisSIL}
 \usepackage{mlmodern}
 \usepackage[stickstoo]{newtxmath}
 \usepackage[all]{nowidow}
@@ -42,23 +72,12 @@
 	tabsize=3
 }
 
-\newcommand{\bodyfont}{Century Supra A}
-\newcommand{\headingfont}{Concourse 6 Caps}
-\newcommand{\sansfont}{Concourse 3}
-\newcommand{\scfont}{Century Supra A Caps}
-\newcommand{\monospacefont}{Triplicate A}
-\newcommand{\Footheadfont}{Concourse 4 Caps}
-\newcommand{\footheadfont}{Concourse 4}
 \font \bodyfontfs = "\bodyfont"
 \font \sansfontfs = "\sansfont"
 \font \scfontfs = "\scfont"
 \font \monofontfs = "\monospacefont"
 \font \Footheadfontfs = "\Footheadfont"
 \font \footheadfontfs = "\footheadfont"
-
-\newtheorem{thm}{Teorema}
-\setlength{\tabcolsep}{0.5em} % for the horizontal padding
-{\renewcommand{\arraystretch}{1.35}% for the vertical padding
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -67,48 +86,55 @@
 \fancyfoot[CE,CO]{\footheadfontfs \thepage}
 \renewcommand{\headrulewidth}{1.0pt}
 \renewcommand{\footrulewidth}{1.0pt}
-\renewcommand{\chaptermark}[1]{%
-  \markboth{#1}{}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+
+\newtheorem{thm}{Teorema}
+\setlength{\tabcolsep}{0.5em} % for the horizontal padding
+{\renewcommand{\arraystretch}{1.35}% for the vertical padding
+
 
 \begin{document}
-%\setmonofont[Scale=.85]{Fira Code Retina}
 \setmainfont{\bodyfont}
 \setsansfont{\sansfont}
 \setmonofont{\monospacefont}
 
+\include{\titlepagename}
+%\title{Title}
+%\author{Author}
+%\maketitle
 
-\include{cn-titlepage}
-\setstretch{1.25}
+\setstretch{\spacingvalue}
 \setlength{\emergencystretch}{0pt}
 \pretolerance=150
 \tolerance=250
 \hbadness=150
 \hfuzz=0pt
-\setlength{\headsep}{30pt}
-\setlength{\footskip}{40pt}
-\setlength{\marginparsep}{20pt}
-\setlength{\marginparwidth}{90pt}
+\setlength{\headsep}{\headsepvalue}
+\setlength{\footskip}{\footskipvalue}
+\setlength{\marginparsep}{\marginparsepvalue}
+\setlength{\marginparwidth}{\marginparwidthvalue}
 
-%\title{Complessità}
-%\author{Marco Sgobino}
-%\maketitle
 \tableofcontents
 
 \let\oldtextsc\textsc
 \renewcommand{\textsc}[1]{\oldtextsc{\scfontfs #1}}
-
 \let\oldchapter\chapter
 \renewcommand{\chapter}[1]{\setmainfont{\headingfont}\oldchapter{#1}\setmainfont{\bodyfont}}
-
 \let\oldsection\section
 \renewcommand{\section}[1]{\setmainfont{\headingfont}\oldsection{#1}\setmainfont{\bodyfont}}
-
 \let\oldsubsection\subsection
 \renewcommand{\subsection}[1]{\setmainfont{\headingfont}\oldsubsection{#1}\setmainfont{\bodyfont}}
-
 \let\oldsubsubsection\subsubsection
 \renewcommand{\subsubsection}[1]{\setmainfont{\headingfont}\oldsubsubsection{#1}\setmainfont{\bodyfont}}
 
+
+% --------------------------------------------------------------------------------
+%                     ___                             _
+%                    |   \ ___  __ _  _ _ __  ___ _ _| |_
+%                    | |) / _ \/ _| || | '  \/ -_) ' \  _|
+%                    |___/\___/\__|\_,_|_|_|_\___|_||_\__|
+%
+% --------------------------------------------------------------------------------
 
 \part{Security in Networking Protocols}
 
@@ -6791,4 +6817,13 @@ on.
     \item \textbf{asset management} is crucial for correct \textbf{patching} of
         all systems.
 \end{itemize}
+
 \end{document}
+% --------------------------------------------------------------------------------
+%                        _____ _          ___         _
+%                       |_   _| |_  ___  | __|_ _  __| |
+%                         | | | ' \/ -_) | _|| ' \/ _` |
+%                         |_| |_||_\___| |___|_||_\__,_|
+%
+% --------------------------------------------------------------------------------
+
