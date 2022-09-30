@@ -1,7 +1,10 @@
+*-legacy.tex
 *.aux
+*.fdb_latexmk
+*.fls
 *.log
 *.out
+*.pdf
 *.synctex
 *.toc
-*.pdf
-*-legacy.tex
+*.xdv

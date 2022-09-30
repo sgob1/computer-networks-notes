@@ -652,7 +652,7 @@ matter how many times \texttt{send()} is invoked, the end result will be to simp
 insert those $N$ bytes in the TX-buffer, because the sole effect of
 \texttt{send()} is to insert the passed number of bytes into the TX-buffer,
 triggering a transmission. As a first approximation, the number of transmitted
-segments will roughly be $$\mbox{\#transmitted } = \frac{N}{MSS} + 1,$$ with
+segments will roughly be \[\mbox{\#transmitted } = \frac{N}{MSS} + 1,\] with
 the last segment $+1$ smaller than the previous ones. Things, however, can go
 wrong and be much more complex due to packet loss and retransmissions. Recall
 that for all these reasons, the exact number is neither predictable nor
@@ -1009,8 +1009,8 @@ connection. RTO value is basically a \emph{trade-off} between exhibiting few
 retransmissions and having a fast and responsive connection. RTO should be set
 \textbf{dinamically}: it should be slightly greater than the \emph{RTT}
 (Round-Trip-Time), an idea from Jacobson algorithm. This is of a crucial
-importance for TCP to work. Initial RTO value is heuristical, and varies from
-one OS to another. Linux and Window start from same value, macOS use a
+importance for TCP to work. Initial RTO value is heuristic, and varies from
+one OS to another. Linux and Windows start from same value, macOS adopts a
 different value, and so on.
 
 
@@ -1166,8 +1166,8 @@ called \emph{congestion window}, whose goal is to \emph{model the maximum curren
 throughput of the network}. 
 
 The number of in-flight bytes \emph{must be slower than both send window and
-congestion window multiplied by MSS}, so that $$\mbox{in-flight} \leq
-\min(\mbox{sndWin}, \mbox{congWin} \cdot \mbox{MSS}).$$ 
+congestion window multiplied by MSS}, so that \[\mbox{in-flight} \leq
+\min(\mbox{sndWin}, \mbox{congWin} \cdot \mbox{MSS}).\]
 
 The mental model should be the following one: if the transmission buffer is
 full of data, a number of in-flight bytes equal to the minumum of both
@@ -1600,8 +1600,8 @@ linear growth, the segments are increasing linearly up to $k+1$, that means the
 number of segments belonging to a pattern is $\frac{k \cdot (k + 1)}{2}$;
 hence, the \emph{average throughput formula} is
 
-$$A_t = \frac{MSS\cdot \frac{K(K+1)}{2}}{(K+1)\cdot RTT} = \frac{MSS\cdot
-K/2}{RTT}.$$ 
+\[A_t = \frac{MSS\cdot \frac{K(K+1)}{2}}{(K+1)\cdot RTT} = \frac{MSS\cdot
+K/2}{RTT}.\] 
 
 Thus, the injected throughput is the same one would obtain by
 having a \emph{constant window} of $K/2 \cdot MSS$ size \--- on average and
@@ -1686,8 +1686,8 @@ them, several variants of TCP have been developed.
 
 As an example, suppose a sustainable throughput $T_{MAX} = K \cdot MSS /
 RTT$, and suppose the length of the first initialization period be $t_{init} =
-K \cdot RTT$. Solving in $K$ leads to $$t_{init} = \frac{T_{MAX} \cdot
-RTT^2}{MSS}.$$ By looking at the formula, one recognizes that the initial time
+K \cdot RTT$. Solving in $K$ leads to \[t_{init} = \frac{T_{MAX} \cdot
+RTT^2}{MSS}.\] By looking at the formula, one recognizes that the initial time
 has a squared dependency over round-trip time, a direct proportionality over
 $T_{MAX}$ and is inversely proportional to MSS. In all connections where both
 RTT and $T_{MAX}$ are large or extremely large, the initialization time could
@@ -1725,8 +1725,8 @@ of transferred data when adopting the standard TCP protocol.}\label{tab:warmUp}
 Let \texttt{T\_MAX} be known and let $M$ the flow control window size be known
 as well; $B$ bytes should be sent. To estimate the time of the entire data
 exchange, a solution could be to first estimate the maximum number of bytes in
-the transient phase, that is $$N = MSS \cdot [(\frac{M \cdot (M + 1)}{2}) -
-3];$$ if the obtained quantity $N > B$, then the entire data exchange occurs
+the transient phase, that is \[N = MSS \cdot [(\frac{M \cdot (M + 1)}{2}) -
+3];\] if the obtained quantity $N > B$, then the entire data exchange occurs
 under congestion control. Otherwise, a portion $B - N$ of the bytes would fall
 under one of the two possible steady states, depending on the relationship
 between the maximum throughput of the network \texttt{T\_MAX}, and the window
@@ -4051,8 +4051,7 @@ The mechanism with which those endpoints agree on the OTP is the
 should be \emph{time\--dependent} in a predictable way if one knows secret
 \texttt{K1}, and unpredictable if one doesn't know the secret. Basically, the
 formula is as follows,
-
-$$ OTP(t) = Enc_K(t - t_0), $$ where $t$ is the current time, $t_0$ is the
+\[ OTP(t) = Enc_K(t - t_0), \] where $t$ is the current time, $t_0$ is the
 conventional zero time (same for both parties) and $K$ is the shared secret
 (the private key) that both parties (and only them) own. Basically, the result
 is the encryption of $t - t_0$, a result that after a normalization yields a
@@ -4072,7 +4071,7 @@ Possible issues of this mechanisms are the following ones:
 
 hence, the above formula cannot reliably work! The solution is to apply a sort
 of \emph{module operation}, in which 
-$$ OTP(t) = Enc_K((t - t_0) \% DX), $$  with $DX = 30s$ --- this means that the OTP
+\[ OTP(t) = Enc_K((t - t_0) \% DX), \]  with $DX = 30s$ --- this means that the OTP
 changes once every $30s$ (and not at each and every second), and there is a
 $30s$ time window to insert the OTP code before it expires.
 
