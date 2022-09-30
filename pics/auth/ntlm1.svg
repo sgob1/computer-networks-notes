@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="192.50092mm"
+   height="113.36583mm"
+   viewBox="0 0 192.50092 113.36583"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="ntlm1.svg"
+   inkscape:export-filename="ntlm1.png"
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.5518659"
+     inkscape:cx="351.83453"
+     inkscape:cy="217.80233"
+     inkscape:window-width="1904"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <marker
+       style="overflow:visible"
+       id="marker47630"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="7"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path47628"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect47542"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect47157"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect41112"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect37835"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <marker
+       style="overflow:visible"
+       id="marker35771"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path35769"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect35689"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect35607"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect33348"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <marker
+       style="overflow:visible"
+       id="marker26568"
+       refX="0"
+       refY="0"
+       orient="59"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="7"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid"
+       markerUnits="strokeWidth">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path26566"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker25252"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="7"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path25250"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker25080"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="7"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path25078"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker16595"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path16593"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker15611"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="7"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path15609"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker15491"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="6.9999995"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="path15489"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow3"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow3"
+       markerWidth="4.2071066"
+       markerHeight="6.9999995"
+       viewBox="0 0 4.2071068 7"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:round"
+         d="M 3,-3 0,0 3,3"
+         id="arrow3"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker12137"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path12135"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1L"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1L"
+       markerWidth="8.75"
+       markerHeight="5"
+       viewBox="0 0 8.75 5"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="arrow1L"
+         transform="scale(-0.5)" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker6703"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path6701"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="Arrow1"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path5057"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker16595-8"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path16593-7"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker35771-1"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Arrow1"
+       markerWidth="4.0606604"
+       markerHeight="6.7071066"
+       viewBox="0 0 4.0606602 6.7071068"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         id="path35769-2"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc" />
+    </marker>
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect35689-9"
+       is_visible="true"
+       lpeversion="1"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+  </defs>
+  <g
+     inkscape:label="Livello 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-6.1595722,-4.9360714)">
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect3355"
+       width="16.631792"
+       height="9.0767908"
+       x="37.555233"
+       y="14.344777" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="5.842072"
+       y="20.727636"
+       id="text4885"><tspan
+         sodipodi:role="line"
+         id="tspan4883"
+         style="font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="5.842072"
+         y="20.727636">Password</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="95.201637"
+       y="20.420031"
+       id="text4885-2"><tspan
+         sodipodi:role="line"
+         id="tspan4883-7"
+         style="font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="95.201637"
+         y="20.420031">MAC<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan20896">H(PWD)</tspan>(CHS,CHC) = <tspan
+   style="font-weight:bold"
+   id="tspan22544">X</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="21.092827"
+       y="61.146046"
+       id="text4885-5"><tspan
+         sodipodi:role="line"
+         id="tspan4883-6"
+         style="font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="21.092827"
+         y="61.146046">Negotiate</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="116.69331"
+       y="29.027618"
+       id="text4885-5-0"><tspan
+         sodipodi:role="line"
+         id="tspan4883-6-9"
+         style="font-weight:bold;font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="116.69331"
+         y="29.027618">CHC</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="129.06577"
+       y="28.902454"
+       id="text4885-5-0-3"><tspan
+         sodipodi:role="line"
+         id="tspan4883-6-9-6"
+         style="font-weight:bold;font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="129.06577"
+         y="28.902454">User</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4937"
+       width="6.8204136"
+       height="26.798141"
+       x="73.621971"
+       y="5.1860709" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52777px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="41.389339"
+       y="20.112261"
+       id="text6393"><tspan
+         sodipodi:role="line"
+         id="tspan6391"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="41.389339"
+         y="20.112261">HASH</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="75.634827"
+       y="14.787742"
+       id="text6393-6"><tspan
+         sodipodi:role="line"
+         id="tspan6391-7"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="75.634827"
+         y="14.787742">M</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="75.634827"
+         y="20.079403"
+         id="tspan6422">A</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="75.634827"
+         y="25.371067"
+         id="tspan6424">C</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow1)"
+       d="m 23.786979,20.008734 13.665823,-0.04238"
+       id="path6480" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker6703)"
+       d="M 54.074631,19.848619 73.185778,19.69133"
+       id="path6699" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:3.99999, 0.499999;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow1L)"
+       d="M 6.8830165,51.477769 C 188.0885,51.475653 188.0885,51.475653 188.0885,51.475653"
+       id="path8265" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:none;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:4, 0.499999;stroke-dashoffset:0;stroke-opacity:1"
+       x="186.15247"
+       y="45.212791"
+       id="text8311"><tspan
+         sodipodi:role="line"
+         id="tspan8309"
+         style="fill:none;stroke:none;stroke-width:0.5"
+         x="186.15247"
+         y="45.212791">time</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:none;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:4, 0.499999;stroke-dashoffset:0;stroke-opacity:1"
+       x="175.92749"
+       y="49.214069"
+       id="text8315"><tspan
+         sodipodi:role="line"
+         id="tspan8313"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.5"
+         x="175.92749"
+         y="49.214069">time flow</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:4, 0.499999;stroke-dashoffset:0;stroke-opacity:1"
+       x="32.081451"
+       y="34.391106"
+       id="text10605"><tspan
+         sodipodi:role="line"
+         id="tspan10603"
+         style="stroke-width:0.5"
+         x="32.081451"
+         y="34.391106"><tspan
+   style="font-weight:bold"
+   id="tspan15779">CHC</tspan> is </tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.5"
+         x="32.081451"
+         y="39.68277"
+         id="tspan11369">generated</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:4, 0.499999;stroke-dashoffset:0;stroke-opacity:1"
+       x="30.797819"
+       y="76.7453"
+       id="text10605-2"><tspan
+         sodipodi:role="line"
+         id="tspan10603-9"
+         style="stroke-width:0.5"
+         x="30.797819"
+         y="76.7453"><tspan
+   style="font-weight:bold"
+   id="tspan15777">CHS</tspan> is </tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.5"
+         x="30.797819"
+         y="82.036964"
+         id="tspan11369-1">generated</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker12137)"
+       d="m 53.578307,35.047774 11.418414,-0.212452 v 0 l -0.09524,-24.140173 8.918955,0.09191"
+       id="path12133" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="12.30951"
+       y="9.7261314"
+       id="text13767"><tspan
+         sodipodi:role="line"
+         id="tspan13765"
+         style="stroke-width:0.5"
+         x="12.30951"
+         y="9.7261314">The client side</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="10.843387"
+       y="111.24258"
+       id="text13767-5"><tspan
+         sodipodi:role="line"
+         id="tspan13765-3"
+         style="stroke-width:0.5"
+         x="10.843387"
+         y="111.24258">The server side</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow3)"
+       d="m 13.584217,22.800866 13.449688,34.68281"
+       id="path14597" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker15491)"
+       d="m 28.846732,62.523232 3.785492,9.604253"
+       id="path15487" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker15611)"
+       d="m 45.804192,72.6716 22.9001,-26.394552 0.107226,-18.452612 4.112494,0.06527"
+       id="path15607" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker16595)"
+       d="M 81.497979,19.387663 H 93.770195"
+       id="path16591" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="137.34619"
+       y="96.331017"
+       id="text4885-2-9"><tspan
+         sodipodi:role="line"
+         id="tspan4883-7-2"
+         style="font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="137.34619"
+         y="96.331017">MAC<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan20896-0">H(PWD)</tspan>(CHS,CHC) = <tspan
+   style="font-weight:bold"
+   id="tspan22544-2">X'</tspan></tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4937-2"
+       width="6.8204136"
+       height="26.798141"
+       x="115.7665"
+       y="81.097061" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="117.77936"
+       y="90.69873"
+       id="text6393-6-8"><tspan
+         sodipodi:role="line"
+         id="tspan6391-7-9"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="117.77936"
+         y="90.69873">M</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="117.77936"
+         y="95.990395"
+         id="tspan6422-7">A</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:4.23333px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="117.77936"
+         y="101.28206"
+         id="tspan6424-3">C</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker16595-8)"
+       d="m 123.64252,95.298657 h 12.27222"
+       id="path16591-6" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 102.10374,22.807526 -0.0959,13.684783"
+       id="path23368" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 120.13678,30.359863 0.0586,6.432142"
+       id="path23370" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 133.48656,30.166725 0.0999,6.331577"
+       id="path24248" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker26568)"
+       d="m 102.10507,36.348455 6.35622,11.942548 v 0 0"
+       id="path25072" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker25252)"
+       d="m 120.21603,36.879249 -3.5524,7.985898"
+       id="path25074" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker25080)"
+       d="m 133.51054,36.600865 -10.53265,8.124423"
+       id="path25076" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="109.08022"
+       y="50.354324"
+       id="text4885-0"><tspan
+         sodipodi:role="line"
+         id="tspan4883-62"
+         style="font-weight:bold;font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="109.08022"
+         y="50.354324">X<tspan
+   style="font-weight:normal"
+   id="tspan31287">,</tspan>CHC<tspan
+   style="font-weight:normal"
+   id="tspan31285">,</tspan>User</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 112.17752,52.427473 10.82635,16.834921"
+       id="path31289" />
+    <ellipse
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path32443"
+       cx="80.332909"
+       cy="114.31536"
+       rx="9.2066593"
+       ry="3.7365422" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="73.64859"
+       y="115.81493"
+       id="text4885-6"><tspan
+         sodipodi:role="line"
+         id="tspan4883-1"
+         style="font-size:3.52778px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="73.64859"
+         y="115.81493">AuthDB</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow3)"
+       d="m 72.360392,111.98165 c -4.470214,-3.36282 -8.940725,-6.72587 -8.765696,-8.89997 0.175029,-2.1741 4.995496,-3.158941 9.815856,-4.143765"
+       id="path33346"
+       inkscape:path-effect="#path-effect33348"
+       inkscape:original-d="m 72.360392,111.98165 c -4.470248,-3.36278 -8.940757,-6.72583 -13.411527,-10.08914 4.820922,-0.98462 9.64139,-1.969464 14.461687,-2.954595" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="75.177467"
+       y="100.38083"
+       id="text33574"><tspan
+         sodipodi:role="line"
+         id="tspan33572"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="75.177467"
+         y="100.38083">H(password)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="80.838776"
+       y="89.699303"
+       id="text33574-1"><tspan
+         sodipodi:role="line"
+         id="tspan33572-9"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="80.838776"
+         y="89.699303"><tspan
+   style="font-weight:bold"
+   id="tspan41435">CHC</tspan>, <tspan
+   style="font-weight:bold"
+   id="tspan41433">CHS</tspan></tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker35771)"
+       d="m 103.18632,99.421557 c 3.9033,0.03312 7.80634,0.06624 11.70912,0.09936"
+       id="path35687"
+       inkscape:path-effect="#path-effect35689"
+       inkscape:original-d="m 103.18632,99.421557 c 3.9033,0.03338 7.80634,0.06651 11.70912,0.09936" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker35771-1)"
+       d="m 102.80621,88.098901 c 3.9033,0.03312 7.80634,0.06624 11.70912,0.09936"
+       id="path35687-3"
+       inkscape:path-effect="#path-effect35689-9"
+       inkscape:original-d="m 102.80621,88.098901 c 3.9033,0.03338 7.80634,0.06651 11.70912,0.09936" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker15491)"
+       d="m 122.78609,69.147391 c 7.7362,-0.03597 15.47213,-0.07193 23.20779,-0.107892"
+       id="path37833"
+       inkscape:path-effect="#path-effect37835"
+       inkscape:original-d="m 122.78609,69.147391 c 7.7362,-0.0357 15.47213,-0.07166 23.20779,-0.107892" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;font-family:'IBM Plex Mono';-inkscape-font-specification:'IBM Plex Mono';fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       x="148.84441"
+       y="68.587181"
+       id="text42333"><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.5"
+         x="148.84441"
+         y="68.587181"
+         id="tspan43235">if <tspan
+   style="font-weight:bold"
+   id="tspan44139">X'</tspan> = <tspan
+   style="font-weight:bold"
+   id="tspan44137">X</tspan>, the user </tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.5"
+         x="148.84441"
+         y="73.878845"
+         id="tspan44135">will be authorized</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow3)"
+       d="m 158.60279,92.250594 c -0.001,-5.583827 -0.002,-11.167919 -0.003,-16.752276"
+       id="path47155"
+       inkscape:path-effect="#path-effect47157"
+       inkscape:original-d="m 158.60279,92.250594 c -7.9e-4,-5.583827 -0.002,-11.167919 -0.003,-16.752276" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.499999;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#marker47630)"
+       d="M 122.93857,69.110197 C 111.2189,74.316551 99.499098,79.52296 87.779177,84.729424"
+       id="path47540"
+       inkscape:path-effect="#path-effect47542"
+       inkscape:original-d="M 122.93857,69.110197 C 111.21904,74.316872 99.49924,79.523279 87.779177,84.729424" />
+  </g>
+</svg>

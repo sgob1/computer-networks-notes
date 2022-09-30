@@ -4595,7 +4595,7 @@ Figure~\ref{fig:almost-kerberos}.
 \begin{figure}[ht]
     \centering
     \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/almost-kerberos.png}
-    \caption{A simplified overview of the Kerberos protocol.}
+    \caption{A simplified overview of the Kerberos protocol. Letter \texttt{U} denotes `user', letter \texttt{S} denotes `service', while \texttt{AS} stands for \emph{Authentication Service}. In blue, the \emph{Authenticator} component of the message is highlighted.}
     \label{fig:almost-kerberos}
 \end{figure}
 
@@ -4749,27 +4749,20 @@ ticket with which the user workstation will be able to communicate with the
 \texttt{TGS}. After that, the user presents its \texttt{TGT} to the
 \texttt{TGS}, along with a request for service \texttt{S}. The \texttt{TGS}
 will respond with the \textbf{service ticket} for communucating with service
-\texttt{S}. To summarise, a first ticket --- the \emph{Ticket Granting Ticket} --- should be provided by the Ticket Granting Service to request other tickets. Subsequent tickets --- the \emph{Service Tickets} --- are the same ones we illustrated in the previous sections. Next
-Figures~\ref{fig:real-kerberos-1}~and~\ref{fig:real-kerberos-2} illustrate the
-entire process in detail.
+\texttt{S}. To summarise, a first ticket --- the \emph{Ticket Granting Ticket}
+--- should be provided by the Ticket Granting Service to request other tickets.
+Subsequent tickets --- the \emph{Service Tickets} --- are the same ones we
+illustrated in the previous sections. Next
+Figure~\ref{fig:real-kerberos} illustrate the whole process in detail.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/real-kerberos-1.png}
-    \caption{The first steps of real Kerberos.}
-    \label{fig:real-kerberos-1}
+    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/real-kerberos.png}
+    \caption{The real Kerberos configuration.}
+    \label{fig:real-kerberos}
 \end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[ width=1.0\linewidth, height=\textheight, keepaspectratio]{./pics/auth/real-kerberos-2.png}
-    \caption{The further steps of real Kerberos.}
-    \label{fig:real-kerberos-2}
-\end{figure}
-
 
 \clearpage
-
 
 Hence, the process can be summarized in $4$, distinct steps (two phases):
 \begin{enumerate}
